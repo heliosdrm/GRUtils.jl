@@ -1,6 +1,6 @@
 ## Select keyword arguments from list
 keys_geom_attributes = [:label, :alpha, :linewidth, :markersize, :step_position]
-keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold]
+keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
 
 geom_attributes(;kwargs...) = filter(p -> p.first ∈ keys_geom_attributes, kwargs)
@@ -87,6 +87,75 @@ end
 @plotfunction(plot3, geom = :line3d, canvas = :axes3d)
 @plotfunction(polar, geom = :polarline, canvas = :axespolar)
 
+function barcoordinates(heights; barwidth=0.8, baseline=0.0, kwargs...)
+    n = length(heights)
+    halfw = barwidth/2
+    wc = zeros(2n)
+    hc  = zeros(2n)
+    for (i, value) in enumerate(heights)
+        wc[2i-1] = i - halfw
+        wc[2i]   = i + halfw
+        hc[2i-1] = baseline
+        hc[2i]   = value
+    end
+    (wc, hc)
+end
+
+function _setargs_bar(f, labels, heights; kwargs...)
+    wc, hc = barcoordinates(heights; kwargs...)
+    horizontal = get(kwargs, :horizontal, false)
+    if horizontal
+        args = (hc, wc)
+        tickoptions = (:yticks => (1,1), :yticklabels => string.(labels))
+    else
+        args = (wc, hc)
+        tickoptions = (:xticks => (1,1), :xticklabels => string.(labels))
+    end
+    return (args, (tickoptions..., currentplot(f).specs..., kwargs...))
+end
+
+function _setargs_bar(f, heights; kwargs...)
+    n = length(heights)
+    _setargs_bar(f, string.(1:n), heights; kwargs...)
+end
+
+@plotfunction(barplot, geom = :bar, canvas = :axes2d, setargs=_setargs_bar)
+
+function hist(x, nbins=0)
+    if nbins <= 1
+        nbins = round(Int, 3.3 * log10(length(x))) + 1
+    end
+
+    xmin, xmax = extrema(x)
+    edges = linspace(xmin, xmax, nbins + 1)
+    counts = zeros(nbins)
+    buckets = Int[max(2, min(searchsortedfirst(edges, xᵢ), length(edges)))-1 for xᵢ in x]
+    for b in buckets
+        counts[b] += 1
+    end
+    wc = zeros(2nbins)
+    hc  = zeros(2nbins)
+    baseline = 0.0 # fix for log scale
+    for (i, value) in enumerate(counts)
+        wc[2i-1] = edges[i]
+        wc[2i]   = edges[i+1]
+        hc[2i-1] = baseline
+        hc[2i]   = value
+    end
+    (wc, hc)
+end
+
+function _setargs_hist(f, x; kwargs...)
+    nbins = get(kwargs, :nbins, 0)
+    wc, hc = hist(x, nbins)
+    horizontal = get(kwargs, :horizontal, false)
+    args = horizontal ? (hc, wc) : (wc, hc)
+    return (args, (currentplot(f).specs..., kwargs...))
+end
+
+@plotfunction(histogram, geom = :bar, canvas = :axes2d, kind = :hist, setargs=_setargs_hist)
+
+
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend
     if haskey(p.specs, :location) && p.specs[:location] ∈ legend_locations[:right_out]
@@ -103,9 +172,9 @@ function legend!(p::PlotObject, args...; location=1)
     p.specs[:location] = location
 end
 
-legend!(f::Figure, args...; kwargs...) = legend!(f.plots[end], args...; kwargs...)
+legend!(f::Figure, args...; kwargs...) = legend!(currentplot(f), args...; kwargs...)
 legend(args::AbstractString...; kwargs...) = legend!(gcf(), args...; kwargs...)
 
 hold!(p::PlotObject, state::Bool) = (p.specs[:hold] = state)
-hold!(f::Figure, state) = hold!(f.plots[end], state)
+hold!(f::Figure, state) = hold!(currentplot(f), state)
 hold(state) = hold!(gcf(), state)

@@ -208,6 +208,22 @@ function draw(g::Geometry{:scatter})
     GR.restorestate()
 end
 
+function draw(g::Geometry{:bar})
+    GR.savestate()
+    if haskey(g.attributes, :alpha)
+        GR.settransparency(g.attributes[:alpha])
+    end
+    for i = 1:2:length(g.x)
+        GR.setfillcolorind(989)
+        GR.setfillintstyle(GR.INTSTYLE_SOLID)
+        GR.fillrect(g.x[i], g.x[i+1], g.y[i], g.y[i+1])
+        GR.setfillcolorind(1)
+        GR.setfillintstyle(GR.INTSTYLE_HOLLOW)
+        GR.fillrect(g.x[i], g.x[i+1], g.y[i], g.y[i+1])
+    end
+    GR.restorestate()
+end
+
 function draw(g::Geometry{:line3d})
     GR.savestate()
     if haskey(g.attributes, :alpha)

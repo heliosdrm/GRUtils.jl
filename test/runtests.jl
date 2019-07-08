@@ -60,6 +60,7 @@ GRUtils.barplot(keys(population), values(population), horizontal=true)
 x = 2 .* randn(100) .- 1
 GRUtils.histogram(x)
 GRUtils.histogram(x, nbins=19)
+GRUtils.histogram(x, horizontal=true)
 
 GRUtils.polarhistogram(x, alpha=0.5)
 GRUtils.polarhistogram(x, nbins=19, alpha=0.5)
