@@ -55,14 +55,24 @@ population = Dict("Africa" => 1216,
                  "Europe" => 739,
                  "Oceania" => 38)
 GRUtils.barplot(keys(population), values(population))
+GRUtils.barplot(keys(population), values(population), baseline=1000)
+GRUtils.barplot(keys(population), values(population), baseline=500, ylog=true)
 GRUtils.barplot(keys(population), values(population), horizontal=true)
 
 x = 2 .* randn(100) .- 1
 GRUtils.histogram(x)
-GRUtils.histogram(x, nbins=19)
+GRUtils.histogram(x, ylog=true)
+GRUtils.histogram(x, nbins=19, ylog=false)
 GRUtils.histogram(x, horizontal=true)
 
+x = 360 .* rand(100)
+GRUtils.subplot(1,2,1)
+GRUtils.histogram(x)
+GRUtils.subplot(1,2,2)
 GRUtils.polarhistogram(x, alpha=0.5)
+GRUtils.subplot(1,2,1)
+GRUtils.histogram(x, nbins=19)
+GRUtils.subplot(1,2,2)
 GRUtils.polarhistogram(x, nbins=19, alpha=0.5)
 
 

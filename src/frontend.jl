@@ -1,6 +1,6 @@
 ## Select keyword arguments from list
 keys_geom_attributes = [:label, :alpha, :linewidth, :markersize, :step_position]
-keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins]
+keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
 
 geom_attributes(;kwargs...) = filter(p -> p.first ∈ keys_geom_attributes, kwargs)
@@ -78,14 +78,12 @@ function _setargs_step(f, args...; kwargs...)
     else
         throw(ArgumentError("""`where` must be one of `"mid"`, `"pre"` or `"post"`"""))
     end
-    return (args, pairs((step_position=step_position, where=step_position_str, currentplot(f).specs..., kwargs...)))
+    return (args, (:step_position=>step_position, :where=>step_position_str, currentplot(f).specs..., kwargs...))
 end
 @plotfunction(step, geom = :step, canvas = :axes2d, setargs=_setargs_step)
 
 @plotfunction(stem, geom = :stem, canvas = :axes2d)
 @plotfunction(scatter, geom = :scatter, canvas = :axes2d)
-@plotfunction(plot3, geom = :line3d, canvas = :axes3d)
-@plotfunction(polar, geom = :polarline, canvas = :axespolar)
 
 function barcoordinates(heights; barwidth=0.8, baseline=0.0, kwargs...)
     n = length(heights)
@@ -102,6 +100,7 @@ function barcoordinates(heights; barwidth=0.8, baseline=0.0, kwargs...)
 end
 
 function _setargs_bar(f, labels, heights; kwargs...)
+    kwargs = Dict(currentplot(f).specs..., kwargs...)
     wc, hc = barcoordinates(heights; kwargs...)
     horizontal = get(kwargs, :horizontal, false)
     if horizontal
@@ -121,7 +120,7 @@ end
 
 @plotfunction(barplot, geom = :bar, canvas = :axes2d, setargs=_setargs_bar)
 
-function hist(x, nbins=0)
+function hist(x, nbins=0, baseline=0.0)
     if nbins <= 1
         nbins = round(Int, 3.3 * log10(length(x))) + 1
     end
@@ -135,7 +134,6 @@ function hist(x, nbins=0)
     end
     wc = zeros(2nbins)
     hc  = zeros(2nbins)
-    baseline = 0.0 # fix for log scale
     for (i, value) in enumerate(counts)
         wc[2i-1] = edges[i]
         wc[2i]   = edges[i+1]
@@ -146,15 +144,25 @@ function hist(x, nbins=0)
 end
 
 function _setargs_hist(f, x; kwargs...)
+    kwargs = Dict(currentplot(f).specs..., kwargs...)
     nbins = get(kwargs, :nbins, 0)
-    wc, hc = hist(x, nbins)
     horizontal = get(kwargs, :horizontal, false)
+    # Define baseline - 0.0 by default, unless using log scale
+    if get(kwargs, :ylog, false) || horizontal && get(kwargs, :xlog, false)
+        baseline = 1.0
+    else
+        baseline = 0.0
+    end
+    wc, hc = hist(x, nbins, baseline)
     args = horizontal ? (hc, wc) : (wc, hc)
     return (args, (currentplot(f).specs..., kwargs...))
 end
 
-@plotfunction(histogram, geom = :bar, canvas = :axes2d, kind = :hist, setargs=_setargs_hist)
+@plotfunction(histogram, geom = :bar, canvas = :axes2d, kind = :hist, setargs = _setargs_hist)
 
+@plotfunction(plot3, geom = :line3d, canvas = :axes3d)
+@plotfunction(polar, geom = :polarline, canvas = :axespolar)
+@plotfunction(polarhistogram, geom = :polarbar, canvas = :axespolar, kind = :polarhist, setargs = _setargs_hist)
 
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend

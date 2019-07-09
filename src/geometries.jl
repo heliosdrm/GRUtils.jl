@@ -72,7 +72,8 @@ geometries(G::Type{Geometry{:scatter}}, y::AbstractVector; kwargs...) =
     geometries(G, 1:length(y), y; kwargs...)
 
 # Bar plot and histogram
-geometries(G::Type{Geometry{:bar}}, x, y; kwargs...) = [G(; x=x, y=y, kwargs...)]
+const Bar2d = Union{Geometry{:bar}, Geometry{:polarbar}}
+geometries(G::Type{<:Bar2d}, x, y; kwargs...) = [G(; x=x, y=y, kwargs...)]
 
 
 
@@ -246,4 +247,27 @@ function draw(g::Geometry{:polarline})
     x = ρ .* cos.(g.x)
     y = ρ .* sin.(g.x)
     GR.polyline(x, y)
+    GR.restorestate()
+end
+
+function draw(g::Geometry{:polarbar})
+    GR.savestate()
+    if haskey(g.attributes, :alpha)
+        GR.settransparency(g.attributes[:alpha])
+    end
+    xmin, xmax = extrema(g.x)
+    ymin, ymax = extrema(g.y)
+    ρ = g.y ./ ymax # 2 .* (g.y ./ ymax) .- 0.5)
+    θ = 2pi .* (g.x .- xmin) ./ (xmax - xmin)
+    for i = 1:2:length(ρ)
+        GR.setfillcolorind(989)
+        GR.setfillintstyle(GR.INTSTYLE_SOLID)
+        GR.fillarea([ρ[i] * cos(θ[i]), ρ[i] * cos(θ[i+1]), ρ[i+1] * cos(θ[i+1]), ρ[i+1] * cos(θ[i])],
+                    [ρ[i] * sin(θ[i]), ρ[i] * sin(θ[i+1]), ρ[i+1] * sin(θ[i+1]), ρ[i+1] * sin(θ[i])])
+        GR.setfillcolorind(1)
+        GR.setfillintstyle(GR.INTSTYLE_HOLLOW)
+        GR.fillarea([ρ[i] * cos(θ[i]), ρ[i] * cos(θ[i+1]), ρ[i+1] * cos(θ[i+1]), ρ[i+1] * cos(θ[i])],
+                    [ρ[i] * sin(θ[i]), ρ[i] * sin(θ[i+1]), ρ[i+1] * sin(θ[i+1]), ρ[i+1] * sin(θ[i])])
+    end
+    GR.restorestate()
 end
