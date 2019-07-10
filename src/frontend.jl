@@ -6,7 +6,7 @@ keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nb
 geom_attributes(;kwargs...) = filter(p -> p.first ∈ keys_geom_attributes, kwargs)
 plot_specs(;kwargs...) = filter(p -> p.first ∈ keys_plot_specs, kwargs)
 
-_setargs_default(f, args...; kwargs...) = (args, (currentplot(f).specs..., kwargs...))
+_setargs_default(f, args...; kwargs...) = (args, kwargs)
 
 macro plotfunction(fname, options...)
     # Parse options (geom, canvas, and setargs)
@@ -32,21 +32,27 @@ macro plotfunction(fname, options...)
     plotkind = dict_op[:kind]
     expr = quote
         function $(fname!)(f::Figure, args...; kwargs...)
-            args, kwargs = $(dict_op[:setargs])(f, args...; kwargs...)
-            p = f.plots[end]
-            mergedspecs = plot_specs(; p.specs..., kwargs...)
-            holdstate = get(mergedspecs, :hold, false)
-            if holdstate
-                geoms = [p.geoms; geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)]
-                specs = mergedspecs
+            p = currentplot(f)
+            if haskey(kwargs, :hold)
+                holdstate = kwargs[:hold]
             else
+                holdstate = get(p.specs, :hold, false)
+            end
+            if holdstate
+                # Keep all specsº
+                kwargs = (p.specs..., kwargs...)
+                args, kwargs = $(dict_op[:setargs])(f, args...; kwargs...)
+                geoms = [p.geoms; geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)]
+            else
+                # Only keep previous subplot
+                kwargs = (:subplot => p.specs[:subplot], kwargs...)
+                args, kwargs = $(dict_op[:setargs])(f, args...; kwargs...)
                 geoms = geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)
-                specs = plot_specs(; kwargs...)
             end
             axes = Axes{$canvas_k}(geoms; kwargs...)
             legend = Legend(geoms)
             colorbar = Colorbar() # tbd
-            p = PlotObject(geoms, axes, legend, colorbar; kind=$plotkind, specs...)
+            p = PlotObject(geoms, axes, legend, colorbar; kind=$plotkind, plot_specs(; kwargs...)...)
             f.plots[end] = p
             draw(f)
         end
@@ -78,7 +84,7 @@ function _setargs_step(f, args...; kwargs...)
     else
         throw(ArgumentError("""`where` must be one of `"mid"`, `"pre"` or `"post"`"""))
     end
-    return (args, (:step_position=>step_position, :where=>step_position_str, currentplot(f).specs..., kwargs...))
+    return (args, (:step_position=>step_position, :where=>step_position_str, kwargs...))
 end
 @plotfunction(step, geom = :step, canvas = :axes2d, setargs=_setargs_step)
 
@@ -100,7 +106,6 @@ function barcoordinates(heights; barwidth=0.8, baseline=0.0, kwargs...)
 end
 
 function _setargs_bar(f, labels, heights; kwargs...)
-    kwargs = Dict(currentplot(f).specs..., kwargs...)
     wc, hc = barcoordinates(heights; kwargs...)
     horizontal = get(kwargs, :horizontal, false)
     if horizontal
@@ -110,7 +115,7 @@ function _setargs_bar(f, labels, heights; kwargs...)
         args = (wc, hc)
         tickoptions = (:xticks => (1,1), :xticklabels => string.(labels))
     end
-    return (args, (tickoptions..., currentplot(f).specs..., kwargs...))
+    return (args, (tickoptions..., kwargs...))
 end
 
 function _setargs_bar(f, heights; kwargs...)
@@ -144,7 +149,6 @@ function hist(x, nbins=0, baseline=0.0)
 end
 
 function _setargs_hist(f, x; kwargs...)
-    kwargs = Dict(currentplot(f).specs..., kwargs...)
     nbins = get(kwargs, :nbins, 0)
     horizontal = get(kwargs, :horizontal, false)
     # Define baseline - 0.0 by default, unless using log scale
@@ -155,7 +159,7 @@ function _setargs_hist(f, x; kwargs...)
     end
     wc, hc = hist(x, nbins, baseline)
     args = horizontal ? (hc, wc) : (wc, hc)
-    return (args, (currentplot(f).specs..., kwargs...))
+    return (args, kwargs)
 end
 
 @plotfunction(histogram, geom = :bar, canvas = :axes2d, kind = :hist, setargs = _setargs_hist)

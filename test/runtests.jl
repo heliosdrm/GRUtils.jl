@@ -62,7 +62,7 @@ GRUtils.barplot(keys(population), values(population), horizontal=true)
 x = 2 .* randn(100) .- 1
 GRUtils.histogram(x)
 GRUtils.histogram(x, ylog=true)
-GRUtils.histogram(x, nbins=19, ylog=false)
+GRUtils.histogram(x, nbins=19)
 GRUtils.histogram(x, horizontal=true)
 
 x = 360 .* rand(100)
@@ -75,7 +75,7 @@ GRUtils.histogram(x, nbins=19)
 GRUtils.subplot(1,2,2)
 GRUtils.polarhistogram(x, nbins=19, alpha=0.5)
 
-
+GRUtils.Figure()
 x = LinRange(0, 1, 100)
 GRUtils.plot(x, x.^2)
 GRUtils.hold(true)
