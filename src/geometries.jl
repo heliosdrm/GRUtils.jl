@@ -22,7 +22,7 @@ Geometry{K}(;
     Geometry{K}(x, y, z, c, spec, label, Dict{Symbol,Float64}(kwargs...))
 
 function Geometry(g::Geometry{K}; kwargs...) where K
-    kwargs = (pairs(g.attributes)..., kwargs...)
+    kwargs = (; g.attributes..., kwargs...)
     typeof(g)(; x=g.x, y=g.y, z=g.z, c=g.z, spec=g.spec, label=g.label, kwargs...)
 end
 
@@ -36,10 +36,10 @@ geometries(G, x::AbstractVecOrMat{<:Real},
 
 geometries(G, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real},
     f::Function, args...; kwargs...) =
-    geometries(G, x, y, f.(x), args...; kwargs...)
+    geometries(G, x, y, f.(x, y), args...; kwargs...)
 
 geometries(G, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real}, z::AbstractVecOrMat{<:Real},
-    f::Function, args...; kwargs...) = geometries(G, x, y, z, f.(x), args...; kwargs...)
+    f::Function, args...; kwargs...) = geometries(G, x, y, z, f.(x, y, z), args...; kwargs...)
 
 column(a::Vector, i::Int) = a
 column(a::AbstractVector, i::Int) = collect(a)
@@ -92,6 +92,11 @@ function geometries(G::Type{Geometry{:polarline}},
 
     [G(; x=column(x,i), y=column(y,i), spec=spec, kwargs...)
     for i = 1:size(y,2)]
+end
+
+# Contour plot
+function geometries(G::Type{Geometry{:contour}}, x, y, z, h; kwargs...)
+    [G(; x=x[:], y=y[:], z=z[:], c=h, kwargs...)]
 end
 
 # `draw` methods
@@ -269,5 +274,12 @@ function draw(g::Geometry{:polarbar})
         GR.fillarea([ρ[i] * cos(θ[i]), ρ[i] * cos(θ[i+1]), ρ[i+1] * cos(θ[i+1]), ρ[i+1] * cos(θ[i])],
                     [ρ[i] * sin(θ[i]), ρ[i] * sin(θ[i+1]), ρ[i+1] * sin(θ[i+1]), ρ[i+1] * sin(θ[i])])
     end
+    GR.restorestate()
+end
+
+function draw(g::Geometry{:contour})
+    GR.savestate()
+    clabels = get(g.attributes, :clabels, 1.0)
+    GR.contour(g.x, g.y, g.c, g.z, Int(clabels))
     GR.restorestate()
 end

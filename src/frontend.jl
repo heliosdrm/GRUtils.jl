@@ -1,6 +1,7 @@
 ## Select keyword arguments from list
-keys_geom_attributes = [:label, :alpha, :linewidth, :markersize, :step_position]
-keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog]
+keys_geom_attributes = [:clabels, :label, :alpha, :linewidth, :markersize, :step_position]
+keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
+    :levels, :majorlevels, :color]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
 
 geom_attributes(;kwargs...) = filter(p -> p.first ∈ keys_geom_attributes, kwargs)
@@ -39,19 +40,20 @@ macro plotfunction(fname, options...)
                 holdstate = get(p.specs, :hold, false)
             end
             if holdstate
-                # Keep all specsº
-                kwargs = (p.specs..., kwargs...)
+                # Keep all specs
+                kwargs = (; p.specs..., kwargs...)
                 args, kwargs = $(dict_op[:setargs])(f, args...; kwargs...)
                 geoms = [p.geoms; geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)]
             else
                 # Only keep previous subplot
-                kwargs = (:subplot => p.specs[:subplot], kwargs...)
+                kwargs = (subplot = p.specs[:subplot], kwargs...)
                 args, kwargs = $(dict_op[:setargs])(f, args...; kwargs...)
                 geoms = geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)
             end
             axes = Axes{$canvas_k}(geoms; kwargs...)
             legend = Legend(geoms)
-            colorbar = Colorbar() # tbd
+            colorchannel = get(kwargs, :colorchannel, :none)
+            colorbar = Colorbar(axes, colorchannel) # tbd
             p = PlotObject(geoms, axes, legend, colorbar; kind=$plotkind, plot_specs(; kwargs...)...)
             f.plots[end] = p
             draw(f)
@@ -84,7 +86,7 @@ function _setargs_step(f, args...; kwargs...)
     else
         throw(ArgumentError("""`where` must be one of `"mid"`, `"pre"` or `"post"`"""))
     end
-    return (args, (:step_position=>step_position, :where=>step_position_str, kwargs...))
+    return (args, (step_position=step_position, where=step_position_str, kwargs...))
 end
 @plotfunction(step, geom = :step, canvas = :axes2d, setargs=_setargs_step)
 
@@ -110,12 +112,12 @@ function _setargs_bar(f, labels, heights; kwargs...)
     horizontal = get(kwargs, :horizontal, false)
     if horizontal
         args = (hc, wc)
-        tickoptions = (:yticks => (1,1), :yticklabels => string.(labels))
+        tickoptions = (yticks = (1,1), yticklabels = string.(labels))
     else
         args = (wc, hc)
-        tickoptions = (:xticks => (1,1), :xticklabels => string.(labels))
+        tickoptions = (xticks = (1,1), xticklabels = string.(labels))
     end
-    return (args, (tickoptions..., kwargs...))
+    return (args, (; tickoptions..., kwargs...))
 end
 
 function _setargs_bar(f, heights; kwargs...)
@@ -167,6 +169,37 @@ end
 @plotfunction(plot3, geom = :line3d, canvas = :axes3d)
 @plotfunction(polar, geom = :polarline, canvas = :axespolar)
 @plotfunction(polarhistogram, geom = :polarbar, canvas = :axespolar, kind = :polarhist, setargs = _setargs_hist)
+
+function _setargs_contour(f, x, y, z, h; kwargs...)
+    if length(x) == length(y) == length(z)
+        x, y, z = GR.gridit(x[:], y[:], z[:], 200, 200)
+    end
+    if get(kwargs, :color, true)
+        clabels = float(1000 + (get(kwargs, :majorlevels, 0)))
+        kwargs = (; colorchannel = :z, clabels = clabels, kwargs...)
+    else
+        clabels = float(get(kwargs, :majorlevels, 1))
+        kwargs = (; clabels = clabels, kwargs...)
+    end
+    return ((x, y, z, h), kwargs)
+end
+
+function _setargs_contour(f, x, y, z; kwargs...)
+    (x, y, z, _), kwargs = _setargs_contour(f, x, y, z, []; kwargs...)
+    levels = Int(get(kwargs, :levels, 0))
+    zmin, zmax = get(kwargs, :zlim, (_min(z), _max(z)))
+    hmin, hmax = GR.adjustrange(zmin, zmax)
+    h = linspace(hmin, hmax, levels == 0 ? 21 : levels + 1)
+    return ((x, y, z, h), kwargs)
+end
+
+function _setargs_contour(f, x, y, fz::Function, args...; kwargs...)
+    z = fz.(x, y)
+    _setargs_contour(f, x, y, z, args...; kwargs...)
+end
+
+@plotfunction(contour, geom = :contour, canvas = :xyplane, kind = :contour, setargs = _setargs_contour)
+
 
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend

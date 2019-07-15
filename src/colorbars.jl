@@ -8,11 +8,20 @@ end
 
 Colorbar() = Colorbar((0.0, 0.0), 0.0, 0, 0.0, 0)
 
-function Colorbar(axes, colors=256)
-    range = axes.ranges[:z]
+function Colorbar(axes, channel, colors=256)
+    range = get(axes.ranges, channel, (-Inf, Inf))
+    if !all(isfinite.(range))
+        return Colorbar()
+    end
     axscale = get(axes.options, :scale, 0)
-    tick = (axscale & GR.OPTION_Z_LOG == 0) ? 0.5 * GR.tick(range...) : 2
-    if get(axes.options, :zflip, false)
+    # Tick size conditioned to log color scale
+    if (channel == :z && (axscale & GR.OPTION_Z_LOG ≠ 0)) ||
+        (channel == :c && get(axes.options, :clog, false))
+        tick = 2
+    else
+        tick = 0.5 * GR.tick(range...)
+    end
+    if channel == :z && get(axes.options, :zflip, false)
         scale = (axscale | GR.OPTION_FLIP_Y) & ~GR.OPTION_FLIP_X
     elseif get(axes.options, :yflip, false)
         scale = axscale & ~GR.OPTION_FLIP_Y & ~GR.OPTION_FLIP_X

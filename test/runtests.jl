@@ -85,3 +85,42 @@ GRUtils.legend(location=11)
 GRUtils.draw(GRUtils.gcf())
 GRUtils.legend("square", location=2)
 GRUtils.draw(GRUtils.gcf())
+GRUtils.hold(false)
+
+function meshgrid(vx, vy)
+    m, n = length(vy), length(vx)
+    vx = reshape(vx, 1, n)
+    vy = reshape(vy, m, 1)
+    (GRUtils.repmat(vx, m, 1), GRUtils.repmat(vy, 1, n))
+end
+
+function meshgrid(vx, vy, vz)
+    m, n, o = length(vy), length(vx), length(vz)
+    vx = reshape(vx, 1, n, 1)
+    vy = reshape(vy, m, 1, 1)
+    vz = reshape(vz, 1, 1, o)
+    om = ones(Int, m)
+    on = ones(Int, n)
+    oo = ones(Int, o)
+    (vx[om, :, oo], vy[:, on, oo], vz[om, on, :])
+end
+
+
+# Create example point data
+x = 8 .* rand(100) .- 4
+y = 8 .* rand(100) .- 4
+z = sin.(x) .+ cos.(y)
+# Draw the contour plot
+GRUtils.contour(x, y, z)
+GRUtils.contour(x, y, z, levels=10)
+GRUtils.contour(x, y, z, majorlevels=3)
+GRUtils.contour(x, y, z, color=false)
+# Create example grid data
+X = LinRange(-2, 2, 40)
+Y = LinRange(0, pi, 20)
+x, y = meshgrid(X, Y)
+z = sin.(x) .+ cos.(y)
+# Draw the contour plot
+GRUtils.contour(x, y, z)
+# Draw the contour plot using a callable
+GRUtils.contour(x, y, (x,y) -> sin(x) + cos(y))

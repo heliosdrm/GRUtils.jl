@@ -36,7 +36,7 @@ end
 function PlotObject(geoms, axes, legend=Legend(), colorbar=Colorbar(); kwargs...)
     # Viewport: square unless axes2d
     subplot = get(kwargs, :subplot, unitsquare)
-    square = !isa(axes, Axes{:axes2d})
+    square = isa(axes, Axes{:axes3d}) || isa(axes, Axes{:axespolar}) || isa(axes, Axes{:xyplane})
     viewport = Viewport(subplot; square=square)
     location = get(kwargs, :location, 0)
     # Redefine viewport if legend is set outside
@@ -71,6 +71,7 @@ function draw(p::PlotObject)
     end
     location = get(p.specs, :location, 0)
     draw(p.legend, p.geoms, location)
+    draw(p.colorbar)
     # GR.updatews()
     # GR.show()
 end

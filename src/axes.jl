@@ -132,24 +132,32 @@ end
 # Set ticks for the different types of axes
 function set_ticks(::Type{Axes{:axes2d}}, ranges; kwargs...)
     major_count = 5
-    xaxis = set_axis(:x, ranges[:x], 5; kwargs...)
-    yaxis = set_axis(:y, ranges[:y], 5; kwargs...)
+    xaxis = set_axis(:x, ranges[:x], major_count; kwargs...)
+    yaxis = set_axis(:y, ranges[:y], major_count; kwargs...)
     Dict(:x => xaxis, :y => yaxis)
 end
 
 function set_ticks(::Type{Axes{:axes3d}}, ranges; kwargs...)
     major_count = 2
-    xaxis = set_axis(:x, ranges[:x], 2; kwargs...)
-    yaxis = set_axis(:y, ranges[:y], 2; kwargs...)
-    zaxis = set_axis(:z, ranges[:z], 2; kwargs...)
+    xaxis = set_axis(:x, ranges[:x], major_count; kwargs...)
+    yaxis = set_axis(:y, ranges[:y], major_count; kwargs...)
+    zaxis = set_axis(:z, ranges[:z], major_count; kwargs...)
     Dict(:x => xaxis, :y => yaxis, :z => zaxis)
 end
 
 function set_ticks(::Type{Axes{:axespolar}}, ranges; kwargs...)
     major_count = 2
-    xaxis = set_axis(:x, ranges[:x], 2; kwargs..., xlog=false, xflip=false)
-    yaxis = set_axis(:y, ranges[:y], 2; kwargs..., ylog=false, yflip=false)
+    xaxis = set_axis(:x, ranges[:x], major_count; kwargs..., xlog=false, xflip=false)
+    yaxis = set_axis(:y, ranges[:y], major_count; kwargs..., ylog=false, yflip=false)
     Dict(:x => xaxis, :y => yaxis)
+end
+
+function set_ticks(::Type{Axes{:xyplane}}, ranges; kwargs...)
+    major_count = 5
+    xaxis = set_axis(:x, ranges[:x], major_count; kwargs...)
+    yaxis = set_axis(:y, ranges[:y], major_count; kwargs...)
+    zaxis = set_axis(:z, ranges[:z], 0; kwargs...)
+    Dict(:x => xaxis, :y => yaxis, :z => zaxis)
 end
 
 set_ticks(::Any, ranges; kwargs...) = Dict{Symbol, AxisTickData}()
@@ -215,6 +223,8 @@ function set_perspective(::Type{Axes{:axes3d}}; kwargs...)
     tilt = Int(get(kwargs, :tilt, 70))
     [rotation, tilt]
 end
+
+set_perspective(::Type{Axes{:xyplane}}; kwargs...) = [0, 90]
 
 set_perspective(::Any; kwargs...) = [0, 0]
 
@@ -307,6 +317,25 @@ function draw(ax::Axes{:axespolar})
         GR.textext(x, y, string(alpha, "^o"))
     end
     GR.restorestate()
+end
+
+function draw(ax::Axes{:xyplane})
+    # Set the window of data seen and the perspective
+    GR.setwindow(ax.ranges[:x]..., ax.ranges[:y]...)
+    GR.setspace(ax.ranges[:z]..., ax.perspective...)
+    # Modify scale (log or flipped axes)
+    GR.setscale(ax.options[:scale])
+    # Set the specifications of guides (grid and ticks)
+    GR.setlinecolorind(1)
+    GR.setlinewidth(1)
+    ticksize, charheight = _tickcharheight()
+    GR.setcharheight(charheight)
+    xtick, xorg, majorx = ax.tickdata[:x]
+    ytick, yorg, majory = ax.tickdata[:y]
+    ztick, zorg, majorz = ax.tickdata[:z]
+    (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
+    GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)
+    GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)
 end
 
 function _tickcharheight(vp=GR.inqviewport())

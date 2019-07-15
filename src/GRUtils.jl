@@ -30,6 +30,14 @@ const nullpair = (0.0, 0.0)
   repmat(A::AbstractArray, m::Int, n::Int) = repeat(A::AbstractArray, m::Int, n::Int)
 end
 
+function _min(a)
+  minimum(filter(!isnan, a))
+end
+
+function _max(a)
+  maximum(filter(!isnan, a))
+end
+
 include("geometries.jl")
 include("axes.jl")
 include("legends.jl")
