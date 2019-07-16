@@ -5,7 +5,7 @@ end
 
 Viewport() = Viewport(zeros(4), zeros(4))
 
-function Viewport(subplot; square=true)
+function Viewport(subplot)
     ratio_w, ratio_h = wswindow(gcf())
     outer = [subplot[1]*ratio_w, subplot[2]*ratio_w, subplot[3]*ratio_h, subplot[4]*ratio_h]
     # inner contains the axes
@@ -14,11 +14,24 @@ function Viewport(subplot; square=true)
     ycenter = 0.5 * (outer[3] + outer[4])
     vp_x = outer[2] - outer[1]
     vp_y = outer[4] - outer[3]
-    if square
-        vp_x = vp_y = min(vp_x, vp_y)
-    end
     inner = [xcenter - low*vp_x, xcenter + high*vp_x, ycenter - low*vp_y, ycenter + high*vp_y]
     Viewport(outer, inner)
+end
+
+function Viewport(subplot, ratio::Real)
+    v = Viewport(subplot)
+    w = v.inner[2] - v.inner[1]
+    h = v.inner[4] - v.inner[3]
+    if w/h > ratio
+        d = 0.5 * (w - h * ratio)
+        v.inner[1] += d
+        v.inner[2] -= d
+    else
+        d = 0.5 * (h - w / ratio)
+        v.inner[3] += d
+        v.inner[4] -= d
+    end
+    v
 end
 
 """
@@ -36,8 +49,16 @@ end
 function PlotObject(geoms, axes, legend=Legend(), colorbar=Colorbar(); kwargs...)
     # Viewport: square unless axes2d
     subplot = get(kwargs, :subplot, unitsquare)
-    square = isa(axes, Axes{:axes3d}) || isa(axes, Axes{:axespolar}) || isa(axes, Axes{:xyplane})
-    viewport = Viewport(subplot; square=square)
+    if haskey(kwargs, :ratio)
+        viewport = Viewport(subplot, kwargs[:ratio])
+    elseif isa(axes, Axes{:axes3d}) || isa(axes, Axes{:axespolar})
+        viewport = Viewport(subplot, 1.0)
+    else
+        viewport = Viewport(subplot)
+    end
+    if get(kwargs, :colorbar, false) && colorbar.range ≠ (0.0, 0.0)
+        viewport.inner[2] -= 0.1
+    end
     location = get(kwargs, :location, 0)
     # Redefine viewport if legend is set outside
     if legend.size ≠ nullpair && location ∈ legend_locations[:right_out]
@@ -71,7 +92,7 @@ function draw(p::PlotObject)
     end
     location = get(p.specs, :location, 0)
     draw(p.legend, p.geoms, location)
-    draw(p.colorbar)
+    get(p.specs, :colorbar, true) && draw(p.colorbar)
     # GR.updatews()
     # GR.show()
 end

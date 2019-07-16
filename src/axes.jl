@@ -332,7 +332,6 @@ function draw(ax::Axes{:xyplane})
     GR.setcharheight(charheight)
     xtick, xorg, majorx = ax.tickdata[:x]
     ytick, yorg, majory = ax.tickdata[:y]
-    ztick, zorg, majorz = ax.tickdata[:z]
     (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
     GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)
     GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)

@@ -114,7 +114,7 @@ z = sin.(x) .+ cos.(y)
 GRUtils.contour(x, y, z)
 GRUtils.contour(x, y, z, levels=10)
 GRUtils.contour(x, y, z, majorlevels=3)
-GRUtils.contour(x, y, z, color=false)
+GRUtils.contour(x, y, z, colorbar=false)
 # Create example grid data
 X = LinRange(-2, 2, 40)
 Y = LinRange(0, pi, 20)

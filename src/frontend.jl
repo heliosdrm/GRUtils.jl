@@ -1,7 +1,7 @@
 ## Select keyword arguments from list
 keys_geom_attributes = [:clabels, :label, :alpha, :linewidth, :markersize, :step_position]
 keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
-    :levels, :majorlevels, :color]
+    :levels, :majorlevels, :colorbar, :ratio]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
 
 geom_attributes(;kwargs...) = filter(p -> p.first ∈ keys_geom_attributes, kwargs)
@@ -52,8 +52,9 @@ macro plotfunction(fname, options...)
             end
             axes = Axes{$canvas_k}(geoms; kwargs...)
             legend = Legend(geoms)
-            colorchannel = get(kwargs, :colorchannel, :none)
-            colorbar = Colorbar(axes, colorchannel) # tbd
+            # colorchannel = get(kwargs, :colorchannel, :none)
+            # colorbar = Colorbar(axes, colorchannel) # tbd
+            colorbar = Colorbar(axes)
             p = PlotObject(geoms, axes, legend, colorbar; kind=$plotkind, plot_specs(; kwargs...)...)
             f.plots[end] = p
             draw(f)
@@ -174,12 +175,17 @@ function _setargs_contour(f, x, y, z, h; kwargs...)
     if length(x) == length(y) == length(z)
         x, y, z = GR.gridit(x[:], y[:], z[:], 200, 200)
     end
-    if get(kwargs, :color, true)
-        clabels = float(1000 + (get(kwargs, :majorlevels, 0)))
-        kwargs = (; colorchannel = :z, clabels = clabels, kwargs...)
+    if get(kwargs, :colorbar, true)
+        majorlevels = get(kwargs, :majorlevels, 0)
+        clabels = float(1000 + majorlevels)
+        kwargs = (; colorbar = true, clabels = clabels, rotation = 0, tilt = 90, kwargs...)
     else
-        clabels = float(get(kwargs, :majorlevels, 1))
-        kwargs = (; clabels = clabels, kwargs...)
+        majorlevels = get(kwargs, :majorlevels, 1)
+        clabels = float(majorlevels)
+        kwargs = (; clabels = clabels, rotation = 0, tilt = 90, kwargs...)
+    end
+    if majorlevels ≠ 0
+        kwargs = (; kwargs..., ratio = 1.0)
     end
     return ((x, y, z, h), kwargs)
 end
