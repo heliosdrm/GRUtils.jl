@@ -96,9 +96,8 @@ end
 
 # Contour plot
 const Contour = Union{Geometry{:contour}, Geometry{:contourf}}
-function geometries(G::Type{<:Contour}, x, y, z, h; kwargs...)
-    [G(; x=x[:], y=y[:], z=z[:], c=h, kwargs...)]
-end
+geometries(G::Type{<:Contour}, x, y, z, h; kwargs...) = [G(; x=x[:], y=y[:], z=z[:], c=h, kwargs...)]
+geometries(G::Type{Geometry{:surface}}, x, y, z; kwargs...) = [G(; x=x[:], y=y[:], z=z[:], c=z[:], kwargs...)]
 
 # `draw` methods
 
@@ -278,13 +277,22 @@ function draw(g::Geometry{:polarbar})
     GR.restorestate()
 end
 
+_contour(::Geometry{:contour}) = GR.contour
+_contour(::Geometry{:contourf}) = GR.contourf
+
 function draw(g::G) where {G <: Contour}
     GR.savestate()
     clabels = get(g.attributes, :clabels, 1.0)
-    if isa(g, Geometry{:contourf})
-        GR.contourf(g.x, g.y, g.c, g.z, Int(clabels))
-    else
-        GR.contour(g.x, g.y, g.c, g.z, Int(clabels))
-    end
+    _contour(g)(g.x, g.y, g.c, g.z, Int(clabels))
     GR.restorestate()
+end
+
+function draw(g::Geometry{:surface})
+    GR.savestate()
+    if get(g.attributes, :accelerate, 1.0) == 0.0
+        GR.surface(g.x, g.y, g.z, GR.OPTION_COLORED_MESH)
+    else
+        GR.gr3.clear()
+        GR.gr3.surface(g.x, g.y, g.z, GR.OPTION_COLORED_MESH)
+    end
 end

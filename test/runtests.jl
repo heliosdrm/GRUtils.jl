@@ -118,6 +118,8 @@ GRUtils.contour(x, y, f)
 # Other
 GRUtils.contour(x, y, z)
 GRUtils.contourf(x, y, z)
+GRUtils.surface(x, y, z)
+GRUtils.surface(x, y, z, accelerate=0.0)
 GRUtils.contour(x, y, z, levels=10)
 GRUtils.contour(x, y, z, majorlevels=3)
 GRUtils.contour(x, y, z, colorbar=false)
@@ -129,3 +131,4 @@ z = sin.(x) .+ cos.(y')
 # Draw the contour plot
 GRUtils.contour(x, y, z)
 GRUtils.contourf(x, y, z)
+GRUtils.surface(x, y, z)

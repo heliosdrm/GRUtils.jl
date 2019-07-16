@@ -1,5 +1,5 @@
 ## Select keyword arguments from list
-keys_geom_attributes = [:clabels, :label, :alpha, :linewidth, :markersize, :step_position]
+keys_geom_attributes = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :step_position]
 keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
     :levels, :majorlevels, :colorbar, :ratio]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
@@ -192,10 +192,10 @@ end
 
 function _setargs_contour(f, x, y, z; kwargs...)
     (x, y, z, _), kwargs = _setargs_contour(f, x, y, z, []; kwargs...)
-    levels = Int(get(kwargs, :levels, 0))
+    levels = Int(get(kwargs, :levels, 20))
     zmin, zmax = get(kwargs, :zlim, (_min(z), _max(z)))
     hmin, hmax = GR.adjustrange(zmin, zmax)
-    h = linspace(hmin, hmax, levels == 0 ? 21 : levels + 1)
+    h = linspace(hmin, hmax, levels + 1)
     return ((x, y, z, h), kwargs)
 end
 
@@ -207,6 +207,16 @@ end
 @plotfunction(contour, geom = :contour, canvas = :xyplane, kind = :contour, setargs = _setargs_contour)
 @plotfunction(contourf, geom = :contourf, canvas = :xyplane, kind = :contour, setargs = _setargs_contour)
 
+function _setargs_surface(f, x, y, z; kwargs...)
+    if length(x) == length(y) == length(z)
+        x, y, z = GR.gridit(x[:], y[:], z[:], 200, 200)
+    end
+    colorbar = get(kwargs, :colorbar, true)
+    accelerate = Bool(get(kwargs, :accelerate, true)) ? 1.0 : 0.0
+    ((x, y, z), (; colorbar = colorbar, accelerate = accelerate, kwargs...))
+end
+
+@plotfunction(surface, geom = :surface, canvas = :axes3d, kind = :surface, setargs = _setargs_surface)
 
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend
