@@ -26,13 +26,18 @@ macro plotfunction(fname, options...)
     if !haskey(dict_op, :kind)
         dict_op[:kind] = Symbol(fname)
     end
+    if !haskey(dict_op, :kwargs)
+        dict_op[:kwargs] = NamedTuple()
+    end
     # Define functions
     fname! = Symbol(fname, :!)
     geom_k = dict_op[:geom]
     canvas_k = dict_op[:canvas]
     plotkind = dict_op[:kind]
+    def_kwargs = dict_op[:kwargs]
     expr = quote
         function $(fname!)(f::Figure, args...; kwargs...)
+            kwargs = (; $(dict_op[:kwargs])..., kwargs...)
             p = currentplot(f)
             if haskey(kwargs, :hold)
                 holdstate = kwargs[:hold]
@@ -52,8 +57,6 @@ macro plotfunction(fname, options...)
             end
             axes = Axes{$canvas_k}(geoms; kwargs...)
             legend = Legend(geoms)
-            # colorchannel = get(kwargs, :colorchannel, :none)
-            # colorbar = Colorbar(axes, colorchannel) # tbd
             colorbar = Colorbar(axes)
             p = PlotObject(geoms, axes, legend, colorbar; kind=$plotkind, plot_specs(; kwargs...)...)
             f.plots[end] = p
@@ -92,7 +95,7 @@ end
 @plotfunction(step, geom = :step, canvas = :axes2d, setargs=_setargs_step)
 
 @plotfunction(stem, geom = :stem, canvas = :axes2d)
-@plotfunction(scatter, geom = :scatter, canvas = :axes2d)
+@plotfunction(scatter, geom = :scatter, canvas = :axes2d, kwargs=(colorbar=true,))
 
 function barcoordinates(heights; barwidth=0.8, baseline=0.0, kwargs...)
     n = length(heights)
@@ -178,11 +181,11 @@ function _setargs_contour(f, x, y, z, h; kwargs...)
     if get(kwargs, :colorbar, true)
         majorlevels = get(kwargs, :majorlevels, 0)
         clabels = float(1000 + majorlevels)
-        kwargs = (; colorbar = true, clabels = clabels, rotation = 0, tilt = 90, kwargs...)
+        kwargs = (; colorbar = true, clabels = clabels, kwargs...)
     else
         majorlevels = get(kwargs, :majorlevels, 1)
         clabels = float(majorlevels)
-        kwargs = (; clabels = clabels, rotation = 0, tilt = 90, kwargs...)
+        kwargs = (; clabels = clabels, kwargs...)
     end
     if majorlevels ≠ 0
         kwargs = (; kwargs..., ratio = 1.0)
@@ -211,12 +214,11 @@ function _setargs_surface(f, x, y, z; kwargs...)
     if length(x) == length(y) == length(z)
         x, y, z = GR.gridit(x[:], y[:], z[:], 200, 200)
     end
-    colorbar = get(kwargs, :colorbar, true)
     accelerate = Bool(get(kwargs, :accelerate, true)) ? 1.0 : 0.0
-    ((x, y, z), (; colorbar = colorbar, accelerate = accelerate, kwargs...))
+    ((x, y, z), (; accelerate = accelerate, kwargs...))
 end
 
-@plotfunction(surface, geom = :surface, canvas = :axes3d, kind = :surface, setargs = _setargs_surface)
+@plotfunction(surface, geom = :surface, canvas = :axes3d, kind = :surface, setargs = _setargs_surface, kwargs=(colorbar=true, accelerate=true))
 
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend

@@ -6,13 +6,14 @@ struct Colorbar
     colors::Int
 end
 
-Colorbar() = Colorbar((0.0, 0.0), 0.0, 0, 0.0, 0)
+const emptycolorbar = Colorbar(nullpair, 0.0, 0, 0.0, 0)
+Colorbar() = emptycolorbar
 
 # function Colorbar(axes, channel, colors=256)
 function Colorbar(axes, colors=256)
     range = axes.ranges[:c]
     if !all(isfinite.(range))
-        return Colorbar()
+        return emptycolorbar
     end
     axscale = get(axes.options, :scale, 0)
     tick = get(axes.options, :clog, false) ? 2 : 0.5 * GR.tick(range...)
@@ -26,7 +27,7 @@ function Colorbar(axes, colors=256)
 end
 
 function draw(cb::Colorbar)
-    cb.range == (0.0, 0.0) && return nothing
+    cb == emptycolorbar && return nothing
     zmin, zmax = cb.range
     mainvp = GR.inqviewport()
     _, charheight = _tickcharheight(mainvp)

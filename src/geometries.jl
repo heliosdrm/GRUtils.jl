@@ -295,4 +295,5 @@ function draw(g::Geometry{:surface})
         GR.gr3.clear()
         GR.gr3.surface(g.x, g.y, g.z, GR.OPTION_COLORED_MESH)
     end
+    GR.restorestate()
 end

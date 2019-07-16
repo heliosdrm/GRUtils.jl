@@ -47,7 +47,6 @@ mutable struct PlotObject
 end
 
 function PlotObject(geoms, axes, legend=Legend(), colorbar=Colorbar(); kwargs...)
-    # Viewport: square unless axes2d
     subplot = get(kwargs, :subplot, unitsquare)
     if haskey(kwargs, :ratio)
         viewport = Viewport(subplot, kwargs[:ratio])
@@ -56,12 +55,12 @@ function PlotObject(geoms, axes, legend=Legend(), colorbar=Colorbar(); kwargs...
     else
         viewport = Viewport(subplot)
     end
-    if get(kwargs, :colorbar, false) && colorbar.range ≠ (0.0, 0.0)
+    if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
         viewport.inner[2] -= 0.1
     end
     location = get(kwargs, :location, 0)
     # Redefine viewport if legend is set outside
-    if legend.size ≠ nullpair && location ∈ legend_locations[:right_out]
+    if legend ≠ emptylegend && location ∈ legend_locations[:right_out]
         viewport.inner[2] -= legend.size[1]
     end
     PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
@@ -92,7 +91,7 @@ function draw(p::PlotObject)
     end
     location = get(p.specs, :location, 0)
     draw(p.legend, p.geoms, location)
-    get(p.specs, :colorbar, true) && draw(p.colorbar)
+    get(p.specs, :colorbar, false) && draw(p.colorbar)
     # GR.updatews()
     # GR.show()
 end

@@ -54,7 +54,8 @@ function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
     Legend((w, h), cursors)
 end
 
-Legend() = Legend(nullpair, Tuple{Float64, Float64}[])
+const emptylegend = Legend(nullpair, Tuple{Float64, Float64}[])
+Legend() = emptylegend
 
 const legend_locations = Dict(
     :left => [2, 3, 6],
@@ -90,7 +91,7 @@ end
 
 
 function draw(lg::Legend, geoms, location=1)
-    (lg.size == nullpair || location == 0) && return nothing
+    (lg == emptylegend || location == 0) && return nothing
     # First draw the frame
     GR.savestate()
     # Viewport and window
