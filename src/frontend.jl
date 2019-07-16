@@ -205,6 +205,7 @@ function _setargs_contour(f, x, y, fz::Function, args...; kwargs...)
 end
 
 @plotfunction(contour, geom = :contour, canvas = :xyplane, kind = :contour, setargs = _setargs_contour)
+@plotfunction(contourf, geom = :contourf, canvas = :xyplane, kind = :contour, setargs = _setargs_contour)
 
 
 function legend!(p::PlotObject, args...; location=1)

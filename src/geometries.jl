@@ -95,7 +95,8 @@ function geometries(G::Type{Geometry{:polarline}},
 end
 
 # Contour plot
-function geometries(G::Type{Geometry{:contour}}, x, y, z, h; kwargs...)
+const Contour = Union{Geometry{:contour}, Geometry{:contourf}}
+function geometries(G::Type{<:Contour}, x, y, z, h; kwargs...)
     [G(; x=x[:], y=y[:], z=z[:], c=h, kwargs...)]
 end
 
@@ -277,9 +278,13 @@ function draw(g::Geometry{:polarbar})
     GR.restorestate()
 end
 
-function draw(g::Geometry{:contour})
+function draw(g::G) where {G <: Contour}
     GR.savestate()
     clabels = get(g.attributes, :clabels, 1.0)
-    GR.contour(g.x, g.y, g.c, g.z, Int(clabels))
+    if isa(g, Geometry{:contourf})
+        GR.contourf(g.x, g.y, g.c, g.z, Int(clabels))
+    else
+        GR.contour(g.x, g.y, g.c, g.z, Int(clabels))
+    end
     GR.restorestate()
 end
