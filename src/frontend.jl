@@ -218,7 +218,20 @@ function _setargs_surface(f, x, y, z; kwargs...)
     ((vec(x), vec(y), vec(z), vec(z)), (; accelerate = accelerate, kwargs...))
 end
 
-@plotfunction(surface, geom = :surface, canvas = :axes3d, kind = :surface, setargs = _setargs_surface, kwargs=(colorbar=true, accelerate=true))
+@plotfunction(surface, geom = :surface, canvas = :axes3d, kind = :surface, setargs = _setargs_surface, kwargs = (colorbar=true, accelerate=true))
+
+function _setargs_heatmap(f, data; kwargs...)
+    w, h = size(data)
+    if get(kwargs, :xflip, false)
+        data = reverse(data, dims=1)
+    end
+    if get(kwargs, :yflip, false)
+        data = reverse(data, dims=2)
+    end
+    ((1.0:w, 1.0:h, emptyvector(Float64), data[:]), kwargs)
+end
+
+@plotfunction(heatmap, geom = :heatmap, canvas = :axes2d, kind = :heatmap, setargs = _setargs_heatmap, kwargs = (colorbar=true,))
 
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend
