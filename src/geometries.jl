@@ -108,9 +108,7 @@ hasmarker(mask) = ( mask & 0x02 != 0)
 
 function draw(g::Geometry{:line})
     GR.savestate()
-    if haskey(g.attributes, :alpha)
-        GR.settransparency(g.attributes[:alpha])
-    end
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     mask = GR.uselinespec(g.spec)
     hasline(mask) && GR.polyline(g.x, g.y)
     hasmarker(mask) && GR.polymarker(g.x, g.y)
@@ -119,9 +117,7 @@ end
 
 function draw(g::Geometry{:step})
     GR.savestate()
-    if haskey(g.attributes, :alpha)
-        GR.settransparency(g.attributes[:alpha])
-    end
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     mask = GR.uselinespec(g.spec)
     if hasline(mask)
         n = length(g.x)
@@ -169,9 +165,7 @@ end
 
 function draw(g::Geometry{:stem})
     GR.savestate()
-    if haskey(g.attributes, :alpha)
-        GR.settransparency(g.attributes[:alpha])
-    end
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     GR.setlinecolorind(1)
     GR.polyline([minimum(g.x), maximum(g.x)], [0.0, 0.0])
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
@@ -193,9 +187,7 @@ end
 
 function draw(g::Geometry{:scatter})
     GR.savestate()
-    if haskey(g.attributes, :alpha)
-        GR.settransparency(g.attributes[:alpha])
-    end
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
     if !isempty(g.z) || !isempty(g.c)
         if !isempty(g.c)
@@ -217,9 +209,7 @@ end
 
 function draw(g::Geometry{:bar})
     GR.savestate()
-    if haskey(g.attributes, :alpha)
-        GR.settransparency(g.attributes[:alpha])
-    end
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     for i = 1:2:length(g.x)
         GR.setfillcolorind(989)
         GR.setfillintstyle(GR.INTSTYLE_SOLID)
@@ -258,9 +248,7 @@ end
 
 function draw(g::Geometry{:polarbar})
     GR.savestate()
-    if haskey(g.attributes, :alpha)
-        GR.settransparency(g.attributes[:alpha])
-    end
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     xmin, xmax = extrema(g.x)
     ymin, ymax = extrema(g.y)
     ρ = g.y ./ ymax # 2 .* (g.y ./ ymax) .- 0.5)
@@ -280,6 +268,7 @@ end
 
 function draw(g::Geometry{:contour})
     GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     clabels = get(g.attributes, :clabels, 1.0)
     GR.contour(g.x, g.y, g.c, g.z, Int(clabels))
     GR.restorestate()
@@ -287,6 +276,7 @@ end
 
 function draw(g::Geometry{:contourf})
     GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     # clabels limited from 0 to 999
     clabels = rem(get(g.attributes, :clabels, 1.0), 1000)
     GR.contourf(g.x, g.y, g.c, g.z, Int(clabels))
@@ -295,6 +285,7 @@ end
 
 function draw(g::Geometry{:surface})
     GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     if get(g.attributes, :accelerate, 1.0) == 0.0
         GR.surface(g.x, g.y, g.z, GR.OPTION_COLORED_MESH)
     else
