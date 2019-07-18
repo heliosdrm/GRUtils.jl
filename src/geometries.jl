@@ -41,6 +41,22 @@ geometries(G, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real},
 geometries(G, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real}, z::AbstractVecOrMat{<:Real},
     f::Function, args...; kwargs...) = geometries(G, x, y, z, f.(x, y, z), args...; kwargs...)
 
+# Generic functions with given x, y, z, etc. as `AbstractVector`
+geometries(G::Type{<:Geometry},
+    x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat,
+    c::AbstractVecOrMat; kwargs...) = [G(; x=x, y=y, z=z, c=c, kwargs...)]
+
+geometries(G::Type{<:Geometry},
+    x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat;
+    kwargs...) = [G(; x=x, y=y, z=z, kwargs...)]
+
+geometries(G::Type{<:Geometry}, x::AbstractVecOrMat, y::AbstractVecOrMat;
+    kwargs...) = [G(; x=x, y=y, kwargs...)]
+
+geometries(G::Type{<:Geometry}, y; kwargs...) = [G(; x=1:length(y), y=y, kwargs...)]
+
+# Particular functions
+
 column(a::Vector, i::Int) = a
 column(a::AbstractVector, i::Int) = collect(a)
 column(a::AbstractMatrix, i::Int) = a[:,i]
@@ -68,15 +84,6 @@ function geometries(G::Type{Geometry{:scatter}},
     [G(; x=column(x,1), y=column(y,1), z=column(z,1), c=column(c,1), kwargs...)]
 end
 
-geometries(G::Type{Geometry{:scatter}}, y::AbstractVector; kwargs...) =
-    geometries(G, 1:length(y), y; kwargs...)
-
-# Bar plot and histogram
-const Bar2d = Union{Geometry{:bar}, Geometry{:polarbar}}
-geometries(G::Type{<:Bar2d}, x, y; kwargs...) = [G(; x=x, y=y, kwargs...)]
-
-
-
 # 3D line
 function geometries(G::Type{Geometry{:line3d}},
     x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat, spec::String=""; kwargs...)
@@ -94,13 +101,7 @@ function geometries(G::Type{Geometry{:polarline}},
     for i = 1:size(y,2)]
 end
 
-# Contour plot
-const Contour = Union{Geometry{:contour}, Geometry{:contourf}}
-geometries(G::Type{<:Contour}, x, y, z, h; kwargs...) = [G(; x=x[:], y=y[:], z=z[:], c=h, kwargs...)]
-geometries(G::Type{Geometry{:surface}}, x, y, z; kwargs...) = [G(; x=x[:], y=y[:], z=z[:], c=z[:], kwargs...)]
-
 # `draw` methods
-
 
 hasline(mask) = ( mask == 0x00 || (mask & 0x01 != 0) )
 hasmarker(mask) = ( mask & 0x02 != 0)
@@ -277,13 +278,18 @@ function draw(g::Geometry{:polarbar})
     GR.restorestate()
 end
 
-_contour(::Geometry{:contour}) = GR.contour
-_contour(::Geometry{:contourf}) = GR.contourf
-
-function draw(g::G) where {G <: Contour}
+function draw(g::Geometry{:contour})
     GR.savestate()
     clabels = get(g.attributes, :clabels, 1.0)
-    _contour(g)(g.x, g.y, g.c, g.z, Int(clabels))
+    GR.contour(g.x, g.y, g.c, g.z, Int(clabels))
+    GR.restorestate()
+end
+
+function draw(g::Geometry{:contourf})
+    GR.savestate()
+    # clabels limited from 0 to 999
+    clabels = rem(get(g.attributes, :clabels, 1.0), 1000)
+    GR.contourf(g.x, g.y, g.c, g.z, Int(clabels))
     GR.restorestate()
 end
 

@@ -176,7 +176,7 @@ end
 
 function _setargs_contour(f, x, y, z, h; kwargs...)
     if length(x) == length(y) == length(z)
-        x, y, z = GR.gridit(x[:], y[:], z[:], 200, 200)
+        x, y, z = GR.gridit(vec(x), vec(y), vec(z), 200, 200)
     end
     if get(kwargs, :colorbar, true)
         majorlevels = get(kwargs, :majorlevels, 0)
@@ -190,7 +190,7 @@ function _setargs_contour(f, x, y, z, h; kwargs...)
     if majorlevels ≠ 0
         kwargs = (; kwargs..., ratio = 1.0)
     end
-    return ((x, y, z, h), kwargs)
+    return ((vec(x), vec(y), vec(z), vec(h)), kwargs)
 end
 
 function _setargs_contour(f, x, y, z; kwargs...)
@@ -212,10 +212,10 @@ end
 
 function _setargs_surface(f, x, y, z; kwargs...)
     if length(x) == length(y) == length(z)
-        x, y, z = GR.gridit(x[:], y[:], z[:], 200, 200)
+        x, y, z = GR.gridit(vec(x), vec(y), vec(z), 200, 200)
     end
     accelerate = Bool(get(kwargs, :accelerate, true)) ? 1.0 : 0.0
-    ((x, y, z), (; accelerate = accelerate, kwargs...))
+    ((vec(x), vec(y), vec(z), vec(z)), (; accelerate = accelerate, kwargs...))
 end
 
 @plotfunction(surface, geom = :surface, canvas = :axes3d, kind = :surface, setargs = _setargs_surface, kwargs=(colorbar=true, accelerate=true))

@@ -117,11 +117,17 @@ z = f.(x, y)
 GRUtils.contour(x, y, f)
 # Other
 GRUtils.contour(x, y, z)
-GRUtils.contourf(x, y, z)
-GRUtils.surface(x, y, z)
 GRUtils.contour(x, y, z, levels=10)
 GRUtils.contour(x, y, z, majorlevels=3)
 GRUtils.contour(x, y, z, colorbar=false)
+GRUtils.contourf(x, y, z, colorbar=false)
+# Filled
+GRUtils.contourf(x, y, z)
+GRUtils.contourf(x, y, z, levels=10)
+GRUtils.contourf(x, y, z, majorlevels=3)
+GRUtils.contourf(x, y, z, colorbar=false)
+# Surface
+GRUtils.surface(x, y, z)
 # Create example grid data
 x = LinRange(-2, 2, 40)
 y = LinRange(0, pi, 20)
