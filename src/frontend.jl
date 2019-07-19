@@ -170,9 +170,9 @@ end
 
 @plotfunction(histogram, geom = :bar, canvas = :axes2d, kind = :hist, setargs = _setargs_hist)
 
-@plotfunction(plot3, geom = :line3d, canvas = :axes3d)
-@plotfunction(polar, geom = :polarline, canvas = :axespolar)
-@plotfunction(polarhistogram, geom = :polarbar, canvas = :axespolar, kind = :polarhist, setargs = _setargs_hist)
+@plotfunction(plot3, geom = :line3d, canvas = :axes3d, kwargs = (ratio=1.0,))
+@plotfunction(polar, geom = :polarline, canvas = :axespolar, kwargs = (ratio=1.0,))
+@plotfunction(polarhistogram, geom = :polarbar, canvas = :axespolar, kind = :polarhist, setargs = _setargs_hist, kwargs = (ratio=1.0,))
 
 function _setargs_contour(f, x, y, z, h; kwargs...)
     if length(x) == length(y) == length(z)
@@ -207,8 +207,8 @@ function _setargs_contour(f, x, y, fz::Function, args...; kwargs...)
     _setargs_contour(f, x, y, z, args...; kwargs...)
 end
 
-@plotfunction(contour, geom = :contour, canvas = :xyplane, kind = :contour, setargs = _setargs_contour)
-@plotfunction(contourf, geom = :contourf, canvas = :xyplane, kind = :contour, setargs = _setargs_contour)
+@plotfunction(contour, geom = :contour, canvas = :axes3d, setargs = _setargs_contour, kwargs = (rotation=0, tilt=90))
+@plotfunction(contourf, geom = :contourf, canvas = :axes3d, setargs = _setargs_contour, kwargs = (rotation=0, tilt=90, tickdir=-1))
 
 function _setargs_surface(f, x, y, z; kwargs...)
     if length(x) == length(y) == length(z)
@@ -218,7 +218,8 @@ function _setargs_surface(f, x, y, z; kwargs...)
     ((vec(x), vec(y), vec(z), vec(z)), (; accelerate = accelerate, kwargs...))
 end
 
-@plotfunction(surface, geom = :surface, canvas = :axes3d, kind = :surface, setargs = _setargs_surface, kwargs = (colorbar=true, accelerate=true))
+@plotfunction(surface, geom = :surface, canvas = :axes3d, setargs = _setargs_surface, kwargs = (colorbar=true, accelerate=true))
+@plotfunction(wireframe, geom = :wireframe, canvas = :axes3d, setargs = _setargs_surface)
 
 function _setargs_heatmap(f, data; kwargs...)
     w, h = size(data)
@@ -231,7 +232,7 @@ function _setargs_heatmap(f, data; kwargs...)
     ((1.0:w, 1.0:h, emptyvector(Float64), data[:]), kwargs)
 end
 
-@plotfunction(heatmap, geom = :heatmap, canvas = :axes2d, kind = :heatmap, setargs = _setargs_heatmap, kwargs = (colorbar=true,))
+@plotfunction(heatmap, geom = :heatmap, canvas = :axes2d, setargs = _setargs_heatmap, kwargs = (colorbar=true, tickdir=-1))
 
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend

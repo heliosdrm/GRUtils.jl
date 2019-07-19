@@ -7,7 +7,9 @@ const AxisTickData  = Tuple{Float64,Tuple{Float64,Float64},Int}
 * tickdata: minor, origins and major
 * ticklabels: functions based on GR.textext
 * perspective: rotation and tilt
-* options: :scale (code) and :grid (0 is none, others yet undefined)
+* options: :scale (code),
+    :grid (0 is none, others yet undefined)
+    :tickdir (sign for direction, or 0 for no tick marks)
 """
 struct Axes{A}
     ranges::Dict{Symbol, AxisRange}
@@ -40,6 +42,7 @@ function Axes{A}(geoms::Array{<:Geometry}; panzoom=nothing, kwargs...) where {A}
         :scale => set_scale(Axes{A}; kwargs...),
         :grid => Int(get(kwargs, :grid, 1))
         )
+    haskey(kwargs, :tickdir) && (options[:tickdir] = kwargs[:tickdir])
     Axes{A}(ranges, tickdata, ticklabels, perspective, options)
 end
 
@@ -152,14 +155,6 @@ function set_ticks(::Type{Axes{:axespolar}}, ranges; kwargs...)
     Dict(:x => xaxis, :y => yaxis)
 end
 
-function set_ticks(::Type{Axes{:xyplane}}, ranges; kwargs...)
-    major_count = 5
-    xaxis = set_axis(:x, ranges[:x], major_count; kwargs...)
-    yaxis = set_axis(:y, ranges[:y], major_count; kwargs...)
-    zaxis = set_axis(:z, ranges[:z], 0; kwargs...)
-    Dict(:x => xaxis, :y => yaxis, :z => zaxis)
-end
-
 set_ticks(::Any, ranges; kwargs...) = Dict{Symbol, AxisTickData}()
 
 function set_axis(axname, axrange, major; kwargs...)
@@ -224,8 +219,6 @@ function set_perspective(::Type{Axes{:axes3d}}; kwargs...)
     [rotation, tilt]
 end
 
-set_perspective(::Type{Axes{:xyplane}}; kwargs...) = [0, 90]
-
 set_perspective(::Any; kwargs...) = [0, 0]
 
 # `draw` methods
@@ -238,6 +231,7 @@ function draw(ax::Axes{:axes2d})
     GR.setlinecolorind(1)
     GR.setlinewidth(1)
     ticksize, charheight = _tickcharheight()
+    haskey(ax.options, :tickdir) && (ticksize *= ax.options[:tickdir])
     GR.setcharheight(charheight)
     xtick, xorg, majorx = ax.tickdata[:x]
     ytick, yorg, majory = ax.tickdata[:y]
@@ -262,17 +256,24 @@ function draw(ax::Axes{:axes3d})
     GR.setlinecolorind(1)
     GR.setlinewidth(1)
     ticksize, charheight = _tickcharheight()
+    haskey(ax.options, :tickdir) && (ticksize *= ax.options[:tickdir])
     GR.setcharheight(charheight)
     xtick, xorg, majorx = ax.tickdata[:x]
     ytick, yorg, majory = ax.tickdata[:y]
     ztick, zorg, majorz = ax.tickdata[:z]
     # draw
-    if (ax.options[:grid] != 0)
-        GR.grid3d(xtick, 0, ztick, xorg[1], yorg[2], zorg[1], 2, 0, 2)
-        GR.grid3d(0, ytick, 0, xorg[1], yorg[2], zorg[1], 0, 2, 0)
+    if ax.perspective == [0, 90]
+        (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
+        GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)
+        GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)
+    else
+        if (ax.options[:grid] != 0)
+            GR.grid3d(xtick, 0, ztick, xorg[1], yorg[2], zorg[1], 2, 0, 2)
+            GR.grid3d(0, ytick, 0, xorg[1], yorg[2], zorg[1], 0, 2, 0)
+        end
+        GR.axes3d(xtick, 0, ztick, xorg[1], yorg[1], zorg[1], majorx, 0, majorz, -ticksize)
+        GR.axes3d(0, ytick, 0, xorg[2], yorg[1], zorg[1], 0, majory, 0, ticksize)
     end
-    GR.axes3d(xtick, 0, ztick, xorg[1], yorg[1], zorg[1], majorx, 0, majorz, -ticksize)
-    GR.axes3d(0, ytick, 0, xorg[2], yorg[1], zorg[1], 0, majory, 0, ticksize)
 end
 
 signif(x, digits; base = 10) = round(x, sigdigits = digits, base = base)
@@ -317,24 +318,6 @@ function draw(ax::Axes{:axespolar})
         GR.textext(x, y, string(alpha, "^o"))
     end
     GR.restorestate()
-end
-
-function draw(ax::Axes{:xyplane})
-    # Set the window of data seen and the perspective
-    GR.setwindow(ax.ranges[:x]..., ax.ranges[:y]...)
-    GR.setspace(ax.ranges[:z]..., ax.perspective...)
-    # Modify scale (log or flipped axes)
-    GR.setscale(ax.options[:scale])
-    # Set the specifications of guides (grid and ticks)
-    GR.setlinecolorind(1)
-    GR.setlinewidth(1)
-    ticksize, charheight = _tickcharheight()
-    GR.setcharheight(charheight)
-    xtick, xorg, majorx = ax.tickdata[:x]
-    ytick, yorg, majory = ax.tickdata[:y]
-    (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
-    GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)
-    GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)
 end
 
 function _tickcharheight(vp=GR.inqviewport())

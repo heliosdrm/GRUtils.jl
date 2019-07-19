@@ -50,8 +50,6 @@ function PlotObject(geoms, axes, legend=Legend(), colorbar=Colorbar(); kwargs...
     subplot = get(kwargs, :subplot, unitsquare)
     if haskey(kwargs, :ratio)
         viewport = Viewport(subplot, kwargs[:ratio])
-    elseif isa(axes, Axes{:axes3d}) || isa(axes, Axes{:axespolar})
-        viewport = Viewport(subplot, 1.0)
     else
         viewport = Viewport(subplot)
     end

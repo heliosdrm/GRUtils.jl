@@ -295,6 +295,14 @@ function draw(g::Geometry{:surface})
     GR.restorestate()
 end
 
+function draw(g::Geometry{:wireframe})
+    GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
+    GR.setfillcolorind(0)    
+    GR.surface(g.x, g.y, g.z, GR.OPTION_FILLED_MESH)
+    GR.restorestate()
+end
+
 function draw(g::Geometry{:heatmap})
     w = length(g.x)
     h = length(g.y)
