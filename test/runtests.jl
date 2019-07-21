@@ -51,6 +51,15 @@ radii = LinRange(0, 2, 40)
 GRUtils.polar(angles, radii)
 GRUtils.polar(angles, r -> cos(r) ^ 2)
 
+x = 2 .* rand(100) .- 1
+y = 2 .* rand(100) .- 1
+z = 2 .* rand(100) .- 1
+c = 999 .* rand(100) .+ 1
+# Plot the points
+GRUtils.scatter3(x, y, z)
+# Plot the points with colors
+GRUtils.scatter3(x, y, z, c)
+
 population = Dict("Africa" => 1216,
                  "America" => 1002,
                  "Asia" => 4436,
@@ -88,25 +97,6 @@ GRUtils.draw(GRUtils.gcf())
 GRUtils.legend("square", location=2)
 GRUtils.draw(GRUtils.gcf())
 GRUtils.hold(false)
-
-# function meshgrid(vx, vy)
-#     m, n = length(vy), length(vx)
-#     vx = reshape(vx, 1, n)
-#     vy = reshape(vy, m, 1)
-#     (GRUtils.repmat(vx, m, 1), GRUtils.repmat(vy, 1, n))
-# end
-#
-# function meshgrid(vx, vy, vz)
-#     m, n, o = length(vy), length(vx), length(vz)
-#     vx = reshape(vx, 1, n, 1)
-#     vy = reshape(vy, m, 1, 1)
-#     vz = reshape(vz, 1, 1, o)
-#     om = ones(Int, m)
-#     on = ones(Int, n)
-#     oo = ones(Int, o)
-#     (vx[om, :, oo], vy[:, on, oo], vz[om, on, :])
-# end
-
 
 # Create example point data
 x = 8 .* rand(100) .- 4

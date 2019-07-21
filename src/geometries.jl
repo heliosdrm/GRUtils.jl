@@ -223,19 +223,33 @@ end
 
 function draw(g::Geometry{:line3d})
     GR.savestate()
-    if haskey(g.attributes, :alpha)
-        GR.settransparency(g.attributes[:alpha])
-    end
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     GR.uselinespec(g.spec)
     GR.polyline3d(g.x, g.y, g.z)
     GR.restorestate()
 end
 
+function draw(g::Geometry{:scatter3})
+    GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
+    GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
+    if !isempty(g.c)
+        cmin, cmax = extrema(g.c)
+        cnorm = map(x -> normalize_color(x, cmin, cmax), g.c)
+        cind = Int[round(Int, 1000 + _i * 255) for _i in cnorm]
+        for i in 1:length(g.x)
+            GR.setmarkercolorind(cind[i])
+            GR.polymarker3d([g.x[i]], [g.y[i]], [g.z[i]])
+        end
+    else
+        GR.polymarker3d(g.x, g.y, g.z)
+    end
+    GR.restorestate()
+end
+
 function draw(g::Geometry{:polarline})
     GR.savestate()
-    if haskey(g.attributes, :alpha)
-        GR.settransparency(g.attributes[:alpha])
-    end
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     GR.uselinespec(g.spec)
     ymin, ymax = extrema(g.y)
     ρ = (g.y .- ymin) ./ (ymax .- ymin)
@@ -298,7 +312,7 @@ end
 function draw(g::Geometry{:wireframe})
     GR.savestate()
     GR.settransparency(get(g.attributes, :alpha, 1.0))
-    GR.setfillcolorind(0)    
+    GR.setfillcolorind(0)
     GR.surface(g.x, g.y, g.z, GR.OPTION_FILLED_MESH)
     GR.restorestate()
 end

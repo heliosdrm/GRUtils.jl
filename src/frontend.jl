@@ -171,6 +171,11 @@ end
 @plotfunction(histogram, geom = :bar, canvas = :axes2d, kind = :hist, setargs = _setargs_hist)
 
 @plotfunction(plot3, geom = :line3d, canvas = :axes3d, kwargs = (ratio=1.0,))
+
+_setargs_scatter3(f, x, y, z; kwargs...) = ((x,y,z), kwargs)
+_setargs_scatter3(f, x, y, z, c; kwargs...) = ((x,y,z,c), (;colorbar=true, kwargs...))
+@plotfunction(scatter3, geom = :scatter3, canvas = :axes3d, setargs = _setargs_scatter3, kwargs = (ratio=1.0,))
+
 @plotfunction(polar, geom = :polarline, canvas = :axespolar, kwargs = (ratio=1.0,))
 @plotfunction(polarhistogram, geom = :polarbar, canvas = :axespolar, kind = :polarhist, setargs = _setargs_hist, kwargs = (ratio=1.0,))
 
