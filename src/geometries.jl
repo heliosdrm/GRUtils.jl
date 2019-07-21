@@ -318,6 +318,8 @@ function draw(g::Geometry{:wireframe})
 end
 
 function draw(g::Geometry{:heatmap})
+    GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
     w = length(g.x)
     h = length(g.y)
     cmap = colormap()
@@ -325,6 +327,7 @@ function draw(g::Geometry{:heatmap})
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
     rgba = [to_rgba(value, cmap) for value ∈ data]
     GR.drawimage(0.5, w + 0.5, h + 0.5, 0.5, w, h, rgba)
+    GR.restorestate()
 end
 
 function colormap()
@@ -347,4 +350,17 @@ function to_rgba(value, cmap)
     end
     round(UInt32, a * 255) << 24 + round(UInt32, b * 255) << 16 +
     round(UInt32, g * 255) << 8  + round(UInt32, r * 255)
+end
+
+function draw(g::Geometry{:polarheatmap})
+    GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
+    w = length(g.x)
+    h = length(g.y)
+    cmap = colormap()
+    cmin, cmax = extrema(g.c)
+    data = map(x -> normalize_color(x, cmin, cmax), g.c)
+    colors = Int[round(Int, 1000 + _i * 255) for _i in data]
+    GR.polarcellarray(0, 0, 0, 360, 0, 1, w, h, colors)
+    GR.restorestate()
 end

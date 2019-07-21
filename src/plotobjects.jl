@@ -18,10 +18,10 @@ function Viewport(subplot)
     Viewport(outer, inner)
 end
 
-function Viewport(subplot, ratio::Real)
+function Viewport(subplot, ratio::Real, margins=zeros(4))
     v = Viewport(subplot)
-    w = v.inner[2] - v.inner[1]
-    h = v.inner[4] - v.inner[3]
+    w = v.inner[2] - v.inner[1] - margins[1] - margins[2]
+    h = v.inner[4] - v.inner[3] - margins[3] - margins[4]
     if w/h > ratio
         d = 0.5 * (w - h * ratio)
         v.inner[1] += d
@@ -31,6 +31,7 @@ function Viewport(subplot, ratio::Real)
         v.inner[3] += d
         v.inner[4] -= d
     end
+    v.inner .-= margins
     v
 end
 
@@ -48,18 +49,20 @@ end
 
 function PlotObject(geoms, axes, legend=Legend(), colorbar=Colorbar(); kwargs...)
     subplot = get(kwargs, :subplot, unitsquare)
-    if haskey(kwargs, :ratio)
-        viewport = Viewport(subplot, kwargs[:ratio])
-    else
-        viewport = Viewport(subplot)
-    end
+    margins = zeros(4)
     if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
-        viewport.inner[2] -= 0.1
+        margins[2] -= 0.1
     end
     location = get(kwargs, :location, 0)
     # Redefine viewport if legend is set outside
     if legend ≠ emptylegend && location ∈ legend_locations[:right_out]
-        viewport.inner[2] -= legend.size[1]
+        margins[2] -= legend.size[1]
+    end
+    if haskey(kwargs, :ratio)
+        viewport = Viewport(subplot, kwargs[:ratio], margins)
+    else
+        viewport = Viewport(subplot)
+        viewport.inner .-= margins
     end
     PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
 end

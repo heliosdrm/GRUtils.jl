@@ -234,10 +234,12 @@ function _setargs_heatmap(f, data; kwargs...)
     if get(kwargs, :yflip, false)
         data = reverse(data, dims=2)
     end
+    kwargs = (; xlim = (0.5, w + 0.5), ylim = (0.5, h + 0.5), kwargs...)
     ((1.0:w, 1.0:h, emptyvector(Float64), data[:]), kwargs)
 end
 
 @plotfunction(heatmap, geom = :heatmap, canvas = :axes2d, setargs = _setargs_heatmap, kwargs = (colorbar=true, tickdir=-1))
+@plotfunction(polarheatmap, geom = :polarheatmap, canvas = :axespolar, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0))
 
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend
