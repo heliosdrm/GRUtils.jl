@@ -1,7 +1,7 @@
 ## Select keyword arguments from list
 keys_geom_attributes = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :step_position]
 keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
-    :levels, :majorlevels, :colorbar, :ratio]
+    :levels, :majorlevels, :colorbar, :ratio, :gridover]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
 
 geom_attributes(;kwargs...) = filter(p -> p.first ∈ keys_geom_attributes, kwargs)
@@ -239,7 +239,7 @@ function _setargs_heatmap(f, data; kwargs...)
 end
 
 @plotfunction(heatmap, geom = :heatmap, canvas = :axes2d, setargs = _setargs_heatmap, kwargs = (colorbar=true, tickdir=-1))
-@plotfunction(polarheatmap, geom = :polarheatmap, canvas = :axespolar, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0))
+@plotfunction(polarheatmap, geom = :polarheatmap, canvas = :axespolar, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0, gridover=true))
 
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend

@@ -90,6 +90,8 @@ function draw(p::PlotObject)
     for g in p.geoms
         draw(g)
     end
+    # Redraw the grid over the geoms if requested
+    Bool(get(p.specs, :gridover, false)) && draw(p.axes)
     location = get(p.specs, :location, 0)
     draw(p.legend, p.geoms, location)
     get(p.specs, :colorbar, false) && draw(p.colorbar)
