@@ -3,7 +3,8 @@ struct Viewport
     inner::Vector{Float64}
 end
 
-Viewport() = Viewport(zeros(4), zeros(4))
+const emptyviewport = Viewport(zeros(4), zeros(4))
+Viewport() = emptyviewport
 
 function Viewport(subplot)
     ratio_w, ratio_h = wswindow(gcf())
@@ -81,10 +82,20 @@ PlotObject(p::PlotObject) = p
 mutable struct PolarHeatmapPlot <: AbstractPlot
     plotobject::PlotObject
 end
+
 PlotObject(hm::PolarHeatmapPlot) = hm.plotobject
+function Base.getproperty(hm::PolarHeatmapPlot, s::Symbol)
+    p = getfield(hm, :plotobject)
+    if s == :plotobject
+        return p
+    else
+        return getfield(p, s)
+    end
+end
 
 # `draw` methods
 function draw(p::PlotObject)
+    (p.viewport == emptyviewport) && return nothing
     colorspecs = [get(p.specs, :colormap, GR.COLORMAP_VIRIDIS),
                   get(p.specs, :scheme, 0x00000000)]
     setcolors(colorspecs...)
@@ -104,6 +115,7 @@ function draw(p::PlotObject)
 end
 
 function draw(p::PolarHeatmapPlot)
+    (p.viewport == emptyviewport) && return nothing
     draw(p.plotobject)
     # Redraw the axes
     GR.setviewport(p.plotobject.viewport.inner...)

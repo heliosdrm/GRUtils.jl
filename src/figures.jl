@@ -27,7 +27,7 @@ end
 
 # figure(p=PlotObject()) = Figure([p])
 
-currentplot(f::Figure) = PlotObject(f.plots[end])
+currentplot(f::Figure) = f.plots[end]
 
 wswindow(f::Figure) = f.workstation ./ maximum(f.workstation)
 
