@@ -35,10 +35,12 @@ function Viewport(subplot, ratio::Real, margins=zeros(4))
     v
 end
 
+abstract type AbstractPlot end
+
 """
 (not parametric, just a named tuple)
 """
-mutable struct PlotObject
+mutable struct PlotObject <: AbstractPlot
     viewport::Viewport
     axes::Axes
     geoms::Vector{<:Geometry}
@@ -51,12 +53,12 @@ function PlotObject(geoms, axes, legend=Legend(), colorbar=Colorbar(); kwargs...
     subplot = get(kwargs, :subplot, unitsquare)
     margins = zeros(4)
     if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
-        margins[2] -= 0.1
+        margins[2] = 0.1
     end
     location = get(kwargs, :location, 0)
     # Redefine viewport if legend is set outside
     if legend ≠ emptylegend && location ∈ legend_locations[:right_out]
-        margins[2] -= legend.size[1]
+        margins[2] = legend.size[1]
     end
     if haskey(kwargs, :ratio)
         viewport = Viewport(subplot, kwargs[:ratio], margins)
@@ -74,9 +76,15 @@ end
 
 PlotObject(; kwargs...) = PlotObject(Viewport(), Axes{nothing}(), Geometry[], Legend(), Colorbar(); kwargs...)
 
+PlotObject(p::PlotObject) = p
+
+mutable struct PolarHeatmapPlot <: AbstractPlot
+    plotobject::PlotObject
+end
+PlotObject(hm::PolarHeatmapPlot) = hm.plotobject
+
 # `draw` methods
 function draw(p::PlotObject)
-    # GR.clearws()
     colorspecs = [get(p.specs, :colormap, GR.COLORMAP_VIRIDIS),
                   get(p.specs, :scheme, 0x00000000)]
     setcolors(colorspecs...)
@@ -90,13 +98,16 @@ function draw(p::PlotObject)
     for g in p.geoms
         draw(g)
     end
-    # Redraw the grid over the geoms if requested
-    Bool(get(p.specs, :gridover, false)) && draw(p.axes)
     location = get(p.specs, :location, 0)
     draw(p.legend, p.geoms, location)
     get(p.specs, :colorbar, false) && draw(p.colorbar)
-    # GR.updatews()
-    # GR.show()
+end
+
+function draw(p::PolarHeatmapPlot)
+    draw(p.plotobject)
+    # Redraw the axes
+    GR.setviewport(p.plotobject.viewport.inner...)
+    draw(p.plotobject.axes)
 end
 
 

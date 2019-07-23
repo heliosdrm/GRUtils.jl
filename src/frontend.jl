@@ -1,7 +1,7 @@
 ## Select keyword arguments from list
 keys_geom_attributes = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :step_position]
 keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
-    :levels, :majorlevels, :colorbar, :ratio, :gridover]
+    :levels, :majorlevels, :colorbar, :ratio]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
 
 geom_attributes(;kwargs...) = filter(p -> p.first ∈ keys_geom_attributes, kwargs)
@@ -10,8 +10,8 @@ plot_specs(;kwargs...) = filter(p -> p.first ∈ keys_plot_specs, kwargs)
 _setargs_default(f, args...; kwargs...) = (args, kwargs)
 
 macro plotfunction(fname, options...)
-    # Parse options (geom, canvas, and setargs)
-    dict_op = Dict{Symbol, Any}(:setargs => _setargs_default)
+    # Parse options - minimum geom and axes
+    dict_op = Dict{Symbol, Any}()
     for op in options
         if typeof(op) <: Expr && op.head ∈ (:(=), :kw)
             dict_op[op.args[1]] = op.args[2]
@@ -20,24 +20,20 @@ macro plotfunction(fname, options...)
     if !haskey(dict_op, :geom)
         throw(ArgumentError("`geom` not specified"))
     end
-    if !haskey(dict_op, :canvas)
-        throw(ArgumentError("`canvas` not specified"))
-    end
-    if !haskey(dict_op, :kind)
-        dict_op[:kind] = Symbol(fname)
-    end
-    if !haskey(dict_op, :kwargs)
-        dict_op[:kwargs] = NamedTuple()
+    if !haskey(dict_op, :axes)
+        throw(ArgumentError("`axes` not specified"))
     end
     # Define functions
-    fname! = Symbol(fname, :!)
     geom_k = dict_op[:geom]
-    canvas_k = dict_op[:canvas]
-    plotkind = dict_op[:kind]
-    def_kwargs = dict_op[:kwargs]
+    axes_k = dict_op[:axes]
+    setargs_fun = get(dict_op, :setargs, _setargs_default)
+    plottype = get(dict_op, :plottype, PlotObject)
+    plotkind = get(dict_op, :kind, Symbol(fname))
+    def_kwargs = get(dict_op, :kwargs, NamedTuple())
+    fname! = Symbol(fname, :!)
     expr = quote
         function $(fname!)(f::Figure, args...; kwargs...)
-            kwargs = (; $(dict_op[:kwargs])..., kwargs...)
+            kwargs = (; $(def_kwargs)..., kwargs...)
             p = currentplot(f)
             if haskey(kwargs, :hold)
                 holdstate = kwargs[:hold]
@@ -47,19 +43,19 @@ macro plotfunction(fname, options...)
             if holdstate
                 # Keep all specs
                 kwargs = (; p.specs..., kwargs...)
-                args, kwargs = $(dict_op[:setargs])(f, args...; kwargs...)
+                args, kwargs = $setargs_fun(f, args...; kwargs...)
                 geoms = [p.geoms; geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)]
             else
                 # Only keep previous subplot
                 kwargs = (subplot = p.specs[:subplot], kwargs...)
-                args, kwargs = $(dict_op[:setargs])(f, args...; kwargs...)
+                args, kwargs = $setargs_fun(f, args...; kwargs...)
                 geoms = geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)
             end
-            axes = Axes{$canvas_k}(geoms; kwargs...)
+            axes = Axes{$axes_k}(geoms; kwargs...)
             legend = Legend(geoms)
             colorbar = Colorbar(axes)
             p = PlotObject(geoms, axes, legend, colorbar; kind=$plotkind, plot_specs(; kwargs...)...)
-            f.plots[end] = p
+            f.plots[end] = $plottype(p)
             draw(f)
         end
         $fname(args...; kwargs...) = $fname!(gcf(), args...; kwargs...)
@@ -77,7 +73,7 @@ end
 const docplot = """
 Function for plotting
 """
-@plotfunction(plot, geom = :line, canvas = :axes2d, kind = :line, docstring=docplot)
+@plotfunction(plot, geom = :line, axes = :axes2d, kind = :line, docstring=docplot)
 
 function _setargs_step(f, args...; kwargs...)
     step_position_str = get(kwargs, :where, "mid")
@@ -92,10 +88,10 @@ function _setargs_step(f, args...; kwargs...)
     end
     return (args, (step_position=step_position, where=step_position_str, kwargs...))
 end
-@plotfunction(step, geom = :step, canvas = :axes2d, setargs=_setargs_step)
+@plotfunction(step, geom = :step, axes = :axes2d, setargs=_setargs_step)
 
-@plotfunction(stem, geom = :stem, canvas = :axes2d)
-@plotfunction(scatter, geom = :scatter, canvas = :axes2d, kwargs=(colorbar=true,))
+@plotfunction(stem, geom = :stem, axes = :axes2d)
+@plotfunction(scatter, geom = :scatter, axes = :axes2d, kwargs=(colorbar=true,))
 
 function barcoordinates(heights; barwidth=0.8, baseline=0.0, kwargs...)
     n = length(heights)
@@ -129,7 +125,7 @@ function _setargs_bar(f, heights; kwargs...)
     _setargs_bar(f, string.(1:n), heights; kwargs...)
 end
 
-@plotfunction(barplot, geom = :bar, canvas = :axes2d, setargs=_setargs_bar)
+@plotfunction(barplot, geom = :bar, axes = :axes2d, setargs=_setargs_bar)
 
 function hist(x, nbins=0, baseline=0.0)
     if nbins <= 1
@@ -168,16 +164,16 @@ function _setargs_hist(f, x; kwargs...)
     return (args, kwargs)
 end
 
-@plotfunction(histogram, geom = :bar, canvas = :axes2d, kind = :hist, setargs = _setargs_hist)
+@plotfunction(histogram, geom = :bar, axes = :axes2d, kind = :hist, setargs = _setargs_hist)
 
-@plotfunction(plot3, geom = :line3d, canvas = :axes3d, kwargs = (ratio=1.0,))
+@plotfunction(plot3, geom = :line3d, axes = :axes3d, kwargs = (ratio=1.0,))
 
 _setargs_scatter3(f, x, y, z; kwargs...) = ((x,y,z), kwargs)
 _setargs_scatter3(f, x, y, z, c; kwargs...) = ((x,y,z,c), (;colorbar=true, kwargs...))
-@plotfunction(scatter3, geom = :scatter3, canvas = :axes3d, setargs = _setargs_scatter3, kwargs = (ratio=1.0,))
+@plotfunction(scatter3, geom = :scatter3, axes = :axes3d, setargs = _setargs_scatter3, kwargs = (ratio=1.0,))
 
-@plotfunction(polar, geom = :polarline, canvas = :axespolar, kwargs = (ratio=1.0,))
-@plotfunction(polarhistogram, geom = :polarbar, canvas = :axespolar, kind = :polarhist, setargs = _setargs_hist, kwargs = (ratio=1.0,))
+@plotfunction(polar, geom = :polarline, axes = :axespolar, kwargs = (ratio=1.0,))
+@plotfunction(polarhistogram, geom = :polarbar, axes = :axespolar, kind = :polarhist, setargs = _setargs_hist, kwargs = (ratio=1.0,))
 
 function _setargs_contour(f, x, y, z, h; kwargs...)
     if length(x) == length(y) == length(z)
@@ -212,8 +208,8 @@ function _setargs_contour(f, x, y, fz::Function, args...; kwargs...)
     _setargs_contour(f, x, y, z, args...; kwargs...)
 end
 
-@plotfunction(contour, geom = :contour, canvas = :axes3d, setargs = _setargs_contour, kwargs = (rotation=0, tilt=90))
-@plotfunction(contourf, geom = :contourf, canvas = :axes3d, setargs = _setargs_contour, kwargs = (rotation=0, tilt=90, tickdir=-1))
+@plotfunction(contour, geom = :contour, axes = :axes3d, setargs = _setargs_contour, kwargs = (rotation=0, tilt=90))
+@plotfunction(contourf, geom = :contourf, axes = :axes3d, setargs = _setargs_contour, kwargs = (rotation=0, tilt=90, tickdir=-1))
 
 function _setargs_surface(f, x, y, z; kwargs...)
     if length(x) == length(y) == length(z)
@@ -223,8 +219,8 @@ function _setargs_surface(f, x, y, z; kwargs...)
     ((vec(x), vec(y), vec(z), vec(z)), (; accelerate = accelerate, kwargs...))
 end
 
-@plotfunction(surface, geom = :surface, canvas = :axes3d, setargs = _setargs_surface, kwargs = (colorbar=true, accelerate=true))
-@plotfunction(wireframe, geom = :wireframe, canvas = :axes3d, setargs = _setargs_surface)
+@plotfunction(surface, geom = :surface, axes = :axes3d, setargs = _setargs_surface, kwargs = (colorbar=true, accelerate=true))
+@plotfunction(wireframe, geom = :wireframe, axes = :axes3d, setargs = _setargs_surface)
 
 function _setargs_heatmap(f, data; kwargs...)
     w, h = size(data)
@@ -238,8 +234,8 @@ function _setargs_heatmap(f, data; kwargs...)
     ((1.0:w, 1.0:h, emptyvector(Float64), data[:]), kwargs)
 end
 
-@plotfunction(heatmap, geom = :heatmap, canvas = :axes2d, setargs = _setargs_heatmap, kwargs = (colorbar=true, tickdir=-1))
-@plotfunction(polarheatmap, geom = :polarheatmap, canvas = :axespolar, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0, gridover=true))
+@plotfunction(heatmap, geom = :heatmap, axes = :axes2d, setargs = _setargs_heatmap, kwargs = (colorbar=true, tickdir=-1))
+@plotfunction(polarheatmap, geom = :polarheatmap, axes = :axespolar, plottype = PolarHeatmapPlot, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0))
 
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend

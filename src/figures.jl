@@ -4,7 +4,7 @@ Figure, just an alias for an array of PlotObjects
 """
 struct Figure
     workstation::Tuple{Float64, Float64}
-    plots::Vector{PlotObject}
+    plots::Vector{<:AbstractPlot}
 end
 
 function Figure(sizepx=(600,450); kwargs...)
@@ -21,13 +21,13 @@ function Figure(sizepx=(600,450); kwargs...)
     wssize = mwidth / width * w
     ratio = (w > h) ? (1.0, float(h)/w) : (float(w)/h, 1.0)
     workstation = (wssize * ratio[1], wssize * ratio[2])
-    plots = [PlotObject()]
+    plots = AbstractPlot[PlotObject()]
     currentfigure[] = Figure(workstation, plots)
 end
 
 # figure(p=PlotObject()) = Figure([p])
 
-currentplot(f::Figure) = f.plots[end]
+currentplot(f::Figure) = PlotObject(f.plots[end])
 
 wswindow(f::Figure) = f.workstation ./ maximum(f.workstation)
 
