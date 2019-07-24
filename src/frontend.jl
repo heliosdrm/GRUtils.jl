@@ -27,7 +27,7 @@ macro plotfunction(fname, options...)
     geom_k = dict_op[:geom]
     axes_k = dict_op[:axes]
     setargs_fun = get(dict_op, :setargs, _setargs_default)
-    plottype = get(dict_op, :plottype, PlotObject)
+    plottype = get(dict_op, :plottype, Plot)
     plotkind = get(dict_op, :kind, Symbol(fname))
     def_kwargs = get(dict_op, :kwargs, NamedTuple())
     fname! = Symbol(fname, :!)
@@ -52,10 +52,7 @@ macro plotfunction(fname, options...)
                 geoms = geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)
             end
             axes = Axes{$axes_k}(geoms; kwargs...)
-            legend = Legend(geoms)
-            colorbar = Colorbar(axes)
-            p = PlotObject(geoms, axes, legend, colorbar; kind=$plotkind, plot_specs(; kwargs...)...)
-            f.plots[end] = $plottype(p)
+            f.plots[end] = $plottype(geoms, axes; kind=$plotkind, plot_specs(; kwargs...)...)
             draw(f)
         end
         $fname(args...; kwargs...) = $fname!(gcf(), args...; kwargs...)
@@ -255,7 +252,7 @@ end
 @plotfunction(heatmap, geom = :heatmap, axes = :axes2d, setargs = _setargs_heatmap, kwargs = (colorbar=true, tickdir=-1))
 @plotfunction(polarheatmap, geom = :polarheatmap, axes = :axespolar, plottype = PolarHeatmapPlot, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0))
 
-function legend!(p::PlotObject, args...; location=1)
+function legend!(p::Plot, args...; location=1)
     # Reset main viewport if there was a legend
     if haskey(p.specs, :location) && p.specs[:location] ∈ legend_locations[:right_out]
         p.viewport.inner[2] += p.legend.size[1]
@@ -274,6 +271,6 @@ end
 legend!(f::Figure, args...; kwargs...) = legend!(currentplot(f), args...; kwargs...)
 legend(args::AbstractString...; kwargs...) = legend!(gcf(), args...; kwargs...)
 
-hold!(p::PlotObject, state::Bool) = (p.specs[:hold] = state)
+hold!(p::Plot, state::Bool) = (p.specs[:hold] = state)
 hold!(f::Figure, state) = hold!(currentplot(f), state)
 hold(state) = hold!(gcf(), state)

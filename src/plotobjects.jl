@@ -63,14 +63,9 @@ end
 
 BasicPlot(; kwargs...) = BasicPlot(Viewport(), Axes{nothing}(), Geometry[]; kwargs...)
 
-BasicPlot(p::BasicPlot) = p
-
 macro PlotType(typename, extrafields...)
     fields = quote end
     for f in extrafields
-        # if typeof(f) <: Expr && f.head ∈ (:(=), :kw)
-        #     push!(fields.args, :($(f.args[1])::$(f.args[2])))
-        # end
         push!(fields.args, f)
     end
     expr = quote
@@ -85,22 +80,18 @@ macro PlotType(typename, extrafields...)
                 return getfield(p, s)
             end
         end
+        BasicPlot(p::$typename) = p.basicplot
     end
     esc(expr)
 end
 
-@PlotType PlotObject legend::Legend colorbar::Colorbar
+@PlotType Plot legend::Legend colorbar::Colorbar
+# Plot(bp::BasicPlot) = Plot(bp, Legend(), Colorbar())
+# Plot(; kwargs...) = Plot(BasicPlot(; kwargs...), Legend(), Colorbar())
 
-# mutable struct PlotObject <: AbstractPlot
-#     viewport::Viewport
-#     axes::Axes
-#     geoms::Vector{<:Geometry}
-#     legend::Legend
-#     colorbar::Colorbar
-#     specs::Dict
-# end
-
-function PlotObject(geoms, axes, legend, colorbar; kwargs...)
+function Plot(geoms, axes; kwargs...)
+    legend = Legend(geoms)
+    colorbar = Colorbar(axes)
     margins = zeros(4)
     if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
         margins[2] = 0.1
@@ -110,29 +101,24 @@ function PlotObject(geoms, axes, legend, colorbar; kwargs...)
     if legend ≠ emptylegend && location ∈ legend_locations[:right_out]
         margins[2] = legend.size[1]
     end
-    basicplot = BasicPlot(geoms, axes; kwargs...)
-    PlotObject(basicplot, legend, colorbar)
+    basicplot = BasicPlot(geoms, axes, margins; kwargs...)
+    Plot(basicplot, legend, colorbar)
 end
 
-PlotObject(; kwargs...) = PlotObject(BasicPlot(; kwargs...), Legend(), Colorbar())
-PlotObject(p::PlotObject) = p
+@PlotType PolarHeatmapPlot colorbar::Colorbar
 
-mutable struct PolarHeatmapPlot <: AbstractPlot
-    plotobject::PlotObject
-end
-
-PlotObject(hm::PolarHeatmapPlot) = hm.plotobject
-function Base.getproperty(hm::PolarHeatmapPlot, s::Symbol)
-    p = getfield(hm, :plotobject)
-    if s == :plotobject
-        return p
-    else
-        return getfield(p, s)
+function PolarHeatmapPlot(geoms::Vector{<:Geometry}, axes::Axes; kwargs...)
+    colorbar = Colorbar(axes)
+    margins = zeros(4)
+    if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
+        margins[2] = 0.1
     end
+    basicplot = BasicPlot(geoms, axes, margins; kwargs...)
+    PolarHeatmapPlot(basicplot, colorbar)
 end
 
 # `draw` methods
-function draw(p::PlotObject)
+function draw(p::AbstractPlot)
     (p.viewport == emptyviewport) && return nothing
     colorspecs = [get(p.specs, :colormap, GR.COLORMAP_VIRIDIS),
                   get(p.specs, :scheme, 0x00000000)]
@@ -147,6 +133,12 @@ function draw(p::PlotObject)
     for g in p.geoms
         draw(g)
     end
+    return nothing
+end
+
+function draw(p::Plot)
+    (p.viewport == emptyviewport) && return nothing
+    draw(p.basicplot)
     location = get(p.specs, :location, 0)
     draw(p.legend, p.geoms, location)
     get(p.specs, :colorbar, false) && draw(p.colorbar)
@@ -154,10 +146,10 @@ end
 
 function draw(p::PolarHeatmapPlot)
     (p.viewport == emptyviewport) && return nothing
-    draw(p.plotobject)
+    draw(p.basicplot)
     # Redraw the axes
-    GR.setviewport(p.plotobject.viewport.inner...)
-    draw(p.plotobject.axes)
+    draw(p.axes)
+    get(p.specs, :colorbar, false) && draw(p.colorbar)
 end
 
 
