@@ -30,9 +30,9 @@ function Colorbar(axes, colors=256)
     Colorbar(range, tick, scale, margin, colors)
 end
 
-function draw(cb::Colorbar)
+function draw(cb::Colorbar, range=cb.range)
     cb == emptycolorbar && return nothing
-    zmin, zmax = cb.range
+    zmin, zmax = range
     mainvp = GR.inqviewport()
     _, charheight = _tickcharheight(mainvp)
     GR.savestate()

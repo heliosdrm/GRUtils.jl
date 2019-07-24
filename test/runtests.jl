@@ -136,3 +136,7 @@ GRUtils.surface(x, y, z, accelerate=false)
 GRUtils.wireframe(x, y, z)
 GRUtils.heatmap(z)
 GRUtils.polarheatmap(z)
+
+x = randn(100000)
+y = randn(100000)
+GRUtils.hexbin(x, y)

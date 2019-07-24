@@ -252,6 +252,9 @@ end
 @plotfunction(heatmap, geom = :heatmap, axes = :axes2d, setargs = _setargs_heatmap, kwargs = (colorbar=true, tickdir=-1))
 @plotfunction(polarheatmap, geom = :polarheatmap, axes = :axespolar, plottype = PolarHeatmapPlot, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0))
 
+_setargs_hexbin(f, x, y; kwargs...) = ((x, y, emptyvector(Float64), [0.0, 1.0]), kwargs)
+@plotfunction(hexbin, geom = :hexbin, axes = :axes2d, plottype = HexbinPlot, setargs = _setargs_hexbin, kwargs = (colorbar=true,))
+
 function legend!(p::Plot, args...; location=1)
     # Reset main viewport if there was a legend
     if haskey(p.specs, :location) && p.specs[:location] ∈ legend_locations[:right_out]

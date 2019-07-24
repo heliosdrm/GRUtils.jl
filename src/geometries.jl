@@ -348,6 +348,15 @@ function draw(g::Geometry{:heatmap})
     GR.restorestate()
 end
 
+function draw(g::Geometry{:hexbin})
+    GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
+    nbins = Int(get(g.attributes, :nbins, 40.0))
+    cntmax = GR.hexbin(g.x, g.y, nbins)
+    GR.restorestate()
+    cntmax
+end    
+
 function colormap()
     rgb = zeros(256, 3)
     for colorind in 1:256

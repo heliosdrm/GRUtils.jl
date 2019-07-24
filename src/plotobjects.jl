@@ -117,41 +117,27 @@ function PolarHeatmapPlot(geoms::Vector{<:Geometry}, axes::Axes; kwargs...)
     PolarHeatmapPlot(basicplot, colorbar)
 end
 
+@PlotType HexbinPlot colorbar::Colorbar
+
+function HexbinPlot(geoms::Vector{Geometry{:hexbin}}, axes::Axes; kwargs...)
+    colorbar = Colorbar(axes)
+    margins = zeros(4)
+    if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
+        margins[2] = 0.1
+    end
+    basicplot = BasicPlot(geoms, axes, margins; kwargs...)
+    HexbinPlot(basicplot, colorbar)
+end
+
+
 # `draw` methods
-function draw(p::AbstractPlot)
-    (p.viewport == emptyviewport) && return nothing
+
+function paintbackground(p::AbstractPlot)
     colorspecs = [get(p.specs, :colormap, GR.COLORMAP_VIRIDIS),
                   get(p.specs, :scheme, 0x00000000)]
     setcolors(colorspecs...)
     haskey(p.specs, :backgroundcolor) && fillbackground(p.viewport.outer, cv.options[:backgroundcolor])
-    # Define the viewport
-    GR.setviewport(p.viewport.inner...)
-    draw(p.axes)
-    # title and labels
-
-    GR.uselinespec(" ")
-    for g in p.geoms
-        draw(g)
-    end
-    return nothing
 end
-
-function draw(p::Plot)
-    (p.viewport == emptyviewport) && return nothing
-    draw(p.basicplot)
-    location = get(p.specs, :location, 0)
-    draw(p.legend, p.geoms, location)
-    get(p.specs, :colorbar, false) && draw(p.colorbar)
-end
-
-function draw(p::PolarHeatmapPlot)
-    (p.viewport == emptyviewport) && return nothing
-    draw(p.basicplot)
-    # Redraw the axes
-    draw(p.axes)
-    get(p.specs, :colorbar, false) && draw(p.colorbar)
-end
-
 
 function setcolors(colormap, scheme)
     GR.setcolormap(colormap)
@@ -184,4 +170,49 @@ function fillbackground(rectndc, color)
     GR.fillrect(rectndc...)
     GR.selntran(1)
     GR.restorestate()
+end
+
+function draw(p::AbstractPlot)
+    (p.viewport == emptyviewport) && return nothing
+    paintbackground(p)
+    # Define the viewport
+    GR.setviewport(p.viewport.inner...)
+    draw(p.axes)
+    # title and labels
+
+    GR.uselinespec(" ")
+    for g in p.geoms
+        draw(g)
+    end
+    return nothing
+end
+
+function draw(p::Plot)
+    (p.viewport == emptyviewport) && return nothing
+    draw(p.basicplot)
+    location = get(p.specs, :location, 0)
+    draw(p.legend, p.geoms, location)
+    get(p.specs, :colorbar, false) && draw(p.colorbar)
+end
+
+function draw(p::PolarHeatmapPlot)
+    (p.viewport == emptyviewport) && return nothing
+    draw(p.basicplot)
+    # Redraw the axes
+    draw(p.axes)
+    get(p.specs, :colorbar, false) && draw(p.colorbar)
+end
+
+function draw(p::HexbinPlot)
+    (p.viewport == emptyviewport) && return nothing
+    paintbackground(p)
+    # Define the viewport
+    GR.setviewport(p.viewport.inner...)
+    draw(p.axes)
+    # p.geoms must contain Geometry{:hexbin} objects
+    cntmax = draw(p.geoms[1])
+    if get(p.specs, :colorbar, false) && cntmax > 0
+        draw(p.colorbar, (0.0, cntmax))
+    end
+    return nothing
 end
