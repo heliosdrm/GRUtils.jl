@@ -211,6 +211,23 @@ end
 @plotfunction(contour, geom = :contour, axes = :axes3d, setargs = _setargs_contour, kwargs = (rotation=0, tilt=90))
 @plotfunction(contourf, geom = :contourf, axes = :axes3d, setargs = _setargs_contour, kwargs = (rotation=0, tilt=90, tickdir=-1))
 
+_setargs_tricont(f, x, y, z, h; kwargs...) = ((x, y, z, h), kwargs...)
+
+function _setargs_tricont(f, x, y, z; kwargs...)
+    levels = Int(get(kwargs, :levels, 20))
+    zmin, zmax = get(kwargs, :zlim, (_min(z), _max(z)))
+    hmin, hmax = GR.adjustrange(zmin, zmax)
+    h = linspace(hmin, hmax, levels)
+    return ((x, y, z, h), kwargs)
+end
+
+function _setargs_tricont(f, x, y, fz::Function, args...; kwargs...)
+    z = fz.(x, y)
+    _setargs_tricont(f, x, y, z, args...; kwargs...)
+end
+
+@plotfunction(tricont, geom = :tricont, axes = :axes3d, setargs = _setargs_tricont, kwargs = (colorbar=true, rotation=0, tilt=90))
+
 function _setargs_surface(f, x, y, z; kwargs...)
     if length(x) == length(y) == length(z)
         x, y, z = GR.gridit(vec(x), vec(y), vec(z), 200, 200)
@@ -221,6 +238,7 @@ end
 
 @plotfunction(surface, geom = :surface, axes = :axes3d, setargs = _setargs_surface, kwargs = (colorbar=true, accelerate=true))
 @plotfunction(wireframe, geom = :wireframe, axes = :axes3d, setargs = _setargs_surface)
+@plotfunction(trisurf, geom = :trisurf, axes = :axes3d, setargs = _setargs_tricont, kwargs = (colorbar=true,))
 
 function _setargs_heatmap(f, data; kwargs...)
     w, h = size(data)

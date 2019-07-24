@@ -115,9 +115,14 @@ GRUtils.contourf(x, y, z)
 GRUtils.contourf(x, y, z, levels=10)
 GRUtils.contourf(x, y, z, majorlevels=3)
 GRUtils.contourf(x, y, z, colorbar=false)
+# Tricontour
+GRUtils.tricont(x, y, z)
+GRUtils.tricont(x, y, z, levels=10)
+GRUtils.tricont(x, y, z, colorbar=false)
 # Surface
 GRUtils.surface(x, y, z)
 GRUtils.wireframe(x, y, z)
+GRUtils.trisurf(x, y, z)
 # Create example grid data
 x = LinRange(-2, 2, 40)
 y = LinRange(0, pi, 20)

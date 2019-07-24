@@ -297,6 +297,16 @@ function draw(g::Geometry{:contourf})
     GR.restorestate()
 end
 
+function draw(g::Geometry{:tricont})
+    GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
+    clabels = get(g.attributes, :clabels, 1.0)
+    # clabels = rem(get(g.attributes, :clabels, 1.0), 1000)
+    GR.tricontour(g.x, g.y, g.z, g.c)
+    GR.restorestate()
+end
+
+
 function draw(g::Geometry{:surface})
     GR.savestate()
     GR.settransparency(get(g.attributes, :alpha, 1.0))
@@ -314,6 +324,14 @@ function draw(g::Geometry{:wireframe})
     GR.settransparency(get(g.attributes, :alpha, 1.0))
     GR.setfillcolorind(0)
     GR.surface(g.x, g.y, g.z, GR.OPTION_FILLED_MESH)
+    GR.restorestate()
+end
+
+function draw(g::Geometry{:trisurf})
+    GR.savestate()
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
+    GR.setfillcolorind(0)
+    GR.trisurface(g.x, g.y, g.z)
     GR.restorestate()
 end
 
