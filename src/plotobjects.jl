@@ -38,20 +38,69 @@ end
 
 abstract type AbstractPlot end
 
-"""
-(not parametric, just a named tuple)
-"""
-mutable struct PlotObject <: AbstractPlot
+mutable struct BasicPlot <: AbstractPlot
     viewport::Viewport
     axes::Axes
     geoms::Vector{<:Geometry}
-    legend::Legend
-    colorbar::Colorbar
     specs::Dict
 end
 
-function PlotObject(geoms, axes, legend=Legend(), colorbar=Colorbar(); kwargs...)
+function BasicPlot(geoms::Vector{<:Geometry}, axes::Axes, margins=zeros(4); kwargs...)
     subplot = get(kwargs, :subplot, unitsquare)
+    if haskey(kwargs, :ratio)
+        viewport = Viewport(subplot, kwargs[:ratio], margins)
+    else
+        viewport = Viewport(subplot)
+        viewport.inner .-= margins
+    end
+    BasicPlot(viewport, axes, geoms; kwargs...)
+end
+
+function BasicPlot(viewport, axes, geoms; kwargs...)
+    specs = Dict(:subplot => unitsquare, kwargs...)
+    BasicPlot(viewport, axes, geoms, specs)
+end
+
+BasicPlot(; kwargs...) = BasicPlot(Viewport(), Axes{nothing}(), Geometry[]; kwargs...)
+
+BasicPlot(p::BasicPlot) = p
+
+macro PlotType(typename, extrafields...)
+    fields = quote end
+    for f in extrafields
+        # if typeof(f) <: Expr && f.head ∈ (:(=), :kw)
+        #     push!(fields.args, :($(f.args[1])::$(f.args[2])))
+        # end
+        push!(fields.args, f)
+    end
+    expr = quote
+        mutable struct $typename <: AbstractPlot
+            basicplot::BasicPlot
+            $fields
+        end
+        function Base.getproperty(p::$typename, s::Symbol)
+            if s ∈ fieldnames(BasicPlot)
+                return getfield(getfield(p, :basicplot), s)
+            else
+                return getfield(p, s)
+            end
+        end
+    end
+    esc(expr)
+end
+
+@PlotType PlotObject legend::Legend colorbar::Colorbar
+
+# mutable struct PlotObject <: AbstractPlot
+#     viewport::Viewport
+#     axes::Axes
+#     geoms::Vector{<:Geometry}
+#     legend::Legend
+#     colorbar::Colorbar
+#     specs::Dict
+# end
+
+function PlotObject(geoms, axes, legend, colorbar; kwargs...)
     margins = zeros(4)
     if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
         margins[2] = 0.1
@@ -61,22 +110,11 @@ function PlotObject(geoms, axes, legend=Legend(), colorbar=Colorbar(); kwargs...
     if legend ≠ emptylegend && location ∈ legend_locations[:right_out]
         margins[2] = legend.size[1]
     end
-    if haskey(kwargs, :ratio)
-        viewport = Viewport(subplot, kwargs[:ratio], margins)
-    else
-        viewport = Viewport(subplot)
-        viewport.inner .-= margins
-    end
-    PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
+    basicplot = BasicPlot(geoms, axes; kwargs...)
+    PlotObject(basicplot, legend, colorbar)
 end
 
-function PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
-    specs = Dict(:subplot => unitsquare, kwargs...)
-    PlotObject(viewport, axes, geoms, legend, colorbar, specs)
-end
-
-PlotObject(; kwargs...) = PlotObject(Viewport(), Axes{nothing}(), Geometry[], Legend(), Colorbar(); kwargs...)
-
+PlotObject(; kwargs...) = PlotObject(BasicPlot(; kwargs...), Legend(), Colorbar())
 PlotObject(p::PlotObject) = p
 
 mutable struct PolarHeatmapPlot <: AbstractPlot
