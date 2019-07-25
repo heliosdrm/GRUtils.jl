@@ -1,4 +1,5 @@
-mutable struct Geometry{K}
+mutable struct Geometry
+    kind::Symbol
     x::Vector{Float64}
     y::Vector{Float64}
     z::Vector{Float64}
@@ -11,7 +12,7 @@ end
 # Partial constructor with keyword arguments
 emptyvector(T::DataType) = Array{T,1}(undef,0)
 
-Geometry{K}(;
+Geometry(kind::Symbol;
     x=emptyvector(Float64),
     y=emptyvector(Float64),
     z=emptyvector(Float64),
@@ -19,41 +20,41 @@ Geometry{K}(;
     spec="",
     label="",
     kwargs...) where K =
-    Geometry{K}(x, y, z, c, spec, label, Dict{Symbol,Float64}(kwargs...))
+    Geometry(kind, x, y, z, c, spec, label, Dict{Symbol,Float64}(kwargs...))
 
-function Geometry(g::Geometry{K}; kwargs...) where K
+function Geometry(g::Geometry; kwargs...)
     kwargs = (; g.attributes..., kwargs...)
-    typeof(g)(; x=g.x, y=g.y, z=g.z, c=g.z, spec=g.spec, label=g.label, kwargs...)
+    Geometry(g.kind, g.x, g.y, g.z, g.z, g.spec, g.label; kwargs...)
 end
 
 # Complex arguments processed as pair of real, imaginary values
-geometries(G, x::AbstractVecOrMat{<:Complex}, args...; kwargs...) =
-    geometries(G, real(x), imag(x), args...; kwargs...)
+geometries(K, x::AbstractVecOrMat{<:Complex}, args...; kwargs...) =
+    geometries(K, real(x), imag(x), args...; kwargs...)
 
 # Parse function arguments
-geometries(G, x::AbstractVecOrMat{<:Real},
-    f::Function, args...; kwargs...) = geometries(G, x, f.(x), args...; kwargs...)
+geometries(K, x::AbstractVecOrMat{<:Real},
+    f::Function, args...; kwargs...) = geometries(K, x, f.(x), args...; kwargs...)
 
-geometries(G, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real},
+geometries(K, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real},
     f::Function, args...; kwargs...) =
-    geometries(G, x, y, f.(x, y), args...; kwargs...)
+    geometries(K, x, y, f.(x, y), args...; kwargs...)
 
-geometries(G, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real}, z::AbstractVecOrMat{<:Real},
-    f::Function, args...; kwargs...) = geometries(G, x, y, z, f.(x, y, z), args...; kwargs...)
+geometries(K, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real}, z::AbstractVecOrMat{<:Real},
+    f::Function, args...; kwargs...) = geometries(K, x, y, z, f.(x, y, z), args...; kwargs...)
 
 # Generic functions with given x, y, z, etc. as `AbstractVector`
-geometries(G::Type{<:Geometry},
+geometries(::Val{kind},
     x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat,
-    c::AbstractVecOrMat; kwargs...) = [G(; x=x, y=y, z=z, c=c, kwargs...)]
+    c::AbstractVecOrMat; kwargs...) where kind = [Geometry(kind; x=x, y=y, z=z, c=c, kwargs...)]
 
-geometries(G::Type{<:Geometry},
+geometries(::Val{kind},
     x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat;
-    kwargs...) = [G(; x=x, y=y, z=z, kwargs...)]
+    kwargs...) where kind = [Geometry(kind; x=x, y=y, z=z, kwargs...)]
 
-geometries(G::Type{<:Geometry}, x::AbstractVecOrMat, y::AbstractVecOrMat;
-    kwargs...) = [G(; x=x, y=y, kwargs...)]
+geometries(::Val{kind}, x::AbstractVecOrMat, y::AbstractVecOrMat;
+    kwargs...) where kind = [Geometry(kind; x=x, y=y, kwargs...)]
 
-geometries(G::Type{<:Geometry}, y; kwargs...) = [G(; x=1:length(y), y=y, kwargs...)]
+geometries(::Val{kind}, y; kwargs...) where kind = [Geometry(kind; x=1:length(y), y=y, kwargs...)]
 
 # Particular functions
 
@@ -62,62 +63,65 @@ column(a::AbstractVector, i::Int) = collect(a)
 column(a::AbstractMatrix, i::Int) = a[:,i]
 
 ## Line, step and stem (lines with specification):
-const MarkedLine = Union{Geometry{:line}, Geometry{:step}, Geometry{:stem}}
-function geometries(G::Type{<:MarkedLine},
-    x::AbstractVecOrMat, y::AbstractVecOrMat, spec::String=""; kwargs...)
+# const MarkedLine = Union{Val{:line}, Val{:step}, Val{:stem}}
+for kind in ("line", "step", "stem")
+    @eval function geometries(::Val{Symbol($kind)},
+        x::AbstractVecOrMat, y::AbstractVecOrMat, spec::String=""; kwargs...)
 
-    # tbd: check size of x, y
-    [G(; x=column(x,i), y=column(y,i), spec=spec, kwargs...)
-    for i = 1:size(y,2)]
+        [Geometry(Symbol($kind); x=column(x,i), y=column(y,i), spec=spec, kwargs...)
+        for i = 1:size(y,2)]
+    end
 end
 
-geometries(G::Type{<:MarkedLine}, y::AbstractVecOrMat, spec::String=""; kwargs...) =
-    geometries(G, 1:size(y,1), y, spec; kwargs...)
+const MarkedLine = Union{Val{:line}, Val{:step}, Val{:stem}}
+geometries(K::Type{<:MarkedLine}, y::AbstractVecOrMat, spec::String=""; kwargs...) =
+    geometries(K, 1:size(y,1), y, spec; kwargs...)
 
 # Scatter
-function geometries(G::Type{Geometry{:scatter}},
+function geometries(::Val{:scatter},
     x::AbstractVector, y::AbstractVector,
     z::AbstractVector=emptyvector(Float64),
     c::AbstractVector=emptyvector(Float64); kwargs...)
 
-    # tbd: check size of x, y
-    [G(; x=column(x,1), y=column(y,1), z=column(z,1), c=column(c,1), kwargs...)]
+    [Geometry(:scatter; x=column(x,1), y=column(y,1), z=column(z,1), c=column(c,1), kwargs...)]
 end
 
 # 3D line
-function geometries(G::Type{Geometry{:line3d}},
+function geometries(::Val{:line3d},
     x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat, spec::String=""; kwargs...)
 
-    [G(; x=column(x,i), y=column(y,i), z=column(z,i), spec=spec, kwargs...)
+    [Geometry(:line3d; x=column(x,i), y=column(y,i), z=column(z,i), spec=spec, kwargs...)
     for i = 1:size(y,2)]
 end
 
 
 # Polar plot
-function geometries(G::Type{Geometry{:polarline}},
+function geometries(::Val{:polarline},
     x::AbstractVecOrMat, y::AbstractVecOrMat, spec::String=""; kwargs...)
 
-    [G(; x=column(x,i), y=column(y,i), spec=spec, kwargs...)
+    [Geometry(:polarline; x=column(x,i), y=column(y,i), spec=spec, kwargs...)
     for i = 1:size(y,2)]
 end
 
 # `draw` methods
 
-hasline(mask) = ( mask == 0x00 || (mask & 0x01 != 0) )
-hasmarker(mask) = ( mask & 0x02 != 0)
-
-function draw(g::Geometry{:line})
+function draw(g::Geometry)
     GR.savestate()
     GR.settransparency(get(g.attributes, :alpha, 1.0))
-    mask = GR.uselinespec(g.spec)
-    hasline(mask) && GR.polyline(g.x, g.y)
-    hasmarker(mask) && GR.polymarker(g.x, g.y)
+    draw(g, Val(g.kind))
     GR.restorestate()
 end
 
-function draw(g::Geometry{:step})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+hasline(mask) = ( mask == 0x00 || (mask & 0x01 != 0) )
+hasmarker(mask) = ( mask & 0x02 != 0)
+
+function draw(g::Geometry, ::Val{:line})
+    mask = GR.uselinespec(g.spec)
+    hasline(mask) && GR.polyline(g.x, g.y)
+    hasmarker(mask) && GR.polymarker(g.x, g.y)
+end
+
+function draw(g::Geometry, ::Val{:step})
     mask = GR.uselinespec(g.spec)
     if hasline(mask)
         n = length(g.x)
@@ -160,12 +164,9 @@ function draw(g::Geometry{:step})
         GR.polyline(xs, ys)
     end
     hasmarker(mask) && GR.polymarker(g.x, g.y)
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:stem})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:stem})
     GR.setlinecolorind(1)
     GR.polyline([minimum(g.x), maximum(g.x)], [0.0, 0.0])
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
@@ -174,7 +175,6 @@ function draw(g::Geometry{:stem})
         GR.polyline([g.x[i], g.x[i]], [0.0, g.y[i]])
         GR.polymarker([g.x[i]], [g.y[i]])
     end
-    GR.restorestate()
 end
 
 # Normalize a color c with the range [cmin, cmax]
@@ -185,9 +185,7 @@ function normalize_color(c, cmin, cmax)
     return c
 end
 
-function draw(g::Geometry{:scatter})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:scatter})
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
     if !isempty(g.z) || !isempty(g.c)
         if !isempty(g.c)
@@ -204,12 +202,9 @@ function draw(g::Geometry{:scatter})
     else
         GR.polymarker(g.x, g.y)
     end
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:bar})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:bar})
     for i = 1:2:length(g.x)
         GR.setfillcolorind(989)
         GR.setfillintstyle(GR.INTSTYLE_SOLID)
@@ -218,20 +213,14 @@ function draw(g::Geometry{:bar})
         GR.setfillintstyle(GR.INTSTYLE_HOLLOW)
         GR.fillrect(g.x[i], g.x[i+1], g.y[i], g.y[i+1])
     end
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:line3d})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:line3d})
     GR.uselinespec(g.spec)
     GR.polyline3d(g.x, g.y, g.z)
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:scatter3})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:scatter3})
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
     if !isempty(g.c)
         cmin, cmax = extrema(g.c)
@@ -244,12 +233,9 @@ function draw(g::Geometry{:scatter3})
     else
         GR.polymarker3d(g.x, g.y, g.z)
     end
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:polarline})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:polarline})
     GR.uselinespec(g.spec)
     ymin, ymax = extrema(g.y)
     ρ = (g.y .- ymin) ./ (ymax .- ymin)
@@ -257,12 +243,9 @@ function draw(g::Geometry{:polarline})
     x = ρ .* cos.(g.x)
     y = ρ .* sin.(g.x)
     GR.polyline(x, y)
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:polarbar})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:polarbar})
     xmin, xmax = extrema(g.x)
     ymin, ymax = extrema(g.y)
     ρ = g.y ./ ymax # 2 .* (g.y ./ ymax) .- 0.5)
@@ -277,67 +260,45 @@ function draw(g::Geometry{:polarbar})
         GR.fillarea([ρ[i] * cos(θ[i]), ρ[i] * cos(θ[i+1]), ρ[i+1] * cos(θ[i+1]), ρ[i+1] * cos(θ[i])],
                     [ρ[i] * sin(θ[i]), ρ[i] * sin(θ[i+1]), ρ[i+1] * sin(θ[i+1]), ρ[i+1] * sin(θ[i])])
     end
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:contour})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:contour})
     clabels = get(g.attributes, :clabels, 1.0)
     GR.contour(g.x, g.y, g.c, g.z, Int(clabels))
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:contourf})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:contourf})
     # clabels limited from 0 to 999
     clabels = rem(get(g.attributes, :clabels, 1.0), 1000)
     GR.contourf(g.x, g.y, g.c, g.z, Int(clabels))
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:tricont})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:tricont})
     clabels = get(g.attributes, :clabels, 1.0)
     # clabels = rem(get(g.attributes, :clabels, 1.0), 1000)
     GR.tricontour(g.x, g.y, g.z, g.c)
-    GR.restorestate()
 end
 
-
-function draw(g::Geometry{:surface})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:surface})
     if get(g.attributes, :accelerate, 1.0) == 0.0
         GR.surface(g.x, g.y, g.z, GR.OPTION_COLORED_MESH)
     else
         GR.gr3.clear()
         GR.gr3.surface(g.x, g.y, g.z, GR.OPTION_COLORED_MESH)
     end
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:wireframe})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:wireframe})
     GR.setfillcolorind(0)
     GR.surface(g.x, g.y, g.z, GR.OPTION_FILLED_MESH)
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:trisurf})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:trisurf})
     GR.setfillcolorind(0)
     GR.trisurface(g.x, g.y, g.z)
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:heatmap})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:heatmap})
     w = length(g.x)
     h = length(g.y)
     cmap = colormap()
@@ -345,17 +306,12 @@ function draw(g::Geometry{:heatmap})
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
     rgba = [to_rgba(value, cmap) for value ∈ data]
     GR.drawimage(0.5, w + 0.5, h + 0.5, 0.5, w, h, rgba)
-    GR.restorestate()
 end
 
-function draw(g::Geometry{:hexbin})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:hexbin})
     nbins = Int(get(g.attributes, :nbins, 40.0))
-    cntmax = GR.hexbin(g.x, g.y, nbins)
-    GR.restorestate()
-    cntmax
-end    
+    cntmax = GR.hexbin(g.x, g.y, nbins) #!!!
+end
 
 function colormap()
     rgb = zeros(256, 3)
@@ -379,9 +335,7 @@ function to_rgba(value, cmap)
     round(UInt32, g * 255) << 8  + round(UInt32, r * 255)
 end
 
-function draw(g::Geometry{:polarheatmap})
-    GR.savestate()
-    GR.settransparency(get(g.attributes, :alpha, 1.0))
+function draw(g::Geometry, ::Val{:polarheatmap})
     w = length(g.x)
     h = length(g.y)
     cmap = colormap()
@@ -389,5 +343,4 @@ function draw(g::Geometry{:polarheatmap})
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
     colors = Int[round(Int, 1000 + _i * 255) for _i in data]
     GR.polarcellarray(0, 0, 0, 360, 0, 1, w, h, colors)
-    GR.restorestate()
 end

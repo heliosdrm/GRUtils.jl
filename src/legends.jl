@@ -1,15 +1,20 @@
-legend_kinds = [Geometry{k} for k in (:line, :line3d)]
+const legend_kinds = (:line, :line3d)
 
-function guide(g::Geometry{:line}, x, y)
+function guide(g::Geometry, x, y)
     GR.savestate()
-    if haskey(g.attributes, :alpha)
-        GR.settransparency(g.attributes[:alpha])
-    end
+    GR.settransparency(get(g.attributes, :alpha, 1.0))
+    guide(g.kind, g, x, y)
+    GR.restorestate()
+end
+
+function guide(::Val{:line}, g, x, y)
     mask = GR.uselinespec(g.spec)
     hasline(mask) && GR.polyline(x .+ [-0.03, 0.03], y .+ [0.0, 0.0])
     hasmarker(mask) && GR.polymarker(x .+ [-0.02, 0.02], y .+ [0.0, 0.0])
-    GR.restorestate()
+    return nothing
 end
+guide(::Val{:line3d}, args...) = guide(Val(:line), g, x, y)
+guide(kind, g, x, y) = nothing
 
 struct Legend
     size::Tuple{Float64, Float64}
@@ -27,7 +32,7 @@ function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
     GR.selntran(0)
     GR.setscale(0)
     for g in geoms
-        if !isempty(g.label) && typeof(g) ∈ legend_kinds
+        if !isempty(g.label) && g.kind ∈ legend_kinds
             row += 1
             # New column if the limit is exceeded
             if row > maxrows
@@ -116,7 +121,7 @@ function draw(lg::Legend, geoms, location=1)
     for g in geoms
         (c > length(lg.cursors)) && break
         cursor = lg.cursors[c]
-        if !isempty(g.label) && typeof(g) ∈ legend_kinds
+        if !isempty(g.label) && g.kind ∈ legend_kinds
             guide(g, cursor[1] - 0.04, cursor[2])
             text(cursor[1], cursor[2], g.label, true)
             c += 1

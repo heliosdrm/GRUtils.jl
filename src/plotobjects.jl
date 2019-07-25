@@ -119,7 +119,7 @@ end
 
 @PlotType HexbinPlot colorbar::Colorbar
 
-function HexbinPlot(geoms::Vector{Geometry{:hexbin}}, axes::Axes; kwargs...)
+function HexbinPlot(geoms::Vector{Geometry}, axes::Axes; kwargs...)
     colorbar = Colorbar(axes)
     margins = zeros(4)
     if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar

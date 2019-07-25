@@ -44,12 +44,12 @@ macro plotfunction(fname, options...)
                 # Keep all specs
                 kwargs = (; p.specs..., kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
-                geoms = [p.geoms; geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)]
+                geoms = [p.geoms; geometries(Val($geom_k), args...; geom_attributes(;kwargs...)...)]
             else
                 # Only keep previous subplot
                 kwargs = (subplot = p.specs[:subplot], kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
-                geoms = geometries(Geometry{$geom_k}, args...; geom_attributes(;kwargs...)...)
+                geoms = geometries(Val($geom_k), args...; geom_attributes(;kwargs...)...)
             end
             axes = Axes{$axes_k}(geoms; kwargs...)
             f.plots[end] = $plottype(geoms, axes; kind=$plotkind, plot_specs(; kwargs...)...)
