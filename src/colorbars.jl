@@ -22,7 +22,7 @@ function Colorbar(axes, colors=256)
     else
         scale = axscale & ~GR.OPTION_FLIP_X
     end
-    if all(axes.perspective .≠ 0) || isa(axes, Axes{:axespolar})
+    if all(axes.perspective .≠ 0) || axes.kind == :polar
         margin = 0.05
     else
         margin = 0.0

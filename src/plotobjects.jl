@@ -61,7 +61,7 @@ function BasicPlot(viewport, axes, geoms; kwargs...)
     BasicPlot(viewport, axes, geoms, specs)
 end
 
-BasicPlot(; kwargs...) = BasicPlot(Viewport(), Axes{nothing}(), Geometry[]; kwargs...)
+BasicPlot(; kwargs...) = BasicPlot(Viewport(), Axes(:none), Geometry[]; kwargs...)
 
 macro PlotType(typename, extrafields...)
     fields = quote end

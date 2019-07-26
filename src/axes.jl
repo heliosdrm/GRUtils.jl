@@ -11,7 +11,8 @@ const AxisTickData  = Tuple{Float64,Tuple{Float64,Float64},Int}
     :grid (0 is none, others yet undefined)
     :tickdir (sign for direction, or 0 for no tick marks)
 """
-struct Axes{A}
+struct Axes
+    kind::Symbol
     ranges::Dict{Symbol, AxisRange}
     tickdata::Dict{Symbol, AxisTickData}
     ticklabels::Dict{Symbol, <:Function}
@@ -20,30 +21,30 @@ struct Axes{A}
 end
 
 # Empty axes constructor
-Axes{A}(; ranges = Dict{Symbol, AxisRange}(),
-       tickdata = Dict{Symbol, AxisTickData}(),
-       ticklabels = Dict{Symbol, Function}(),
-       perspective = Int[],
-       options = Dict{Symbol, Int}()) where A =
-       Axes{A}(ranges, tickdata, ticklabels, perspective, options)
+Axes(kind::Symbol; ranges = Dict{Symbol, AxisRange}(),
+    tickdata = Dict{Symbol, AxisTickData}(),
+    ticklabels = Dict{Symbol, Function}(),
+    perspective = Int[],
+    options = Dict{Symbol, Int}()) =
+    Axes(kind, ranges, tickdata, ticklabels, perspective, options)
 
 # Constructor with kind, plot data and figure specs (as kwargs...)
-function Axes{A}(geoms::Array{<:Geometry}; panzoom=nothing, kwargs...) where {A}
+function Axes(K::Val{kind}, geoms::Array{<:Geometry}; panzoom=nothing, kwargs...) where kind
     # Set limits based on data
     rangevalues = minmax(geoms; kwargs...)
     ranges = Dict(zip((:x, :y, :z, :c), rangevalues))
     adjustranges!(ranges, panzoom; kwargs...)
     # Configure axis scale and ticks
-    tickdata = set_ticks(Axes{A}, ranges; kwargs...)
+    tickdata = set_ticks(K, ranges; kwargs...)
     # Tick labels
-    ticklabels = set_ticklabels(Axes{A}; kwargs...)
-    perspective = set_perspective(Axes{A}; kwargs...)
+    ticklabels = set_ticklabels(K; kwargs...)
+    perspective = set_perspective(K; kwargs...)
     options = Dict{Symbol, Int}(
-        :scale => set_scale(Axes{A}; kwargs...),
+        :scale => set_scale(K; kwargs...),
         :grid => Int(get(kwargs, :grid, 1))
         )
     haskey(kwargs, :tickdir) && (options[:tickdir] = kwargs[:tickdir])
-    Axes{A}(ranges, tickdata, ticklabels, perspective, options)
+    Axes(kind, ranges, tickdata, ticklabels, perspective, options)
 end
 
 # Calculation of data ranges
@@ -133,14 +134,14 @@ function adjustranges!(ranges::Dict{Symbol, AxisRange}, panzoom; kwargs...)
 end
 
 # Set ticks for the different types of axes
-function set_ticks(::Type{Axes{:axes2d}}, ranges; kwargs...)
+function set_ticks(::Val{:axes2d}, ranges; kwargs...)
     major_count = 5
     xaxis = set_axis(:x, ranges[:x], major_count; kwargs...)
     yaxis = set_axis(:y, ranges[:y], major_count; kwargs...)
     Dict(:x => xaxis, :y => yaxis)
 end
 
-function set_ticks(::Type{Axes{:axes3d}}, ranges; kwargs...)
+function set_ticks(::Val{:axes3d}, ranges; kwargs...)
     major_count = 2
     xaxis = set_axis(:x, ranges[:x], major_count; kwargs...)
     yaxis = set_axis(:y, ranges[:y], major_count; kwargs...)
@@ -148,7 +149,7 @@ function set_ticks(::Type{Axes{:axes3d}}, ranges; kwargs...)
     Dict(:x => xaxis, :y => yaxis, :z => zaxis)
 end
 
-function set_ticks(::Type{Axes{:axespolar}}, ranges; kwargs...)
+function set_ticks(::Val{:polar}, ranges; kwargs...)
     major_count = 2
     xaxis = set_axis(:x, ranges[:x], major_count; kwargs..., xlog=false, xflip=false)
     yaxis = set_axis(:y, ranges[:y], major_count; kwargs..., ylog=false, yflip=false)
@@ -175,7 +176,7 @@ function set_axis(axname, axrange, major; kwargs...)
 end
 
 # Set tick labels - only working for axes2d
-function set_ticklabels(::Type{Axes{:axes2d}}; kwargs...)
+function set_ticklabels(::Val{:axes2d}; kwargs...)
     ticklabels = Dict{Symbol, Function}()
     if haskey(kwargs, :xticklabels) || haskey(kwargs, :yticklabels)
         ticklabels[:x] = get(kwargs, :xticklabels, identity) |> ticklabel_fun
@@ -210,10 +211,10 @@ function set_scale(::Any; kwargs...)
     return scale
 end
 
-set_scale(::Type{Axes{:axespolar}}; kwargs...) = 0
+set_scale(::Val{:polar}; kwargs...) = 0
 
 # Set the perspective (only for axes3d)
-function set_perspective(::Type{Axes{:axes3d}}; kwargs...)
+function set_perspective(::Val{:axes3d}; kwargs...)
     rotation = Int(get(kwargs, :rotation, 40))
     tilt = Int(get(kwargs, :tilt, 70))
     [rotation, tilt]
@@ -222,7 +223,9 @@ end
 set_perspective(::Any; kwargs...) = [0, 0]
 
 # `draw` methods
-function draw(ax::Axes{:axes2d})
+function draw(ax::Axes)
+    # Special draw function for polar axes
+    ax.kind == :polar && return draw_polaraxes(ax)
     # Set the window of data seen
     GR.setwindow(ax.ranges[:x]..., ax.ranges[:y]...)
     # Modify scale (log or flipped axes)
@@ -235,50 +238,37 @@ function draw(ax::Axes{:axes2d})
     GR.setcharheight(charheight)
     xtick, xorg, majorx = ax.tickdata[:x]
     ytick, yorg, majory = ax.tickdata[:y]
-    # draw
-    (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
-    if !isempty(ax.ticklabels)
-        fx, fy = ax.ticklabels[:x], ax.ticklabels[:y]
-        GR.axeslbl(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize, fx, fy)
-    else
-        GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)
-    end
-    GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)
-end
-
-function draw(ax::Axes{:axes3d})
-    # Set the window of data seen and the perspective
-    GR.setwindow(ax.ranges[:x]..., ax.ranges[:y]...)
-    GR.setspace(ax.ranges[:z]..., ax.perspective...)
-    # Modify scale (log or flipped axes)
-    GR.setscale(ax.options[:scale])
-    # Set the specifications of guides (grid and ticks)
-    GR.setlinecolorind(1)
-    GR.setlinewidth(1)
-    ticksize, charheight = _tickcharheight()
-    haskey(ax.options, :tickdir) && (ticksize *= ax.options[:tickdir])
-    GR.setcharheight(charheight)
-    xtick, xorg, majorx = ax.tickdata[:x]
-    ytick, yorg, majory = ax.tickdata[:y]
-    ztick, zorg, majorz = ax.tickdata[:z]
-    # draw
-    if ax.perspective == [0, 90]
-        (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
-        GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)
-        GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)
-    else
-        if (ax.options[:grid] != 0)
-            GR.grid3d(xtick, 0, ztick, xorg[1], yorg[2], zorg[1], 2, 0, 2)
-            GR.grid3d(0, ytick, 0, xorg[1], yorg[2], zorg[1], 0, 2, 0)
+    if ax.kind == :axes3d
+        GR.setspace(ax.ranges[:z]..., ax.perspective...)
+        ztick, zorg, majorz = ax.tickdata[:z]
+        if ax.perspective == [0, 90]
+            (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
+            GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)
+            GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)
+        else
+            if (ax.options[:grid] != 0)
+                GR.grid3d(xtick, 0, ztick, xorg[1], yorg[2], zorg[1], 2, 0, 2)
+                GR.grid3d(0, ytick, 0, xorg[1], yorg[2], zorg[1], 0, 2, 0)
+            end
+            GR.axes3d(xtick, 0, ztick, xorg[1], yorg[1], zorg[1], majorx, 0, majorz, -ticksize)
+            GR.axes3d(0, ytick, 0, xorg[2], yorg[1], zorg[1], 0, majory, 0, ticksize)
         end
-        GR.axes3d(xtick, 0, ztick, xorg[1], yorg[1], zorg[1], majorx, 0, majorz, -ticksize)
-        GR.axes3d(0, ytick, 0, xorg[2], yorg[1], zorg[1], 0, majory, 0, ticksize)
+    elseif ax.kind == :axes2d
+        (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
+        if !isempty(ax.ticklabels)
+            fx, fy = ax.ticklabels[:x], ax.ticklabels[:y]
+            GR.axeslbl(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize, fx, fy)
+        else
+            GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)
+        end
+        GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)
     end
+    return nothing
 end
 
 signif(x, digits; base = 10) = round(x, sigdigits = digits, base = base)
 
-function draw(ax::Axes{:axespolar})
+function draw_polaraxes(ax)
     # Set the window as the unit circle
     GR.setwindow(-1.0, 1.0, -1.0, 1.0)
     # Modify scale (log or flipped axes)
@@ -318,6 +308,7 @@ function draw(ax::Axes{:axespolar})
         GR.textext(x, y, string(alpha, "^o"))
     end
     GR.restorestate()
+    return nothing
 end
 
 function _tickcharheight(vp=GR.inqviewport())

@@ -3,7 +3,7 @@ const legend_kinds = (:line, :line3d)
 function guide(g::Geometry, x, y)
     GR.savestate()
     GR.settransparency(get(g.attributes, :alpha, 1.0))
-    guide(g.kind, g, x, y)
+    guide(Val(g.kind), g, x, y)
     GR.restorestate()
 end
 

@@ -24,7 +24,7 @@ Geometry(kind::Symbol;
 
 function Geometry(g::Geometry; kwargs...)
     kwargs = (; g.attributes..., kwargs...)
-    Geometry(g.kind, g.x, g.y, g.z, g.z, g.spec, g.label; kwargs...)
+    Geometry(g.kind; x=g.x, y=g.y, z=g.z, c=g.c, spec=g.spec, label=g.label, kwargs...)
 end
 
 # Complex arguments processed as pair of real, imaginary values
@@ -71,11 +71,16 @@ for kind in ("line", "step", "stem")
         [Geometry(Symbol($kind); x=column(x,i), y=column(y,i), spec=spec, kwargs...)
         for i = 1:size(y,2)]
     end
+    @eval function geometries(K::Val{Symbol($kind)},
+        y::AbstractVecOrMat, spec::String=""; kwargs...)
+
+        geometries(K, 1:size(y,1), y, spec; kwargs...)
+    end
 end
 
-const MarkedLine = Union{Val{:line}, Val{:step}, Val{:stem}}
-geometries(K::Type{<:MarkedLine}, y::AbstractVecOrMat, spec::String=""; kwargs...) =
-    geometries(K, 1:size(y,1), y, spec; kwargs...)
+# const MarkedLine = Union{Val{:line}, Val{:step}, Val{:stem}}
+# geometries(K::Type{<:MarkedLine}, y::AbstractVecOrMat, spec::String=""; kwargs...) =
+#     geometries(K, 1:size(y,1), y, spec; kwargs...)
 
 # Scatter
 function geometries(::Val{:scatter},

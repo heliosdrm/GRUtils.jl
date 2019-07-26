@@ -51,7 +51,7 @@ macro plotfunction(fname, options...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
                 geoms = geometries(Val($geom_k), args...; geom_attributes(;kwargs...)...)
             end
-            axes = Axes{$axes_k}(geoms; kwargs...)
+            axes = Axes(Val($axes_k), geoms; kwargs...)
             f.plots[end] = $plottype(geoms, axes; kind=$plotkind, plot_specs(; kwargs...)...)
             draw(f)
         end
@@ -169,8 +169,8 @@ _setargs_scatter3(f, x, y, z; kwargs...) = ((x,y,z), kwargs)
 _setargs_scatter3(f, x, y, z, c; kwargs...) = ((x,y,z,c), (;colorbar=true, kwargs...))
 @plotfunction(scatter3, geom = :scatter3, axes = :axes3d, setargs = _setargs_scatter3, kwargs = (ratio=1.0,))
 
-@plotfunction(polar, geom = :polarline, axes = :axespolar, kwargs = (ratio=1.0,))
-@plotfunction(polarhistogram, geom = :polarbar, axes = :axespolar, kind = :polarhist, setargs = _setargs_hist, kwargs = (ratio=1.0,))
+@plotfunction(polar, geom = :polarline, axes = :polar, kwargs = (ratio=1.0,))
+@plotfunction(polarhistogram, geom = :polarbar, axes = :polar, kind = :polarhist, setargs = _setargs_hist, kwargs = (ratio=1.0,))
 
 function _setargs_contour(f, x, y, z, h; kwargs...)
     if length(x) == length(y) == length(z)
@@ -250,7 +250,7 @@ function _setargs_heatmap(f, data; kwargs...)
 end
 
 @plotfunction(heatmap, geom = :heatmap, axes = :axes2d, setargs = _setargs_heatmap, kwargs = (colorbar=true, tickdir=-1))
-@plotfunction(polarheatmap, geom = :polarheatmap, axes = :axespolar, plottype = PolarHeatmapPlot, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0))
+@plotfunction(polarheatmap, geom = :polarheatmap, axes = :polar, plottype = PolarHeatmapPlot, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0))
 
 _setargs_hexbin(f, x, y; kwargs...) = ((x, y, emptyvector(Float64), [0.0, 1.0]), kwargs)
 @plotfunction(hexbin, geom = :hexbin, axes = :axes2d, plottype = HexbinPlot, setargs = _setargs_hexbin, kwargs = (colorbar=true,))
