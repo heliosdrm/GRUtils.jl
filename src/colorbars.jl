@@ -16,7 +16,7 @@ function Colorbar(axes, colors=256)
         return emptycolorbar
     end
     axscale = get(axes.options, :scale, 0)
-    tick = get(axes.options, :clog, false) ? 2 : 0.5 * GR.tick(range...)
+    tick = get(axes.options, :clog, false) ? 2.0 : 0.5 * GR.tick(range...)
     if get(axes.options, :yflip, false)
         scale = axscale & ~GR.OPTION_FLIP_Y & ~GR.OPTION_FLIP_X
     else
@@ -33,6 +33,7 @@ end
 function draw(cb::Colorbar, range=cb.range)
     cb == emptycolorbar && return nothing
     zmin, zmax = range
+    tick = (range == cb.range) ? cb.tick : 0.5 * GR.tick(zmin, zmax)
     mainvp = GR.inqviewport()
     _, charheight = _tickcharheight(mainvp)
     GR.savestate()
@@ -43,7 +44,7 @@ function draw(cb::Colorbar, range=cb.range)
     GR.cellarray(0, 1, zmax, zmin, 1, cb.colors, l)
     GR.setlinecolorind(1)
     GR.setcharheight(charheight)
-    GR.axes(0, cb.tick, 1, zmin, 0, 1, 0.005)
+    GR.axes(0, tick, 1, zmin, 0, 1, 0.005)
     GR.restorestate()
     return nothing
 end

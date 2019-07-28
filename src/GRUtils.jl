@@ -47,7 +47,7 @@ include("text.jl")
 include("figures.jl")
 include("frontend.jl")
 
-const emptyfigure = Figure((0.0, 0.0), [BasicPlot()])
+const emptyfigure = Figure((0.0, 0.0), [PlotObject()])
 const currentfigure = Ref(emptyfigure)
 
 gcf() = (currentfigure[] == emptyfigure) ? Figure() : currentfigure[]

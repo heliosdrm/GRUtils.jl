@@ -113,8 +113,9 @@ end
 function draw(g::Geometry)
     GR.savestate()
     GR.settransparency(get(g.attributes, :alpha, 1.0))
-    draw(g, Val(g.kind))
+    clims = draw(g, Val(g.kind))
     GR.restorestate()
+    isa(clims, Nothing) ? Float64[] :  float(clims)
 end
 
 hasline(mask) = ( mask == 0x00 || (mask & 0x01 != 0) )
@@ -315,7 +316,8 @@ end
 
 function draw(g::Geometry, ::Val{:hexbin})
     nbins = Int(get(g.attributes, :nbins, 40.0))
-    cntmax = GR.hexbin(g.x, g.y, nbins) #!!!
+    cntmax = GR.hexbin(g.x, g.y, nbins)
+    [0.0, cntmax] # Return color limits
 end
 
 function colormap()

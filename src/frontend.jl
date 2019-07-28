@@ -1,7 +1,7 @@
 ## Select keyword arguments from list
 keys_geom_attributes = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :step_position]
 keys_plot_specs = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
-    :levels, :majorlevels, :colorbar, :ratio]
+    :levels, :majorlevels, :colorbar, :ratio, :overlay_axes]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
 
 geom_attributes(;kwargs...) = filter(p -> p.first ∈ keys_geom_attributes, kwargs)
@@ -27,7 +27,6 @@ macro plotfunction(fname, options...)
     geom_k = dict_op[:geom]
     axes_k = dict_op[:axes]
     setargs_fun = get(dict_op, :setargs, _setargs_default)
-    plottype = get(dict_op, :plottype, Plot)
     plotkind = get(dict_op, :kind, Symbol(fname))
     def_kwargs = get(dict_op, :kwargs, NamedTuple())
     fname! = Symbol(fname, :!)
@@ -52,7 +51,7 @@ macro plotfunction(fname, options...)
                 geoms = geometries(Val($geom_k), args...; geom_attributes(;kwargs...)...)
             end
             axes = Axes(Val($axes_k), geoms; kwargs...)
-            f.plots[end] = $plottype(geoms, axes; kind=$plotkind, plot_specs(; kwargs...)...)
+            f.plots[end] = PlotObject(axes, geoms; kind=$plotkind, plot_specs(; kwargs...)...)
             draw(f)
         end
         $fname(args...; kwargs...) = $fname!(gcf(), args...; kwargs...)
@@ -250,12 +249,12 @@ function _setargs_heatmap(f, data; kwargs...)
 end
 
 @plotfunction(heatmap, geom = :heatmap, axes = :axes2d, setargs = _setargs_heatmap, kwargs = (colorbar=true, tickdir=-1))
-@plotfunction(polarheatmap, geom = :polarheatmap, axes = :polar, plottype = PolarHeatmapPlot, setargs = _setargs_heatmap, kwargs = (colorbar=true, ratio=1.0))
+@plotfunction(polarheatmap, geom = :polarheatmap, axes = :polar, setargs = _setargs_heatmap, kwargs = (colorbar=true, overlay_axes=true, ratio=1.0))
 
 _setargs_hexbin(f, x, y; kwargs...) = ((x, y, emptyvector(Float64), [0.0, 1.0]), kwargs)
-@plotfunction(hexbin, geom = :hexbin, axes = :axes2d, plottype = HexbinPlot, setargs = _setargs_hexbin, kwargs = (colorbar=true,))
+@plotfunction(hexbin, geom = :hexbin, axes = :axes2d, setargs = _setargs_hexbin, kwargs = (colorbar=true,))
 
-function legend!(p::Plot, args...; location=1)
+function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend
     if haskey(p.specs, :location) && p.specs[:location] ∈ legend_locations[:right_out]
         p.viewport.inner[2] += p.legend.size[1]
@@ -274,6 +273,6 @@ end
 legend!(f::Figure, args...; kwargs...) = legend!(currentplot(f), args...; kwargs...)
 legend(args::AbstractString...; kwargs...) = legend!(gcf(), args...; kwargs...)
 
-hold!(p::Plot, state::Bool) = (p.specs[:hold] = state)
+hold!(p::PlotObject, state::Bool) = (p.specs[:hold] = state)
 hold!(f::Figure, state) = hold!(currentplot(f), state)
 hold(state) = hold!(gcf(), state)

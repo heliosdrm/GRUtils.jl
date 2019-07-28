@@ -4,7 +4,7 @@ Figure, just an alias for an array of Plots
 """
 struct Figure
     workstation::Tuple{Float64, Float64}
-    plots::Vector{<:AbstractPlot}
+    plots::Vector{PlotObject}
 end
 
 function Figure(sizepx=(600,450); kwargs...)
@@ -21,7 +21,7 @@ function Figure(sizepx=(600,450); kwargs...)
     wssize = mwidth / width * w
     ratio = (w > h) ? (1.0, float(h)/w) : (float(w)/h, 1.0)
     workstation = (wssize * ratio[1], wssize * ratio[2])
-    plots = AbstractPlot[BasicPlot()]
+    plots = AbstractPlot[PlotObject()]
     currentfigure[] = Figure(workstation, plots)
 end
 
@@ -40,7 +40,7 @@ function subplot!(f::Figure, nr, nc, p, replace=true)
         ymax = max(ymax, r/nr)
     end
     coords = [xmin, xmax, ymin, ymax]
-    po = BasicPlot(; subplot = coords)
+    po = PlotObject(; subplot = coords)
     if replace
         po = replaceplot!(f.plots, po)
     end

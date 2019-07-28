@@ -38,106 +38,59 @@ end
 
 abstract type AbstractPlot end
 
-mutable struct BasicPlot <: AbstractPlot
+mutable struct PlotObject <: AbstractPlot
     viewport::Viewport
     axes::Axes
     geoms::Vector{<:Geometry}
+    legend::Legend
+    colorbar::Colorbar
     specs::Dict
 end
 
-function BasicPlot(geoms::Vector{<:Geometry}, axes::Axes, margins=zeros(4); kwargs...)
+function PlotObject(axes::Axes, geoms::Vector{<:Geometry},
+    legend::Legend=Legend(geoms), colorbar::Colorbar=Colorbar(axes); kwargs...)
+
+    # Adapt margins to legend and colorbar
     subplot = get(kwargs, :subplot, unitsquare)
+    margins = plotmargins(legend, colorbar; kwargs...)
     if haskey(kwargs, :ratio)
         viewport = Viewport(subplot, kwargs[:ratio], margins)
     else
         viewport = Viewport(subplot)
         viewport.inner .-= margins
     end
-    BasicPlot(viewport, axes, geoms; kwargs...)
+    PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
 end
 
-function BasicPlot(viewport, axes, geoms; kwargs...)
+function PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
     specs = Dict(:subplot => unitsquare, kwargs...)
-    BasicPlot(viewport, axes, geoms, specs)
+    PlotObject(viewport, axes, geoms, legend, colorbar, specs)
 end
 
-BasicPlot(; kwargs...) = BasicPlot(Viewport(), Axes(:none), Geometry[]; kwargs...)
+PlotObject(; kwargs...) = PlotObject(Viewport(), Axes(:none), Geometry[], Legend(), Colorbar() ; kwargs...)
 
-macro PlotType(typename, extrafields...)
-    fields = quote end
-    for f in extrafields
-        push!(fields.args, f)
-    end
-    expr = quote
-        mutable struct $typename <: AbstractPlot
-            basicplot::BasicPlot
-            $fields
-        end
-        function Base.getproperty(p::$typename, s::Symbol)
-            if s ∈ fieldnames(BasicPlot)
-                return getfield(getfield(p, :basicplot), s)
-            else
-                return getfield(p, s)
-            end
-        end
-        BasicPlot(p::$typename) = p.basicplot
-    end
-    esc(expr)
-end
-
-@PlotType Plot legend::Legend colorbar::Colorbar
-# Plot(bp::BasicPlot) = Plot(bp, Legend(), Colorbar())
-# Plot(; kwargs...) = Plot(BasicPlot(; kwargs...), Legend(), Colorbar())
-
-function Plot(geoms, axes; kwargs...)
-    legend = Legend(geoms)
-    colorbar = Colorbar(axes)
-    margins = zeros(4)
+# Adjust margins - right now only the right one
+function plotmargins(legend, colorbar; kwargs...)
+    rightmargin = 0.0
     if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
-        margins[2] = 0.1
+        rightmargin = 0.1
     end
     location = get(kwargs, :location, 0)
     # Redefine viewport if legend is set outside
     if legend ≠ emptylegend && location ∈ legend_locations[:right_out]
-        margins[2] = legend.size[1]
+        rightmargin = legend.size[1]
     end
-    basicplot = BasicPlot(geoms, axes, margins; kwargs...)
-    Plot(basicplot, legend, colorbar)
+    [0.0, rightmargin, 0.0, 0.0]
 end
-
-@PlotType PolarHeatmapPlot colorbar::Colorbar
-
-function PolarHeatmapPlot(geoms::Vector{<:Geometry}, axes::Axes; kwargs...)
-    colorbar = Colorbar(axes)
-    margins = zeros(4)
-    if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
-        margins[2] = 0.1
-    end
-    basicplot = BasicPlot(geoms, axes, margins; kwargs...)
-    PolarHeatmapPlot(basicplot, colorbar)
-end
-
-@PlotType HexbinPlot colorbar::Colorbar
-
-function HexbinPlot(geoms::Vector{Geometry}, axes::Axes; kwargs...)
-    colorbar = Colorbar(axes)
-    margins = zeros(4)
-    if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
-        margins[2] = 0.1
-    end
-    basicplot = BasicPlot(geoms, axes, margins; kwargs...)
-    HexbinPlot(basicplot, colorbar)
-end
-
 
 # `draw` methods
 
-function paintbackground(p::AbstractPlot)
-    colorspecs = [get(p.specs, :colormap, GR.COLORMAP_VIRIDIS),
-                  get(p.specs, :scheme, 0x00000000)]
-    setcolors(colorspecs...)
-    haskey(p.specs, :backgroundcolor) && fillbackground(p.viewport.outer, cv.options[:backgroundcolor])
-end
+# function paintbackground(p::AbstractPlot)
+#     colorspecs = [get(p.specs, :colormap, GR.COLORMAP_VIRIDIS),
+#                   get(p.specs, :scheme, 0x00000000)]
+#     setcolors(colorspecs...)
+#     haskey(p.specs, :backgroundcolor) && fillbackground(p.viewport.outer, cv.options[:backgroundcolor])
+# end
 
 function setcolors(colormap, scheme)
     GR.setcolormap(colormap)
@@ -172,47 +125,38 @@ function fillbackground(rectndc, color)
     GR.restorestate()
 end
 
-function draw(p::AbstractPlot)
+function draw(p::PlotObject)
     (p.viewport == emptyviewport) && return nothing
-    paintbackground(p)
+    # Paint the background
+    colorspecs = [get(p.specs, :colormap, GR.COLORMAP_VIRIDIS),
+                  get(p.specs, :scheme, 0x00000000)]
+    setcolors(colorspecs...)
+    haskey(p.specs, :backgroundcolor) && fillbackground(p.viewport.outer, cv.options[:backgroundcolor])
     # Define the viewport
     GR.setviewport(p.viewport.inner...)
+    # Draw components of the plot
     draw(p.axes)
-    # title and labels
-
     GR.uselinespec(" ")
+    # Geometries may include color limits
+    colorlimits = Float64[]
     for g in p.geoms
-        draw(g)
+        cl = draw(g)
+        append!(colorlimits, cl)
     end
-    return nothing
-end
-
-function draw(p::Plot)
-    (p.viewport == emptyviewport) && return nothing
-    draw(p.basicplot)
+    # Overlay axes if requested
+    get(p.specs, :overlay_axes, false) && draw(p.axes)
+    # Legend
     location = get(p.specs, :location, 0)
     draw(p.legend, p.geoms, location)
-    get(p.specs, :colorbar, false) && draw(p.colorbar)
-end
-
-function draw(p::PolarHeatmapPlot)
-    (p.viewport == emptyviewport) && return nothing
-    draw(p.basicplot)
-    # Redraw the axes
-    draw(p.axes)
-    get(p.specs, :colorbar, false) && draw(p.colorbar)
-end
-
-function draw(p::HexbinPlot)
-    (p.viewport == emptyviewport) && return nothing
-    paintbackground(p)
-    # Define the viewport
-    GR.setviewport(p.viewport.inner...)
-    draw(p.axes)
-    # p.geoms must contain Geometry{:hexbin} objects
-    cntmax = draw(p.geoms[1])
-    if get(p.specs, :colorbar, false) && cntmax > 0
-        draw(p.colorbar, (0.0, cntmax))
+    # Colorbar
+    if get(p.specs, :colorbar, false)
+        if isempty(colorlimits) || !get(p.specs, :adjust_colorbar, true)
+            draw(p.colorbar)
+        else
+            draw(p.colorbar, extrema(colorlimits))
+        end
     end
+    # title and labels
+
     return nothing
 end
