@@ -276,3 +276,9 @@ legend(args::AbstractString...; kwargs...) = legend!(gcf(), args...; kwargs...)
 hold!(p::PlotObject, state::Bool) = (p.specs[:hold] = state)
 hold!(f::Figure, state) = hold!(currentplot(f), state)
 hold(state) = hold!(gcf(), state)
+
+function savefig(filename, fig=gcf())
+    GR.beginprint(filename)
+    draw(fig)
+    GR.endprint()
+end
