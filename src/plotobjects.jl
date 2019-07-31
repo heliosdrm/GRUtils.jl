@@ -1,15 +1,28 @@
+"""
+    Viewport(outer::Vector{Float64}, inner::Vector{Float64})
+    Viewport(subplot [, ratio::Real, margins])
+
+The `Viewport` of a plot determines the NDC of the `outer` box that contains
+all the elements of the plot, and the `inner` box where the main items
+(axes and geometries) are plotted.
+
+A `Viewport` can also be defined by the relative coordinates of the `subplot`
+that it refers to, and (optionally) the width:height ratio of the inner box and
+the extra margins that there should be between the outer and inner boxes
+(in the order left-right-bottom-top).
+"""
 struct Viewport
     outer::Vector{Float64}
     inner::Vector{Float64}
 end
 
-const emptyviewport = Viewport(zeros(4), zeros(4))
-Viewport() = emptyviewport
+const EMPTYVIEWPORT = Viewport(zeros(4), zeros(4))
+Viewport() = EMPTYVIEWPORT
 
 function Viewport(subplot)
     ratio_w, ratio_h = wswindow(gcf())
     outer = [subplot[1]*ratio_w, subplot[2]*ratio_w, subplot[3]*ratio_h, subplot[4]*ratio_h]
-    # inner contains the axes
+    # Basic margins (low = left, bottom; high = right, top)
     low, high = 0.375, 0.425
     xcenter = 0.5 * (outer[1] + outer[2])
     ycenter = 0.5 * (outer[3] + outer[4])
@@ -36,9 +49,50 @@ function Viewport(subplot, ratio::Real, margins=zeros(4))
     v
 end
 
-abstract type AbstractPlot end
+"""
+    PlotObject(viewport, axes, geoms, legend, colorbar, specs)
+    PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
 
-mutable struct PlotObject <: AbstractPlot
+A `PlotObject` contains the different elements of a plot:
+
+* `viewport`: a [`Viewport`](@ref) object that defines the area covered by the
+    plot container and the coordinate axes in the display.
+* `axes`: an [`Axes`](@ref) object that defines how to represent the
+    coordinate axes of the space where the plot is contained.
+* `geoms`: a `Vector` of [`Geometry`](@ref) objects that are plotted in the axes.
+* `legend`: a [`Legend`](@ref) object that defines how to present a legend of the
+    different geometries (if required).
+* `colorbar`: a [`Colorbar`](@ref) object that defines how to present the guide
+    to the color scale (if required)
+* `specs`: a dictionary (`Dict{Symbol, Any}`) with varied plot specifications.
+    Those specifications can be passed to the `PlotObject` constructor as
+    keyword arguments.
+
+### Alternative constructor
+
+    PlotObject(axes, geoms [, legend, colorbar; kwargs...])
+
+The viewport can be ommited in the constructor of a `PlotObject`. In that case,
+it will be automatically calculated by the different characteristics of `axes`,
+`geoms`, &mdash; and optionally `legend` and `colorbar`, plus the keyword arguments.
+If `legend` and `colorbar` are not defined, they are automatically calculated
+using the information of `axes`, `geoms` and the keyword arguments.
+
+### Draw method
+
+Plot objects are drawn by the method `draw(::PlotObject)`, which calls other
+`draw` methods for its different components. Normally the order that is followed
+to draw the plot components is:
+
+1. Paint the background and set the viewport defined by the `viewport` field.
+2. Set the window defined by the axes.
+3. Draw the axes.
+4. Draw the geometries.
+5. Draw the legend (if it is not null and `specs[:location] ≠ 0`).
+6. Draw the colorbar (if it is not null and `spects[:colorbar] == true`).
+7. Write different labels and decorations in axes, title, etc.
+"""
+mutable struct PlotObject
     viewport::Viewport
     axes::Axes
     geoms::Vector{<:Geometry}
@@ -47,11 +101,18 @@ mutable struct PlotObject <: AbstractPlot
     specs::Dict
 end
 
+function PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
+    specs = Dict(:subplot => UNITSQUARE, kwargs...)
+    PlotObject(viewport, axes, geoms, legend, colorbar, specs)
+end
+
+PlotObject(; kwargs...) = PlotObject(Viewport(), Axes(:none), Geometry[], Legend(), Colorbar() ; kwargs...)
+
 function PlotObject(axes::Axes, geoms::Vector{<:Geometry},
     legend::Legend=Legend(geoms), colorbar::Colorbar=Colorbar(axes); kwargs...)
 
     # Adapt margins to legend and colorbar
-    subplot = get(kwargs, :subplot, unitsquare)
+    subplot = get(kwargs, :subplot, UNITSQUARE)
     margins = plotmargins(legend, colorbar; kwargs...)
     if haskey(kwargs, :ratio)
         viewport = Viewport(subplot, kwargs[:ratio], margins)
@@ -62,52 +123,72 @@ function PlotObject(axes::Axes, geoms::Vector{<:Geometry},
     PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
 end
 
-function PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
-    specs = Dict(:subplot => unitsquare, kwargs...)
-    PlotObject(viewport, axes, geoms, legend, colorbar, specs)
-end
+"""
+    plotmargins(legend, colorbar; kwargs...)
 
-PlotObject(; kwargs...) = PlotObject(Viewport(), Axes(:none), Geometry[], Legend(), Colorbar() ; kwargs...)
-
-# Adjust margins - right now only the right one
+Define the extra margins needed by a given legend and colorbar, taking into
+account plot specifications that are given by keyword arguments.
+"""
+# In this moment only the right margin is affected
 function plotmargins(legend, colorbar; kwargs...)
     rightmargin = 0.0
-    if get(kwargs, :colorbar, false) && colorbar ≠ emptycolorbar
+    if get(kwargs, :colorbar, false) && colorbar ≠ EMPTYCOLORBAR
         rightmargin = 0.1
     end
     location = get(kwargs, :location, 0)
     # Redefine viewport if legend is set outside
-    if legend ≠ emptylegend && location ∈ legend_locations[:right_out]
+    if legend ≠ EMPTYLEGEND && location ∈ LEGEND_LOCATIONS[:right_out]
         rightmargin = legend.size[1]
     end
     [0.0, rightmargin, 0.0, 0.0]
 end
 
-# `draw` methods
 
-# function paintbackground(p::AbstractPlot)
-#     colorspecs = [get(p.specs, :colormap, GR.COLORMAP_VIRIDIS),
-#                   get(p.specs, :scheme, 0x00000000)]
-#     setcolors(colorspecs...)
-#     haskey(p.specs, :backgroundcolor) && fillbackground(p.viewport.outer, cv.options[:backgroundcolor])
-# end
+####################
+## `draw` methods ##
+####################
 
-function setcolors(colormap, scheme)
-    GR.setcolormap(colormap)
+"""
+    RGB(color)
+
+Return the normalized RGB values (float between 0 and 1) for an integer code
+"""
+function RGB(color::Integer)
+    rgb = zeros(3)
+    rgb[1] = float((color >> 16) & 0xff) / 255.0
+    rgb[2] = float((color >> 8)  & 0xff) / 255.0
+    rgb[3] = float( color        & 0xff) / 255.0
+    rgb
+end
+
+"""
+    setcolors(scheme)
+
+Set the values of discrete color series to a given scheme.
+The argument `scheme` must be an integer number between 0 and 4.
+"""
+function setcolors(scheme)
     scheme == 0 && (return nothing)
+    # Take the column for the given scheme
+    # and replace the default color indices
     for colorind in 1:8
-        color = colors[colorind, scheme]
-        if colorind == 1
-            background = color
-        end
+        color = COLORS[colorind, scheme]
+        # if colorind == 1
+        #     background = color
+        # end
         r, g, b = RGB(color)
+        # replace the indices corresponding to "basic colors"
         GR.setcolorrep(colorind - 1, r, g, b)
-        if scheme != 1
-            GR.setcolorrep(distinct_cmap[colorind], r, g, b)
+        # replace also the ones for "distinct colors" (unless for the first index)
+        if scheme ≠ 1
+            GR.setcolorrep(DISTINCT_CMAP[colorind], r, g, b)
         end
     end
-    r, g, b = RGB(colors[1, scheme])
-    rdiff, gdiff, bdiff = RGB(colors[2, scheme]) - [r, g, b]
+    # Background RGB values
+    r, g, b = RGB(COLORS[1, scheme])
+    # Difference between foreground and background
+    rdiff, gdiff, bdiff = RGB(COLORS[2, scheme]) - [r, g, b]
+    # replace the 12 "grey" shades
     for colorind in 1:12
         f = (colorind - 1) / 11.0
         GR.setcolorrep(92 - colorind, r + f*rdiff, g + f*gdiff, b + f*bdiff)
@@ -115,6 +196,9 @@ function setcolors(colormap, scheme)
     return nothing
 end
 
+"""
+Fill the rectangle in given NDC by the given color index
+"""
 function fillbackground(rectndc, color)
     GR.savestate()
     GR.selntran(0)
@@ -126,11 +210,10 @@ function fillbackground(rectndc, color)
 end
 
 function draw(p::PlotObject)
-    (p.viewport == emptyviewport) && return nothing
-    # Paint the background
-    colorspecs = [get(p.specs, :colormap, GR.COLORMAP_VIRIDIS),
-                  get(p.specs, :scheme, 0x00000000)]
-    setcolors(colorspecs...)
+    (p.viewport == EMPTYVIEWPORT) && return nothing
+    # Set color scals and paint background
+    GR.setcolormap(get(p.specs, :colormap, GR.COLORMAP_VIRIDIS))
+    setcolors(get(p.specs, :scheme, 0))
     haskey(p.specs, :backgroundcolor) && fillbackground(p.viewport.outer, cv.options[:backgroundcolor])
     # Define the viewport
     GR.setviewport(p.viewport.inner...)

@@ -1,15 +1,50 @@
+# Type aliases
 const AxisRange = Tuple{Float64, Float64}
-const AxisTickData  = Tuple{Float64,Tuple{Float64,Float64},Int}
+const AxisTickData  = Tuple{Float64, Tuple{Float64,Float64}, Int}
 
 """
-:x, :y and optionally :z :
-* ranges: minimum and maximum values
-* tickdata: minor, origins and major
-* ticklabels: functions based on GR.textext
-* perspective: rotation and tilt
-* options: :scale (code),
-    :grid (0 is none, others yet undefined)
-    :tickdir (sign for direction, or 0 for no tick marks)
+    Axes(kind::Symbol [; kwargs...])
+
+`Axes` is a type of objects that contain the graphical specifications of the
+coordinate system of a plot.
+
+`Axes` are determined by their `kind`, which may be `:axes2d` for 2-D plots,
+`:axes3d` for 3-D plots, and `:polar` for polar plots. The rest of its fields
+can be passed to the `Axes` constructor as keyword arguments (and they are set
+to "empty" or "null" values if not given). Those fields are:
+
+* `ranges`: boundaries of the different axes/scales. They are given as a dictionary
+    whose keys are `Symbol`s with the name of the axis (`:x`, `:y`, `:z`, `:c`),
+    and whose values are tuples with two float values &mdash;
+    the minimum and maximum values, respectively.
+    The range `(Inf, -Inf)` describes an undefined axis.
+* `tickdata`: numeric specifications of the "ticks" that are drawn on the axes.
+    They are given as a dictionary whose keys are the names of the axis (as for `range`),
+    and whose values are tuples that contain for that axis: (1) the "minor" value
+    between consecutive ticks; (2) a tuple with the two ends of the axis ticks; and
+    (3) the number of minor ticks between "major", numbered ticks.
+* `ticklabels`: transformations between tick values and labels. They are given
+    as a dictionary whose keys are the names of the axis, and whose values are
+    functions that accept a number as argument, and return a `String` with the
+    text that must be written at major ticks. (This only works for the X and Y axes).
+* `perspective`: A `Vector{Int}` that contains the "rotation" and "tilt" angles
+    that are used to project 3-D axes on the plot plane. (Only for 3-D plots)
+* `options`: A `Dict{Symbol, Int}` with extra options that control the visualization
+    of the axes. Currently supported options are:
+    + `options[:scale]`, an integer code that defines what axes are must be
+        plotted in log scale or reversed (cf. [`GR.setscale`](@ref)).
+    + `options[:grid] = 0` to hide the plot grid, or any other value to show it.
+    + `options[:tickdir]` to determine how the ticks are drawn
+        (positive value to draw them inside the plot area, negative value to
+        draw them outside, or `0` to hide them).
+
+### Alternative constructor
+
+    Axes(K::Val{kind}, geoms::Array{<:Geometry} [; kwargs...]) where kind
+
+An `Axes` object can also be made by defining the kind of the axes in a `Val`
+object (`Val(:axes2d)`, `Val(:axes3d)`, etc.), and a vector of [`Geometry`](@ref)
+objects that are used to calculate the different axis limits, ticks, etc.
 """
 struct Axes
     kind::Symbol
@@ -20,7 +55,6 @@ struct Axes
     options::Dict{Symbol, Int}
 end
 
-# Empty axes constructor
 Axes(kind::Symbol; ranges = Dict{Symbol, AxisRange}(),
     tickdata = Dict{Symbol, AxisTickData}(),
     ticklabels = Dict{Symbol, Function}(),
@@ -28,7 +62,6 @@ Axes(kind::Symbol; ranges = Dict{Symbol, AxisRange}(),
     options = Dict{Symbol, Int}()) =
     Axes(kind, ranges, tickdata, ticklabels, perspective, options)
 
-# Constructor with kind, plot data and figure specs (as kwargs...)
 function Axes(K::Val{kind}, geoms::Array{<:Geometry}; panzoom=nothing, kwargs...) where kind
     # Set limits based on data
     rangevalues = minmax(geoms; kwargs...)
@@ -48,34 +81,16 @@ function Axes(K::Val{kind}, geoms::Array{<:Geometry}; panzoom=nothing, kwargs...
 end
 
 # Calculation of data ranges
-function fix_minmax(a, b)
-    if a == b
-        a -= a != 0 ? 0.1 * a : 0.1
-        b += b != 0 ? 0.1 * b : 0.1
-    end
-    a, b
-end
 
-function Extrema64(a)
-    amin =  typemax(Float64)
-    amax = -typemax(Float64)
-    for el in a
-        if !isnan(el)
-            if isnan(amin) || el < amin
-                amin = el
-            end
-            if isnan(amax) || el > amax
-                amax = el
-            end
-        end
-    end
-    amin, amax
-end
+"""
+    minmax(args...)
 
+Calculate the ranges of a given array of values, a `Geometry` or a collection of `Geometry`
+"""
 # Nested definitions of minmax: for array, Geometry and Array of Geometries
 function minmax(x::AbstractVecOrMat{<:Real}, (min_prev, max_prev))
     isempty(x) && return (float(min_prev), float(max_prev))
-    x0, x1 = Extrema64(x)
+    x0, x1 = extrema64(x)
     newmin = min(x0, min_prev)
     newmax = max(x1, max_prev)
     return (newmin, newmax)
@@ -95,7 +110,7 @@ end
 
 function minmax(geoms::Array{<:Geometry}; kwargs...)
     # Calculate ranges of given values
-    xminmax = yminmax = zminmax = cminmax = Extrema64(Float64[])
+    xminmax = yminmax = zminmax = cminmax = extrema64(Float64[])
     for g in geoms
         xminmax, yminmax, zminmax, cminmax = minmax(g, xminmax, yminmax, zminmax, cminmax)
     end
@@ -113,7 +128,55 @@ function minmax(geoms::Array{<:Geometry}; kwargs...)
     return xrange, yrange, zrange, crange
 end
 
-# Adjust ranges (without and with panzoom)
+"""
+    extrema64(a)
+
+Compute both the minimum and maximum element and return them as a 2-tuple.
+This is approximately like `extrema` in the standard library, but always
+returns a tuple of `Float64` values, ignores `NaN`, and returns `(Inf, -Inf)`
+for inputs that are empty or only contain `NaN`.
+"""
+function extrema64(a)
+    amin =  typemax(Float64)
+    amax = -typemax(Float64)
+    for el in a
+        if !isnan(el)
+            if isnan(amin) || el < amin
+                amin = Float64(el)
+            end
+            if isnan(amax) || el > amax
+                amax = Float64(el)
+            end
+        end
+    end
+    amin, amax
+end
+
+"""
+    fix_minmax(a, b)
+
+Adjust `a` and `b` to avoid that they coincide.
+"""
+function fix_minmax(a, b)
+    if a == b
+        a -= a != 0 ? 0.1 * a : 0.1
+        b += b != 0 ? 0.1 * b : 0.1
+    end
+    a, b
+end
+
+# Adjust ranges
+
+"""
+    adjustranges!(ranges, panzoom; kwargs...)
+
+Adjust the pre-calculated ranges of `Axes` &mdash; see [`minmax`](@ref),
+to make them near to integers or "small decimals". This takes into account
+if there is a specific "pan" and/or "zoom" set on the axes
+(`panzoom`, cf. [`GR.panzoom`](@ref)). Explicit axes limits or log scales
+are also considered, through keyword arguments `xlim`, `ylim`, etc. (given as
+2-tuples) or `xlog` `ylog`, etc. (given as `Bool`).
+"""
 function adjustranges!(ranges::Dict{Symbol, AxisRange}, panzoom::Nothing; kwargs...)
     for axname in keys(ranges)
         keylim = Symbol(axname, :lim)
@@ -134,6 +197,18 @@ function adjustranges!(ranges::Dict{Symbol, AxisRange}, panzoom; kwargs...)
 end
 
 # Set ticks for the different types of axes
+
+"""
+    set_ticks(K, ranges; kwargs...)
+
+Define the tick numeric specifications of a given `Axes`, taking into
+account its `kind` and calculated `ranges` &mdash; see [`minmax`](@ref).
+The `kind` is passed as a `Val` object (`Val(:axes2d)`, `Val(:axes3d)`, etc.).
+in the first argument. Keyword arguments are used to adjust the tick intervals
+and limits if the axes are set in log scale (`xlog`, `ylog`, etc.,
+given as `Bool` values), or if they are reversed (`xflip`, `yflip`, etc.,
+also given as `Bools`).
+"""
 function set_ticks(::Val{:axes2d}, ranges; kwargs...)
     major_count = 5
     xaxis = set_axis(:x, ranges[:x], major_count; kwargs...)
@@ -160,9 +235,8 @@ set_ticks(::Any, ranges; kwargs...) = Dict{Symbol, AxisTickData}()
 
 function set_axis(axname, axrange, major; kwargs...)
     if get(kwargs, Symbol(axname, :log), false)
-        # tick = major = 1
         tick = 10
-        major = 1 # enforce scientific notation - in .jlgr.draw_axes
+        major = 1
     else
         keyticks = Symbol(axname, :ticks)
         if haskey(kwargs, keyticks)
@@ -176,6 +250,18 @@ function set_axis(axname, axrange, major; kwargs...)
 end
 
 # Set tick labels - only working for axes2d
+
+"""
+    set_ticklabels(K; kwargs...)
+
+Define the tick label transformation functions for `Axes`, using the
+keyword arguments `xticklabels` or `yticklabels` (if they are given).
+This is only used for axes of `kind == :axes2d`. The kind of the axes is passed
+in the first argument as a `Val` object (i.e. `Val(:axes2d)`, etc.).
+
+The keyword arguments may be functions that transform numbers into strings,
+or collection of strings that are associated to the sequence of integers `1, 2, ...`.
+"""
 function set_ticklabels(::Val{:axes2d}; kwargs...)
     ticklabels = Dict{Symbol, Function}()
     if haskey(kwargs, :xticklabels) || haskey(kwargs, :yticklabels)
@@ -200,6 +286,21 @@ function ticklabel_fun(labels::AbstractVecOrMat{T}) where T <: AbstractString
 end
 
 # Set scale
+
+"""
+    set_scale(K; kwargs...)
+
+Set the scale characteristics of the axes (logarithmic or flipped axes),
+taking into account the kind of the axes, and keyword arguments that determine
+which axes are in logarithmic scale (`xlog`, `ylog`, etc., given as `Bool` values)
+and which ones are flipped (`xflip`, `yflip`, etc. also given as `Bool`s).
+
+Scale specifications are ignored for axes of `kind == :polar`.
+The kind of the axes is passed in the first argument as a `Val` object
+(i.e. `Val(:axes2d)`, etc.).
+
+The result is an integer code used by the low level function [`GR.setscale`](@ref).
+"""
 function set_scale(::Any; kwargs...)
     scale = 0
     get(kwargs, :xlog, false) && (scale |= GR.OPTION_X_LOG)
@@ -214,6 +315,16 @@ end
 set_scale(::Val{:polar}; kwargs...) = 0
 
 # Set the perspective (only for axes3d)
+
+"""
+    set_perspective(K; kwargs...)
+
+Set the perspective of the plot, using the keyword arguments `rotation` and `tilt`.
+
+Scale specifications are only used for axes of `kind == :axes3d`.
+The kind of the axes is passed in the first argument as a `Val` object
+(i.e. `Val(:axes2d)`, etc.).
+"""
 function set_perspective(::Val{:axes3d}; kwargs...)
     rotation = Int(get(kwargs, :rotation, 40))
     tilt = Int(get(kwargs, :tilt, 70))
@@ -222,7 +333,10 @@ end
 
 set_perspective(::Any; kwargs...) = [0, 0]
 
-# `draw` methods
+####################
+## `draw` methods ##
+####################
+
 function draw(ax::Axes)
     # Special draw function for polar axes
     ax.kind == :polar && return draw_polaraxes(ax)
@@ -238,15 +352,17 @@ function draw(ax::Axes)
     GR.setcharheight(charheight)
     xtick, xorg, majorx = ax.tickdata[:x]
     ytick, yorg, majory = ax.tickdata[:y]
+    # Branching for different kinds of axes
     if ax.kind == :axes3d
         GR.setspace(ax.ranges[:z]..., ax.perspective...)
         ztick, zorg, majorz = ax.tickdata[:z]
+        # Draw ticks as 2-D if it is the XY plane
         if ax.perspective == [0, 90]
-            (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
+            (ax.options[:grid] ≠ 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
             GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)
             GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)
         else
-            if (ax.options[:grid] != 0)
+            if (ax.options[:grid] ≠ 0)
                 GR.grid3d(xtick, 0, ztick, xorg[1], yorg[2], zorg[1], 2, 0, 2)
                 GR.grid3d(0, ytick, 0, xorg[1], yorg[2], zorg[1], 0, 2, 0)
             end
@@ -254,7 +370,7 @@ function draw(ax::Axes)
             GR.axes3d(0, ytick, 0, xorg[2], yorg[1], zorg[1], 0, majory, 0, ticksize)
         end
     elseif ax.kind == :axes2d
-        (ax.options[:grid] != 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
+        (ax.options[:grid] ≠ 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
         if !isempty(ax.ticklabels)
             fx, fy = ax.ticklabels[:x], ax.ticklabels[:y]
             GR.axeslbl(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize, fx, fy)
@@ -265,8 +381,6 @@ function draw(ax::Axes)
     end
     return nothing
 end
-
-signif(x, digits; base = 10) = round(x, sigdigits = digits, base = base)
 
 function draw_polaraxes(ax)
     # Set the window as the unit circle
@@ -292,7 +406,8 @@ function draw_polaraxes(ax)
             end
             GR.settextalign(GR.TEXT_HALIGN_LEFT, GR.TEXT_VALIGN_HALF)
             x, y = GR.wctondc(0.05, r)
-            GR.text(x, y, string(signif(rmin + i * tick, 12)))
+            rounded = round(rmin + i * tick, sigdigits = 12, base = 10)
+            GR.text(x, y, string(rounded))
         else
             GR.setlinecolorind(90)
             GR.drawarc(-r, r, -r, r, 0, 359)
@@ -311,6 +426,12 @@ function draw_polaraxes(ax)
     return nothing
 end
 
+"""
+    _tickcharheight(vp)
+
+Return the size of the tick characters and the height of the tick marks,
+proportional to the size of the rectangle defined by `vp`.
+"""
 function _tickcharheight(vp=GR.inqviewport())
     diag = sqrt((vp[2] - vp[1])^2 + (vp[4] - vp[3])^2)
     ticksize = 0.0075 * diag

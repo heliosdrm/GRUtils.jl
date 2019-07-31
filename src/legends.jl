@@ -1,5 +1,172 @@
-const legend_kinds = (:line, :line3d)
+const LEGEND_KINDS = (:line, :line3d)
 
+const LEGEND_LOCATIONS = Dict(
+    :left => [2, 3, 6],
+    :center_h => [8, 9, 10],
+    :right_out => [11, 12, 13],
+    :bottom => [3, 4, 8],
+    :center_v => [5, 6, 7, 10, 12]
+)
+
+"""
+    Legend(size::Tuple{Float64, Float64}, cursors::Vector{Tuple{Float64, Float64}})
+
+A `Legend` object contains the data that defines the frame where a legend is plotted.
+
+The fields contained in a `Legend` object are a 2-tuple that defines the size
+of the legend box in NDC (width and height, respectively), and a vector of
+2-tuples with the positions of the legend items.
+
+### Alternative constructor
+
+    Legend(geoms [, maxrows])
+
+A `Legend` can also be defined by the collection of geometries that
+are meant to be referred to, and (optionally) the maximum number of items that
+are represented in each column of the legend. Only the items in that collection
+of geometries where `label` is not empty will be included.
+
+### Draw method
+
+Legends are drawn by the method `draw(lg, geoms, location)`, where `lg` is the
+`Legend` object, `geoms` is a vector with the geometries of the plot, and
+`location` is an integer code that defines the location of the legend with
+respect to the main plot area &mdash; as defined in
+[Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html).
+"""
+struct Legend
+    size::Tuple{Float64, Float64}
+    cursors::Vector{Tuple{Float64, Float64}}
+end
+
+function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
+    cursors = Tuple{Float64, Float64}[]
+    row = 0
+    x = 0.08         # width reserved for the guide
+    y = -0.015       # vertical top margin
+    labelwidth = 0.0
+    w = h = 0.0      # width and height of the full box
+    scale = Int(GR.inqscale())
+    GR.selntran(0)
+    GR.setscale(0)
+    for g in geoms
+        if !isempty(g.label) && g.kind ∈ LEGEND_KINDS
+            row += 1
+            # New column if the limit is exceeded
+            if row > maxrows
+                (-y > h) && (h = -y) # increase height if needed
+                y = -0.015
+                x += labelwidth + 0.08
+                labelwidth = 0.0
+                row = 1
+            end
+            sz = stringsize(g.label)
+            (sz[1] > labelwidth) && (labelwidth = sz[1]) # increase label width
+            dy = max(sz[2] - 0.03, 0.0) # height of the item
+            push!(cursors, (x, y - dy))
+            y -= dy + 0.03 # add item height and vertical margin
+        end
+    end
+    GR.setscale(scale)
+    GR.selntran(1)
+    if !isempty(cursors)
+        # Define width and height
+        (-y > h) && (h = -y)
+        w = x + labelwidth
+        return Legend((w, h), cursors)
+    else
+        return Legend()
+    end
+end
+
+const EMPTYLEGEND = Legend(NULLPAIR, Tuple{Float64, Float64}[])
+Legend() = EMPTYLEGEND
+
+"""
+    legend_box(frame, (w, h), location)
+
+Define the rectangle for a legend box, given the main `frame` with respect to
+which it is located, the width and height of the box &mdash; in the tuple `(w, h)`,
+and the location of the legend &mdash; an integer that defines the location code of
+[Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html).
+
+All the values are given in NDC.
+"""
+function legend_box(frame, (w, h), location)
+    if location ∈ LEGEND_LOCATIONS[:right_out]
+        px = frame[2] + 0.01
+    elseif location ∈ LEGEND_LOCATIONS[:center_h]
+        px = 0.5 * (frame[1] + frame[2] - w)
+    elseif location ∈ LEGEND_LOCATIONS[:left]
+        px = frame[1] + 0.03
+    else
+        px = frame[2] - 0.03 - w
+    end
+    if location ∈ LEGEND_LOCATIONS[:center_v]
+        py = 0.5 * (frame[3] + frame[4] + h)
+    elseif location == 13
+        py = frame[3] + h
+    elseif location ∈ LEGEND_LOCATIONS[:bottom]
+        py = frame[3] + h + 0.03
+    elseif location == 11
+        py = frame[4]
+    else
+        py = frame[4] - 0.03
+    end
+    (px, px + w, py - h, py)
+end
+
+
+####################
+## `draw` methods ##
+####################
+
+function draw(lg::Legend, geoms, location=1)
+    # Do not draw if the legend is empty or is not meant to be plotted
+    (lg == EMPTYLEGEND || location == 0) && return nothing
+    # First draw the frame
+    GR.savestate()
+    viewport = legend_box(GR.inqviewport(), lg.size, location)
+    GR.setviewport(viewport...)
+    w, h = lg.size
+    window = (0, w, -h, 0)
+    GR.setwindow(window...)
+    # Fill white rectangle
+    GR.setfillintstyle(GR.INTSTYLE_SOLID)
+    GR.setfillcolorind(0)
+    GR.fillrect(window...)
+    # Draw border
+    GR.setlinetype(GR.LINETYPE_SOLID)
+    GR.setlinecolorind(1)
+    GR.setlinewidth(1)
+    GR.drawrect(window...)
+    # Draw the geometries
+    GR.uselinespec(" ")
+    GR.settextalign(GR.TEXT_HALIGN_LEFT, GR.TEXT_VALIGN_HALF)
+    c = 1
+    for g in geoms
+        (c > length(lg.cursors)) && break
+        cursor = lg.cursors[c]
+        if !isempty(g.label) && g.kind ∈ LEGEND_KINDS
+            guide(g, cursor[1] - 0.04, cursor[2])
+            text(cursor[1], cursor[2], g.label, true)
+            c += 1
+        else
+            GR.uselinespec("")
+        end
+    end
+    GR.restorestate()
+    return nothing
+end
+
+"""
+    guide(g, x, y)
+
+Draw a guide to the geometry `g` in the coordinates `x`, `y` of the legend box.
+
+The kind-specific method `guide(::Val{kind}, x, y)` defines the
+low-level plotting instructions for the given kind of `g`.
+"""
 function guide(g::Geometry, x, y)
     GR.savestate()
     GR.settransparency(get(g.attributes, :alpha, 1.0))
@@ -15,120 +182,3 @@ function guide(::Val{:line}, g, x, y)
 end
 guide(::Val{:line3d}, args...) = guide(Val(:line), g, x, y)
 guide(kind, g, x, y) = nothing
-
-struct Legend
-    size::Tuple{Float64, Float64}
-    cursors::Vector{Tuple{Float64, Float64}}
-end
-
-function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
-    cursors = Tuple{Float64, Float64}[]
-    row = 0
-    x = 0.08
-    y = -0.015
-    labelwidth = 0.0
-    w = h = 0.0
-    scale = Int(GR.inqscale())
-    GR.selntran(0)
-    GR.setscale(0)
-    for g in geoms
-        if !isempty(g.label) && g.kind ∈ legend_kinds
-            row += 1
-            # New column if the limit is exceeded
-            if row > maxrows
-                (-y > h) && (h = -y)
-                y = -0.015
-                x += labelwidth + 0.08
-                labelwidth = 0.0
-                row = 1
-            end
-            sz = stringsize(g.label)
-            (sz[1] > labelwidth) && (labelwidth = sz[1])
-            dy = max(sz[2] - 0.03, 0.0)
-            push!(cursors, (x, y - dy))
-            y -= dy + 0.03
-        end
-    end
-    GR.setscale(scale)
-    GR.selntran(1)
-    if !isempty(cursors)
-        # Define width and height
-        (-y > h) && (h = -y)
-        w = x + labelwidth
-    end
-    Legend((w, h), cursors)
-end
-
-const emptylegend = Legend(nullpair, Tuple{Float64, Float64}[])
-Legend() = emptylegend
-
-const legend_locations = Dict(
-    :left => [2, 3, 6],
-    :center_h => [8, 9, 10],
-    :right_out => [11, 12, 13],
-    :bottom => [3, 4, 8],
-    :center_v => [5, 6, 7, 10, 12]
-)
-
-function legend_box(frame, (w, h), location)
-    if location ∈ legend_locations[:right_out]
-        px = frame[2] + 0.01
-    elseif location ∈ legend_locations[:center_h]
-        px = 0.5 * (frame[1] + frame[2] - w)
-    elseif location ∈ legend_locations[:left]
-        px = frame[1] + 0.03
-    else
-        px = frame[2] - 0.03 - w
-    end
-    if location ∈ legend_locations[:center_v]
-        py = 0.5 * (frame[3] + frame[4] + h)
-    elseif location == 13
-        py = frame[3] + h
-    elseif location ∈ legend_locations[:bottom]
-        py = frame[3] + h + 0.03
-    elseif location == 11
-        py = frame[4]
-    else
-        py = frame[4] - 0.03
-    end
-    (px, px + w, py - h, py)
-end
-
-
-function draw(lg::Legend, geoms, location=1)
-    (lg == emptylegend || location == 0) && return nothing
-    # First draw the frame
-    GR.savestate()
-    # Viewport and window
-    viewport = legend_box(GR.inqviewport(), lg.size, location)
-    GR.setviewport(viewport...)
-    w, h = lg.size
-    window = (0, w, -h, 0)
-    GR.setwindow(window...)
-    # Fill white rectangle
-    GR.setfillintstyle(GR.INTSTYLE_SOLID)
-    GR.setfillcolorind(0)
-    GR.fillrect(window...)
-    # Draw border
-    GR.setlinetype(GR.LINETYPE_SOLID)
-    GR.setlinecolorind(1)
-    GR.setlinewidth(1)
-    GR.drawrect(window...)
-    # Then the geometries
-    GR.uselinespec(" ")
-    GR.settextalign(GR.TEXT_HALIGN_LEFT, GR.TEXT_VALIGN_HALF)
-    c = 1
-    for g in geoms
-        (c > length(lg.cursors)) && break
-        cursor = lg.cursors[c]
-        if !isempty(g.label) && g.kind ∈ legend_kinds
-            guide(g, cursor[1] - 0.04, cursor[2])
-            text(cursor[1], cursor[2], g.label, true)
-            c += 1
-        else
-            GR.uselinespec("")
-        end
-    end
-    GR.restorestate()
-    return nothing
-end
