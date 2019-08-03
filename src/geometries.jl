@@ -376,11 +376,13 @@ end
 function draw(g::Geometry, ::Val{:heatmap})::Nothing
     w = length(g.x)
     h = length(g.y)
-    cmap = colormap()
+    # cmap = colormap()
     cmin, cmax = extrema(g.c)
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
-    rgba = [to_rgba(value, cmap) for value ∈ data]
-    GR.drawimage(0.5, w + 0.5, h + 0.5, 0.5, w, h, rgba)
+    # rgba = [to_rgba(value, cmap) for value ∈ data]
+    # GR.cellarray(0.0, w, h, 0.0, w, h, rgba)
+    colors = Int[round(Int, 1000 + _i * 255) for _i ∈ data]
+    GR.cellarray(0.0, w, h, 0.0, w, h, colors)
 end
 
 
@@ -392,4 +394,10 @@ function draw(g::Geometry, ::Val{:polarheatmap})::Nothing
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
     colors = Int[round(Int, 1000 + _i * 255) for _i ∈ data]
     GR.polarcellarray(0, 0, 0, 360, 0, 1, w, h, colors)
+end
+
+function draw(g::Geometry, ::Val{:image})::Nothing
+    w = length(g.x)
+    h = length(g.y)
+    GR.drawimage(0.0, w, h, 0.0, w, h, g.c)
 end

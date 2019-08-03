@@ -145,5 +145,9 @@ function draw(f::Figure)
         draw(p)
     end
     GR.updatews()
-    GR.show()
+    if GR.isinline()
+        return GR.show()
+    else
+        return
+    end
 end

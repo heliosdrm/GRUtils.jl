@@ -734,7 +734,7 @@ function _setargs_heatmap(f, data; kwargs...)
     if get(kwargs, :yflip, false)
         data = reverse(data, dims=2)
     end
-    kwargs = (; xlim = (0.5, w + 0.5), ylim = (0.5, h + 0.5), kwargs...)
+    kwargs = (; xlim = (0.0, float(w)), ylim = (0.0, float(h)), kwargs...)
     ((1.0:w, 1.0:h, emptyvector(Float64), data[:]), kwargs)
 end
 
@@ -793,6 +793,42 @@ display a series of points. It  can receive one or more of the following:
     julia> y = randn(100000)
     julia> # Draw the hexbin plot
     julia> hexbin(x, y)
+""")
+
+function _setargs_imshow(f, filename::AbstractString; kwargs...)
+    w, h, data = GR.readimage(filename)
+    if get(kwargs, :xflip, false)
+        data = reverse(data, dims=1)
+    end
+    if get(kwargs, :yflip, true)
+        data = reverse(data, dims=2)
+    end
+    kwargs = (; xlim = (0.0, float(w)), ylim = (0.0, float(h)), ratio = w/h, kwargs...)
+    ((1.0:w, 1.0:h, emptyvector(Float64), float.(data[:])), kwargs)
+end
+
+@plotfunction(imshow, geom = :image, axes = :axes2d, setargs = _setargs_imshow,
+kwargs = (xticks=NULLPAIR, yticks=NULLPAIR), docstring="""
+Draw an image.
+
+This function can draw an image either from reading a file or using a
+two-dimensional array and the current colormap.
+
+:param image: an image file name or two-dimensional array
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Create example data
+    julia> X = LinRange(-2, 2, 40)
+    julia> Y = LinRange(0, pi, 20)
+    julia> x, y = meshgrid(X, Y)
+    julia> z = sin.(x) .+ cos.(y)
+    julia> # Draw an image from a 2d array
+    julia> imshow(z)
+    julia> # Draw an image from a file
+    julia> imshow("example.png")
 """)
 
 ## Legends
