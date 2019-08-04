@@ -934,6 +934,73 @@ that the next plot will be drawn on top of the previous one.
 hold!(f::Figure, state) = hold!(currentplot(f), state)
 @doc HOLD_DOC hold(state) = hold!(gcf(), state)
 
+TITLE_DOC = """
+Set the plot title.
+
+The plot title is drawn using the extended text function GR.textext.
+You can use a subset of LaTeX math syntax, but will need to escape
+certain characters, e.g. parentheses. For more information see the
+documentation of GR.textext.
+
+:param title: the plot title
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Set the plot title to "Example Plot"
+    julia> title("Example Plot")
+    julia> # Clear the plot title
+    julia> title("")
+"""
+
+@doc TITLE_DOC function title!(p::PlotObject, s)
+    if isempty(s)
+        delete!(p.specs, :title)
+    else
+        p.specs[:title] = s
+    end
+end
+
+title!(f::Figure, s) = title!(currentplot(f), s)
+@doc TITLE_DOC title(s::AbstractString) = title!(gcf(), s)
+
+AXISLABEL_DOC = """
+Set the X, Y or Z axis labels.
+
+The axis labels are drawn using the extended text function GR.textext.
+You can use a subset of LaTeX math syntax, but will need to escape
+certain characters, e.g. parentheses. For more information see the
+documentation of GR.textext.
+
+:param label: the axis label
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Set the x-axis label to "x"
+    julia> xlabel("x")
+    julia> # Clear the y-axis label
+    julia> ylabel("")
+"""
+
+for ax = ("x", "y", "z")
+    fname! = Symbol(ax, :label!)
+    fname = Symbol(ax, :label)
+    @eval function $fname!(p::PlotObject, s)
+        if isempty(s)
+            delete!(p.specs, Symbol($ax, :label))
+        else
+            p.specs[Symbol($ax, :label)] = s
+        end
+    end
+    @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
+    @eval $fname(s::AbstractString) = $fname!(gcf(), s)
+    @eval @doc AXISLABEL_DOC $fname!
+    @eval @doc AXISLABEL_DOC $fname
+end
+
 """
 Save the current figure to a file.
 

@@ -216,9 +216,11 @@ function draw(p::PlotObject)
     # Set color scals and paint background
     GR.setcolormap(get(p.specs, :colormap, GR.COLORMAP_VIRIDIS))
     setcolors(get(p.specs, :scheme, 0))
-    haskey(p.specs, :backgroundcolor) && fillbackground(p.viewport.outer, cv.options[:backgroundcolor])
+    inner = p.viewport.inner
+    outer = p.viewport.outer
+    haskey(p.specs, :backgroundcolor) && fillbackground(outer, cv.options[:backgroundcolor])
     # Define the viewport
-    GR.setviewport(p.viewport.inner...)
+    GR.setviewport(inner...)
     # Draw components of the plot
     draw(p.axes)
     GR.uselinespec(" ")
@@ -242,6 +244,41 @@ function draw(p::PlotObject)
         end
     end
     # title and labels
+    drawlabels(p)
 
     return nothing
+end
+
+function drawlabels(p)
+    inner = p.viewport.inner
+    outer = p.viewport.outer
+    main = String(get(p.specs, :title, ""))
+    xlabel = String(get(p.specs, :xlabel, ""))
+    ylabel = String(get(p.specs, :ylabel, ""))
+    zlabel = String(get(p.specs, :zlabel, ""))
+    GR.savestate()
+    # title
+    if !isempty(main)
+        GR.settextalign(GR.TEXT_HALIGN_CENTER, GR.TEXT_VALIGN_TOP)
+        text(0.5 * (inner[1] + inner[2]), outer[4], main)
+    end
+    # 2d axes
+    _, charheight = _tickcharheight()
+    if p.axes.kind == :axes2d
+        # x
+        if !isempty(xlabel)
+            GR.settextalign(GR.TEXT_HALIGN_CENTER, GR.TEXT_VALIGN_BOTTOM)
+            text(0.5 * (inner[1] + inner[2]), outer[3] + 0.5 * charheight, xlabel)
+        end
+        # y
+        if !isempty(ylabel)
+            GR.settextalign(GR.TEXT_HALIGN_CENTER, GR.TEXT_VALIGN_TOP)
+            GR.setcharup(-1, 0)
+            text(outer[1] + 0.5 * charheight, 0.5 * (inner[3] + inner[4]), ylabel)
+        end
+    # 3d axes
+elseif p.axes.kind == :axes3d && (!isempty(xlabel) || !isempty(ylabel) || !isempty(zlabel))
+        GR.titles3d(xlabel, ylabel, zlabel)
+    end
+    GR.restorestate()
 end
