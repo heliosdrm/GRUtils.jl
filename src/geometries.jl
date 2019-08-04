@@ -345,34 +345,6 @@ function draw(g::Geometry, ::Val{:hexbin})::Vector{Float64}
     [0.0, cntmax]
 end
 
-# Needs to be extended
-function colormap()
-    rgb = zeros(256, 3)
-    for colorind in 1:256
-        color = GR.inqcolor(999 + colorind)
-        rgb[colorind, 1] = float( color        & 0xff) / 255.0
-        rgb[colorind, 2] = float((color >> 8)  & 0xff) / 255.0
-        rgb[colorind, 3] = float((color >> 16) & 0xff) / 255.0
-    end
-    rgb
-end
-
-"""
-    to_rgba(value, cmap)
-
-Transform a normalized value into a color index given by the colormap `cmap`.
-"""
-function to_rgba(value, cmap)
-    if !isnan(value)
-        r, g, b = cmap[round(Int, value * 255 + 1), :]
-        a = 1.0
-    else
-        r, g, b, a = zeros(4)
-    end
-    round(UInt32, a * 255) << 24 + round(UInt32, b * 255) << 16 +
-    round(UInt32, g * 255) << 8  + round(UInt32, r * 255)
-end
-
 function draw(g::Geometry, ::Val{:heatmap})::Nothing
     w = length(g.x)
     h = length(g.y)

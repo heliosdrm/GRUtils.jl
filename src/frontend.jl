@@ -795,8 +795,42 @@ display a series of points. It  can receive one or more of the following:
     julia> hexbin(x, y)
 """)
 
-function _setargs_imshow(f, filename::AbstractString; kwargs...)
-    w, h, data = GR.readimage(filename)
+# Needs to be extended
+function colormap()
+    rgb = zeros(256, 3)
+    for colorind in 1:256
+        color = GR.inqcolor(999 + colorind)
+        rgb[colorind, 1] = float( color        & 0xff) / 255.0
+        rgb[colorind, 2] = float((color >> 8)  & 0xff) / 255.0
+        rgb[colorind, 3] = float((color >> 16) & 0xff) / 255.0
+    end
+    rgb
+end
+
+"""
+    to_rgba(value, cmap)
+
+Transform a normalized value into a color index given by the colormap `cmap`.
+"""
+function to_rgba(value, cmap)
+    if !isnan(value)
+        r, g, b = cmap[round(Int, value * 255 + 1), :]
+        a = 1.0
+    else
+        r, g, b, a = zeros(4)
+    end
+    round(UInt32, a * 255) << 24 + round(UInt32, b * 255) << 16 +
+    round(UInt32, g * 255) << 8  + round(UInt32, r * 255)
+end
+
+function _setargs_imshow(f, data; kwargs...)
+    if isa(data, AbstractString)
+        w, h, data = GR.readimage(data)
+    else
+        w, h = size(data)
+        cmap = colormap()
+        data = [to_rgba(value, cmap) for value ∈ data]
+    end
     if get(kwargs, :xflip, false)
         data = reverse(data, dims=1)
     end

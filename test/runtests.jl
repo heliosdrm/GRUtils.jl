@@ -136,6 +136,7 @@ GRUtils.surface(x, y, z, accelerate=false)
 GRUtils.wireframe(x, y, z)
 GRUtils.heatmap(z)
 GRUtils.polarheatmap(z)
+GRUtils.imshow(z/4 .+ 0.5)
 
 x = randn(100000)
 y = randn(100000)
