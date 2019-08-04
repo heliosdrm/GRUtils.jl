@@ -1,7 +1,7 @@
 ## Select keyword arguments from list
 KEYS_GEOM_ATTRIBUTES = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :step_position]
 KEYS_PLOT_SPECS = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
-    :levels, :majorlevels, :colorbar, :ratio, :overlay_axes]
+    :levels, :majorlevels, :colorbar, :ratio, :overlay_axes, :noframe]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
 
 geom_attributes(; kwargs...) = filter(p -> p.first ∈ KEYS_GEOM_ATTRIBUTES, kwargs)
@@ -842,7 +842,7 @@ function _setargs_imshow(f, data; kwargs...)
 end
 
 @plotfunction(imshow, geom = :image, axes = :axes2d, setargs = _setargs_imshow,
-kwargs = (xticks=NULLPAIR, yticks=NULLPAIR), docstring="""
+kwargs = (xticks=NULLPAIR, yticks=NULLPAIR, noframe=true), docstring="""
 Draw an image.
 
 This function can draw an image either from reading a file or using a

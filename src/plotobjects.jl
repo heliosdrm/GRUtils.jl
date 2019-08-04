@@ -1,15 +1,16 @@
 """
     Viewport(outer::Vector{Float64}, inner::Vector{Float64})
-    Viewport(subplot [, ratio::Real, margins])
+    Viewport(subplot, framewidhts [, ratio::Real, margins])
 
 The `Viewport` of a plot determines the NDC of the `outer` box that contains
 all the elements of the plot, and the `inner` box where the main items
 (axes and geometries) are plotted.
 
 A `Viewport` can also be defined by the relative coordinates of the `subplot`
-that it refers to, and (optionally) the width:height ratio of the inner box and
-the extra margins that there should be between the outer and inner boxes
-(in the order left-right-bottom-top).
+that it refers to, a flag (`frame::Bool`) telling whether there should be a frame
+between the outer and inner boxes, and (optionally), the width:height ratio
+of the inner box and the extra margins that there should be
+between the outer and inner boxes (in the order left-right-bottom-top).
 """
 struct Viewport
     outer::Vector{Float64}
@@ -19,11 +20,11 @@ end
 const EMPTYVIEWPORT = Viewport(zeros(4), zeros(4))
 Viewport() = EMPTYVIEWPORT
 
-function Viewport(subplot)
+function Viewport(subplot, frame::Bool)
     ratio_w, ratio_h = wswindow(gcf())
     outer = [subplot[1]*ratio_w, subplot[2]*ratio_w, subplot[3]*ratio_h, subplot[4]*ratio_h]
     # Basic margins (low = left, bottom; high = right, top)
-    low, high = 0.375, 0.425
+    low, high = frame ? (0.375, 0.425) : (0.5, 0.5)
     xcenter = 0.5 * (outer[1] + outer[2])
     ycenter = 0.5 * (outer[3] + outer[4])
     vp_x = outer[2] - outer[1]
@@ -32,8 +33,8 @@ function Viewport(subplot)
     Viewport(outer, inner)
 end
 
-function Viewport(subplot, ratio::Real, margins=zeros(4))
-    v = Viewport(subplot)
+function Viewport(subplot, frame::Bool, ratio::Real, margins=zeros(4))
+    v = Viewport(subplot, frame)
     w = v.inner[2] - v.inner[1] - margins[1] - margins[2]
     h = v.inner[4] - v.inner[3] - margins[3] - margins[4]
     if w/h > ratio
@@ -114,10 +115,11 @@ function PlotObject(axes::Axes, geoms::Vector{<:Geometry},
     # Adapt margins to legend and colorbar
     subplot = get(kwargs, :subplot, UNITSQUARE)
     margins = plotmargins(legend, colorbar; kwargs...)
+    frame = !get(kwargs, :noframe, false)
     if haskey(kwargs, :ratio)
-        viewport = Viewport(subplot, kwargs[:ratio], margins)
+        viewport = Viewport(subplot, frame, kwargs[:ratio], margins)
     else
-        viewport = Viewport(subplot)
+        viewport = Viewport(subplot, frame)
         viewport.inner .-= margins
     end
     PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
