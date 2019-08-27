@@ -902,7 +902,7 @@ documentation of GR.textext.
 end
 
 legend!(f::Figure, args...; kwargs...) = legend!(currentplot(f), args...; kwargs...)
-@doc LEGEND_DOC legend(args::AbstractString...; kwargs...) = legend!(gcf(), args...; kwargs...)
+@doc LEGEND_DOC legend(args::AbstractString...; kwargs...) = legend!(currentplot(gcf()), args...; kwargs...)
 
 
 const HOLD_DOC = """
@@ -932,9 +932,9 @@ that the next plot will be drawn on top of the previous one.
 
 @doc HOLD_DOC hold!(p::PlotObject, state::Bool) = (p.specs[:hold] = state)
 hold!(f::Figure, state) = hold!(currentplot(f), state)
-@doc HOLD_DOC hold(state) = hold!(gcf(), state)
+@doc HOLD_DOC hold(state) = hold!(currentplot(gcf()), state)
 
-TITLE_DOC = """
+const TITLE_DOC = """
 Set the plot title.
 
 The plot title is drawn using the extended text function GR.textext.
@@ -963,9 +963,9 @@ documentation of GR.textext.
 end
 
 title!(f::Figure, s) = title!(currentplot(f), s)
-@doc TITLE_DOC title(s::AbstractString) = title!(gcf(), s)
+@doc TITLE_DOC title(s::AbstractString) = title!(currentplot(gcf()), s)
 
-AXISLABEL_DOC = """
+const AXISLABEL_DOC = """
 Set the X, Y or Z axis labels.
 
 The axis labels are drawn using the extended text function GR.textext.
@@ -985,7 +985,26 @@ documentation of GR.textext.
     julia> ylabel("")
 """
 
+const TICKS_DOC = """
+Set the intervals of the ticks for the X, Y or Z axis.
+
+Use the function `xticks`, `yticks` or `zticks` for the corresponding axis.
+
+:param minor: the interval between minor ticks.
+:param major: (optional) the number of minor ticks between major ticks.
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Minor ticks every 0.2 units in the X axis
+    julia> xticks(0.2)
+    julia> # Major ticks every 1 unit (5 minor ticks) in the Y axis
+    julia> yticks(0.2, 5)
+"""
+
 for ax = ("x", "y", "z")
+    # xlabel, etc.
     fname! = Symbol(ax, :label!)
     fname = Symbol(ax, :label)
     @eval function $fname!(p::PlotObject, s)
@@ -996,10 +1015,79 @@ for ax = ("x", "y", "z")
         end
     end
     @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
-    @eval $fname(s::AbstractString) = $fname!(gcf(), s)
+    @eval $fname(s::AbstractString) = $fname!(currentplot(gcf()), s)
     @eval @doc AXISLABEL_DOC $fname!
     @eval @doc AXISLABEL_DOC $fname
+
+    # xticks, etc.
+    fname! = Symbol(ax, :ticks!)
+    fname = Symbol(ax, :ticks)
+    @eval function $fname!(p::PlotObject, minor, major=1)
+        tickdata = p.axes.tickdata
+        if haskey(tickdata, Symbol($ax))
+            tickdata[Symbol($ax)] = (float(minor), tickdata[Symbol($ax)][2], Int(major))
+        end
+        return nothing
+    end
+    @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
+    @eval $fname(args...) = $fname!(currentplot(gcf()), args...)
+    @eval @doc TICKS_DOC $fname!
+    @eval @doc TICKS_DOC $fname
 end
+
+const TICKLABELS_DOC = """
+Customize the string of the X and Y axes tick labels.
+
+The labels of the tick axis can be defined through a function
+with one argument (the numeric value of the tick position) and
+returns a string, or through an array of strings that are located
+sequentially at X = 1, 2, etc.
+
+:param s: function or array of strings that define the tick labels.
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Label the range (0-1) of the Y-axis as percent values
+    julia> yticklabels(p -> Base.Printf.@sprintf("%0.0f%%", 100p))
+    julia> # Label the X-axis with a sequence of strings
+    julia> xticklabels(["first", "second", "third"])
+"""
+
+for ax = ("x", "y")
+    fname! = Symbol(ax, :ticklabels!)
+    fname = Symbol(ax, :ticklabels)
+    @eval function $fname!(p::PlotObject, s)
+        K = Val(p.axes.kind)
+        merge!(p.axes.ticklabels, set_ticklabels(K; $fname = s))
+    end
+    @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
+    @eval $fname(s) = $fname!(currentplot(gcf()), s)
+    @eval @doc TICKLABELS_DOC $fname!
+    @eval @doc TICKLABELS_DOC $fname
+end
+
+const GRID_DOC = """
+Set the flag to draw a grid in the plot axes.
+
+:param flag: the value of the grid flag (`true` by default)
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Hid the grid on the next plot
+    julia> grid(false)
+    julia> # Restore the grid
+    julia> grid(true)
+"""
+
+@doc GRID_DOC grid!(p::PlotObject, flag) = (p.axes.options[:grid] = Int(flag))
+
+grid!(f::Figure, flag) = grid!(currentplot(f), flag)
+@doc GRID_DOC grid(flag) = grid!(currentplot(gcf()), flag)
+
 
 """
 Save the current figure to a file.

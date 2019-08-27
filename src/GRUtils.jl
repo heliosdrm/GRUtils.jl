@@ -2,9 +2,6 @@ module GRUtils
 
 import GR
 
-using Serialization
-using Sockets
-
 function search(s::AbstractString, c::Char)
     result = findfirst(isequal(c), s)
     result != nothing ? result : 0

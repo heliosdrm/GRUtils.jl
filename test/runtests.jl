@@ -13,6 +13,15 @@ GRUtils.plot(x, yy)
 GRUtils.plot(yy)
 GRUtils.plot(x .+ [-1 1], yy)
 
+GRUtils.grid(false)
+GRUtils.draw(GRUtils.gcf())
+
+GRUtils.plot(-2π:0.01:2π, sin)
+GRUtils.xticks(π/8, 4)
+GRUtils.xticklabels(x -> Base.Printf.@sprintf("%0.1f\\pi", float(x/π)))
+GRUtils.draw(GRUtils.gcf())
+
+
 GRUtils.plot(x, y, ratio = 16//9)
 
 x = LinRange(-2, 2, 40)
