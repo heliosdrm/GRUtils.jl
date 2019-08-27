@@ -1,6 +1,6 @@
 ## Select keyword arguments from list
 KEYS_GEOM_ATTRIBUTES = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :step_position]
-KEYS_PLOT_SPECS = [:where, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
+KEYS_PLOT_SPECS = [:where, :scheme, :colormap, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
     :levels, :majorlevels, :colorbar, :ratio, :overlay_axes, :noframe]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
 
