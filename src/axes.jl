@@ -64,8 +64,7 @@ Axes(kind::Symbol; ranges = Dict{Symbol, AxisRange}(),
 
 function Axes(K::Val{kind}, geoms::Array{<:Geometry}; panzoom=nothing, kwargs...) where kind
     # Set limits based on data
-    rangevalues = minmax(geoms; kwargs...)
-    ranges = Dict(zip((:x, :y, :z, :c), rangevalues))
+    ranges = minmax(geoms)
     adjustranges!(ranges, panzoom; kwargs...)
     # Configure axis scale and ticks
     tickdata = set_ticks(K, ranges; kwargs...)
@@ -108,7 +107,7 @@ function minmax(g::Geometry, xminmax, yminmax, zminmax, cminmax)
     return xminmax, yminmax, zminmax, cminmax
 end
 
-function minmax(geoms::Array{<:Geometry}; kwargs...)
+function minmax(geoms::Array{<:Geometry})
     # Calculate ranges of given values
     xminmax = yminmax = zminmax = cminmax = extrema64(Float64[])
     for g in geoms
@@ -121,11 +120,7 @@ function minmax(geoms::Array{<:Geometry}; kwargs...)
     yminmax = fix_minmax(yminmax...)
     zminmax = fix_minmax(zminmax...)
     # Return values
-    xrange = get(kwargs, :xlim, xminmax)
-    yrange = get(kwargs, :ylim, yminmax)
-    zrange = get(kwargs, :zlim, zminmax)
-    crange = get(kwargs, :clim, cminmax)
-    return xrange, yrange, zrange, crange
+    return Dict(:x => xminmax, :y => yminmax, :z => zminmax, :c => cminmax)
 end
 
 """
@@ -180,17 +175,22 @@ are also considered, through keyword arguments `xlim`, `ylim`, etc. (given as
 function adjustranges!(ranges::Dict{Symbol, AxisRange}, panzoom::Nothing; kwargs...)
     for axname in keys(ranges)
         keylim = Symbol(axname, :lim)
-        keylog = Symbol(axname, :log)
-        if !haskey(kwargs, keylim) && !get(kwargs, keylog, false)
-            amin, amax = ranges[axname]
-            if isfinite(amin) && isfinite(amax)
-                ranges[axname] = GR.adjustlimits(amin, amax)
+        if haskey(kwargs, keylim)
+            ranges[axname] = kwargs[keylim]
+        else
+            keylog = Symbol(axname, :log)
+            if !get(kwargs, keylog, false)
+                amin, amax = ranges[axname]
+                if isfinite(amin) && isfinite(amax)
+                    ranges[axname] = GR.adjustlimits(amin, amax)
+                end
             end
         end
     end
 end
 
 function adjustranges!(ranges::Dict{Symbol, AxisRange}, panzoom; kwargs...)
+    adjustranges!(ranges, nothing; kwargs...)
     xmin, xmax, ymin, ymax = GR.panzoom(panzoom...)
     ranges[:x] = (xmin, xmax)
     ranges[:y] = (ymin, ymax)

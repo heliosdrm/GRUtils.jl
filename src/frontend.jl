@@ -1003,6 +1003,38 @@ Use the function `xticks`, `yticks` or `zticks` for the corresponding axis.
     julia> yticks(0.2, 5)
 """
 
+const AXISLIM_DOC = """
+Set the limits for the plot axis.
+
+The axis limits can either be passed as individual arguments or as a
+tuple of (**min**, **max**). Setting either limit to **nothing** will
+cause it to be automatically determined based on the data, which is the
+default behavior.
+
+:param min:
+	- the axis lower limit, or
+	- **nothing** to use an automatic lower limit, or
+	- a tuple of both axis limits
+:param x_max:
+	- the axis upper limit, or
+	- **nothing** to use an automatic upper limit, or
+	- **nothing** if both axis limits were passed as first argument
+:param adjust: whether or not the limits may be adjusted
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Set the x-axis limits to -1 and 1
+    julia> xlim((-1, 1))
+    julia> # Reset the x-axis limits to be determined automatically
+    julia> xlim()
+    julia> # Set the y-axis upper limit and set the lower limit to 0
+    julia> ylim((0, nothing))
+    julia> # Reset the y-axis lower limit and set the upper limit to 1
+    julia> ylim((nothing, 1))
+"""
+
 for ax = ("x", "y", "z")
     # xlabel, etc.
     fname! = Symbol(ax, :label!)
@@ -1033,6 +1065,37 @@ for ax = ("x", "y", "z")
     @eval $fname(args...) = $fname!(currentplot(gcf()), args...)
     @eval @doc TICKS_DOC $fname!
     @eval @doc TICKS_DOC $fname
+
+    # xlim, etc.
+    fname! = Symbol(ax, :lim!)
+    fname = Symbol(ax, :lim)
+    @eval function $fname!(p::PlotObject, (minval, maxval), adjust::Bool=false)
+        nomin = isa(minval, Nothing)
+        nomax = isa(maxval, Nothing)
+        fullrange = (nomin || nomax) ? minmax(p.geoms)[Symbol($ax)] : float.((minval, maxval))
+        if nomin && !nomax     # (::Nothing, ::Number)
+            limits = (fullrange[1], float(maxval))
+        elseif !nomin && nomax # (::Number, Nothing)
+            limits = (float(minval), fullrange[2])
+        else # (::Number, ::Number) or (::Nothing, ::Nothing)
+            limits = fullrange
+        end
+        adjust && (limits = GR.adjustlimits(limits...))
+        p.axes.ranges[Symbol($ax)] = limits
+        tickdata = p.axes.tickdata
+        if haskey(tickdata, Symbol($ax))
+            axisticks = tickdata[Symbol($ax)]
+            tickdata[Symbol($ax)] = (axisticks[1], limits, axisticks[3])
+        end
+        return nothing
+    end
+    @eval function $fname!(p::PlotObject, minval::Union{Nothing, Number}, maxval::Union{Nothing, Number}, adjust::Bool=false)
+        $fname!(p, (minval, maxval), adjust)
+    end
+    @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
+    @eval $fname(args...) = $fname!(currentplot(gcf()), args...)
+    @eval @doc AXISLIM_DOC $fname!
+    @eval @doc AXISLIM_DOC $fname
 end
 
 const TICKLABELS_DOC = """

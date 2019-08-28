@@ -17,6 +17,8 @@ GRUtils.grid(false)
 GRUtils.draw(GRUtils.gcf())
 
 GRUtils.plot(-2π:0.01:2π, sin)
+GRUtils.xlim(-2π, 2π)
+GRUtils.ylim((-sqrt(2), sqrt(2)), true)
 GRUtils.xticks(π/8, 4)
 GRUtils.xticklabels(x -> Base.Printf.@sprintf("%0.1f\\pi", float(x/π)))
 GRUtils.draw(GRUtils.gcf())
