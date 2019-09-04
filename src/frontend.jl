@@ -1,5 +1,5 @@
 ## Select keyword arguments from list
-KEYS_GEOM_ATTRIBUTES = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :step_position]
+KEYS_GEOM_ATTRIBUTES = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :spec, :step_position]
 KEYS_PLOT_SPECS = [:where, :scheme, :colormap, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
     :levels, :majorlevels, :colorbar, :ratio, :overlay_axes, :noframe]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
@@ -81,12 +81,12 @@ macro plotfunction(fname, options...)
                 # Keep all specs
                 kwargs = (; p.specs..., kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
-                geoms = [p.geoms; geometries(Val($geom_k), args...; geom_attributes(;kwargs...)...)]
+                geoms = [p.geoms; geometries(Symbol($geom_k), args...; geom_attributes(;kwargs...)...)]
             else
                 # Only keep previous subplot
                 kwargs = (subplot = p.specs[:subplot], kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
-                geoms = geometries(Val($geom_k), args...; geom_attributes(;kwargs...)...)
+                geoms = geometries(Symbol($geom_k), args...; geom_attributes(;kwargs...)...)
             end
             axes = Axes(Val($axes_k), geoms; kwargs...)
             f.plots[end] = PlotObject(axes, geoms; kind=$plotkind, plot_specs(; kwargs...)...)
@@ -104,7 +104,15 @@ macro plotfunction(fname, options...)
     esc(expr)
 end
 
-@plotfunction(plot, geom = :line, axes = :axes2d, kind = :line, docstring="""
+function _setargs_line(f, args...; kwargs...)
+    if typeof(args[end]) <: AbstractString
+        kwargs = (spec=args[end], kwargs...)
+        args = args[1:end-1]
+    end
+    return (args, kwargs)
+end
+
+@plotfunction(plot, geom = :line, axes = :axes2d, setargs=_setargs_line, kind = :line, docstring="""
 Draw one or more line plots.
 
 This function can receive one or more of the following:
@@ -142,7 +150,7 @@ function _setargs_step(f, args...; kwargs...)
     else
         throw(ArgumentError("""`where` must be one of `"mid"`, `"pre"` or `"post"`"""))
     end
-    return (args, (step_position=step_position, where=step_position_str, kwargs...))
+    return _setargs_line(args, (step_position=step_position, where=step_position_str, kwargs...))
 end
 
 @plotfunction(step, geom = :step, axes = :axes2d, setargs=_setargs_step, docstring="""
@@ -177,7 +185,7 @@ This function can receive one or more of the following:
     julia> step(y, where="post")
 """)
 
-@plotfunction(stem, geom = :stem, axes = :axes2d, docstring="""
+@plotfunction(stem, geom = :stem, axes = :axes2d, setargs=_setargs_line, docstring="""
 Draw a stem plot.
 
 This function can receive one or more of the following:
@@ -364,7 +372,7 @@ otherwise the given number of bins is used for the histogram.
     julia> histogram(x, nbins=19)
 """)
 
-@plotfunction(plot3, geom = :line3d, axes = :axes3d, kwargs = (ratio=1.0,), docstring="""
+@plotfunction(plot3, geom = :line3d, axes = :axes3d, kwargs = (ratio=1.0,), setargs=_setargs_line, docstring="""
 Draw one or more three-dimensional line plots.
 
 :param x: the x coordinates to plot
@@ -413,7 +421,7 @@ color. Color values will be used in combination with the current colormap.
     julia> scatter3(x, y, z, c)
 """)
 
-@plotfunction(polar, geom = :polarline, axes = :polar, kwargs = (ratio=1.0,), docstring="""
+@plotfunction(polar, geom = :polarline, axes = :polar, setargs=_setargs_line, kwargs = (ratio=1.0,), docstring="""
 Draw one or more polar plots.
 
 This function can receive one or more of the following:
