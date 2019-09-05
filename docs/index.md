@@ -6,26 +6,26 @@ GRUtils is being maintained in a package apart from GR, in order to make its dev
 
 ## Structure of plots in GRUtils
 
-GRUtils replaces some long, convoluted functions of `jlgr` with many `if-else` blocks by more numerous but smaller functions based on type-dispatch, such that they can be revised and debugged more easily, and new utilities can be added with new functions and methods without having to modify the existing ones.
+GRUtils replaces some long, convoluted functions of `jlgr` with many `if-else` blocks by more numerous but smaller functions based on type-dispatch, and takes advantage of meta-programming, such that those functions can be revised and debugged more easily, and new utilities can be added with new functions and methods without having to modify the existing ones.
 
-Plots are composed by a set of objects of different types, as described next.
+Plots are composed by a set of objects of different types, which are defined in separate source files, as described next.
 
 ### Figures
 
-```julia
 *Figures* are the "top-level" objects, that contain all the information of a plot or set of "subplots" that are meant to be drawn together. This is represented by the type `Figure`:
 
+```julia
 struct Figure
     workstation::Tuple{Float64, Float64}
     plots::Vector{PlotObject}
 end
 ```
 
-The parameters contained in a `Figure` are:
+The parameters contained in a figure are:
 
 * **`workstation`**: a `Tuple{Float64, Float64}` that defines the width and height of the overall plot container (workstation), in pixels.
 
-* **`plots`***: a vector of `PlotObject`s, which contain the information of the individual plots included in the figure.
+* **`plots`**: a vector of `PlotObject` elements, which contain the information of the individual plots included in the figure.
 
 There is a global "current figure" that can be obtained by the function `gcf()` &mdash; with no arguments.
 
@@ -46,7 +46,7 @@ The objects of the type `PlotObject` represent what can be considered a "complet
 
 * **`viewport`**: a `Viewport` object, which defines the area covered by the plot and the coordinate axes in the display.
 * **`axes`**: an `Axes` object that defines how to represent the coordinate axes of the space where the plot is contained.
-* **`geoms`**: a `Vector` of `Geometry` objects that are plotted in the axes (roughly equivalent to the `args` field in `PlotObject` items in `jlgr`).
+* **`geoms`**: a vector of `Geometry` objects that are plotted in the axes (roughly equivalent to the `args` field in `PlotObject` items of `jlgr`).
 * **`legend`**: a `Legend` object that defines how to present a legend of the different geometries (if required).
 * **`colorbar`**: a `Colorbar` object that defines how to present the guide to the color scale (if required).
 * **`specs`**: a dictionary (`Dict{Symbol, Any}`) with varied plot specifications, including the title, axis labels, and other data that modify the default way of representing the different components of the plot.
@@ -91,7 +91,7 @@ The objects of type `Geometry` contain the data represented in a plot by means o
 
 Each `Geometry` has a `kind`, given by a `Symbol` with the name of the geometric element that it represents, such as `:line` for lines, `:scatter` for scattered points, `:bar` for bars, etc. In addition it has the following fields:
 
-* **`x`**, **`y`**, **`z`**, **`c`**: Vectors of `Float64` which are mapped to different characteristics of the geometry. `x` and `y` are normally their X and Y coordinates; `z` usually is its Z coordinate in 3-D plots, or another aesthetic feature (e.g. the size in scatter plots); `c` is usually meant to represent the color scale, if it exists.
+* **`x`**, **`y`**, **`z`**, **`c`**: vectors of `Float64` numbers that are mapped to different characteristics of the geometry. `x` and `y` are normally their X and Y coordinates; `z` usually is its Z coordinate in 3-D plots, or another aesthetic feature (e.g. the size in scatter plots); `c` is usually meant to represent the color scale, if it exists.
 * **`spec`**: a `String` with the specification of the line style, the type of marker and the color of lines in line plots. (Cf. the defintion of format strings in [matplotlib](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.plot.html))
 * **`label`**: a `String` with the label used to identify the geometry in the plot legend.
 * **`attributes`**: a `Dict{Symbol, Float64}` with extra attributes to control how geometries are plotted.
@@ -113,11 +113,11 @@ end
 
 `Axes` is a type of objects that contain the graphical specifications of the coordinate system of a plot.
 
-`Axes` are determined by their **`kind`**, which may be `:axes2d` for 2-D plots, `:axes3d` for 3-D plots, and `:polar` for polar plots. The rest of its fields are:
+Axes are determined by their **`kind`**, which may be `:axes2d` for 2-D plots, `:axes3d` for 3-D plots, and `:axespolar` for polar plots. The rest of its fields are:
 
-* **`ranges`**: boundaries of the different axes/scales. They are given as a dictionary whose keys are `Symbol`s with the name of the axis (`:x`, `:y`, `:z`, `:c`), and whose values are tuples with two float values &mdash; the minimum and maximum values, respectively.
+* **`ranges`**: boundaries of the different axes/scales. They are given as a dictionary whose keys are symbols with the name of the axis (`:x`, `:y`, `:z`, `:c`), and whose values are tuples with two float values &mdash; the minimum and maximum values, respectively.
 * `tickdata`: numeric specifications of the "ticks" that are drawn on the axes. They are given as a dictionary whose keys are the names of the axis (as for `range`), and whose values are tuples that contain for that axis: (1) the "minor" value between consecutive ticks; (2) a tuple with the two ends of the axis ticks; and (3) the number of minor ticks between "major", numbered ticks.
-* **`ticklabels`**: transformations between tick values and labels. They are given as a dictionary whose keys are the names of the axis, and whose values are functions that accept a number as argument, and return a `String` with the text that must be written at major ticks. (This only works for the X and Y axes).
+* **`ticklabels`**: transformations between tick values and labels. They are given as a dictionary whose keys are the names of the axis, and whose values are functions that accept a number as argument, and return a string with the text that must be written at major ticks. (This only works for the X and Y axes).
 * **`perspective`**: A `Vector{Int}` that contains the "rotation" and "tilt" angles that are used to project 3-D axes on the plot plane. (Only for 3-D plots)
 * **`options`**: A `Dict{Symbol, Int}` with extra options that control the visualization of the axes.
 
@@ -157,7 +157,7 @@ A `Colorbar` object contains the data that defines the colorbar associated to a 
 
 * **`range`**: a 2-tuple with the limits of the color scale represented in the bar.
 * **`tick`**: the distance between tick marks drawn as guide next to the bar.
-* **`scale`** an integer code used by [`GR.setscale`](@ref) to define the scale of the bar (basically, if it is presented as linear or log scale).
+* **`scale`** an integer code used by `GR.setscale` to define the scale of the bar (basically, if it is presented as linear or log scale).
 * **`margin`**: size of the extra margin between the main plot frame and the bar.
 * **`colors`**: number of different grades into which the color scale is divided.
 
@@ -242,18 +242,80 @@ Colorbar(axes::Axes [, colors=256])
 
 This `Colorbar` constructor takes the `Axes` object that is used to calculate the different properties of the color bar, depending on the kind of axis and the range of the `c` axis, which is normally meant to contain the variable that is mapped to a color scale. If the `c` axis is not defined in the axes, this constructor will return an empty `Colorbar`.
 
+### Top-level plot constructors
+
+The constructors presented above for the different components of a plot allow to build plots from data using different "grammars". Besides, GRUtils also provide top-level functions for plot creation that imitate the interface provided by `jlgr`.
+
+Since all those functions follow the same basic steps described above, a macro `@plotfunction` is provided to create them from a template. The interface of this macro is:
+
+```julia
+@plotfunction(fname, options...)
+```
+
+That macro creates two functions, e.g. `@plotfunction plot` creates the following:
+
+* `plot!(f::Figure, args...; kwargs...)`
+* `plot(args...; kwargs...)`
+
+The first of those functions (the one whose name ends with an exclamation) edits the figure given as first argument, replacing its last plot by a new one. The second function (the one without exclamation) creates the plot in the current figure. How those functions work depends on the options that are passed after the function name to the macro. Those options are expressed in the fashion of keyword argments, i.e. as
+`key = value`, and they can be the following:
+
+* **`geom`**: a `Symbol` with the name of the kind of the `Geometry` that is created.
+* **`axes`**: a `Symbol` with the name of the kind of the `Axes` that are created.
+* **`plotkind`**: a `Symbol` with the name of the plot kind (only needed as meta-data). If this option is not given, the name of the function is used by default.
+* **`setargs`**: a function that takes the positional and keyword arguments that are passed to the functions, and transforms and extends them to return: (a) a tuple of positional arguments to be passed to the function `geometries`, and (b) the set of keyword arguments that are passed to the constructor of geometries, axes, and the plot object. If `setargs` is not defined, the positional and keyword arguments are returned untransformed.
+* **`kwargs`**: a named tuple with extra keyword arguments that are passed to the constructors of geometries, axes and the plot object.
+* **`docstring`**: the documentation string that will be assigned to those functions.
 
 ## Drawing plots
 
-Plot objects are drawn by the method `draw(::PlotObject)`, which calls other
-`draw` methods for its different components. Normally the order that is followed
-to draw the plot components is:
+The function `draw` executes the instructions that create the graphical visualization of a plot and its components. That function has specialized methods for the different types that have been defined above. In a top-down order:
 
-1. Paint the background and set the viewport defined by the `viewport` field.
-2. Set the window defined by the axes.
-3. Draw the axes.
-4. Draw the geometries.
-5. Draw the legend (if it is not null and `specs[:location] ≠ 0`).
-6. Draw the colorbar (if it is not null and `spects[:colorbar] == true`).
-7. Write different labels and decorations in axes, title, etc.
-"""
+* `draw(::Figure)` sets up the workspace and calls the `draw` method for all the `PlotObject`s  contained in `plots`.
+* `draw(::PlotObject)` does the following actions:
+    1. Paint the background and set the viewport defined by the `viewport` field.
+    2. Call the method `draw` on the plot's `axes`.
+    3. Call the method `draw` on each item of `geoms`.
+    4. Call `draw` on `legend` it is not an empty legend and `specs[:location] ≠ 0`.
+    5. Call `draw` on `colorbar`if it is not an empty color bar and `specs[:colorbar] == true`).
+    6. Write different labels and decorations in axes, title, etc, as defined in `specs`.
+* `draw(::Axes)` sets the window and the scale defined by the axes ranges and specifications &mdash; except in the case of polar plots, where the polar coordinates are transformed into the Cartesian coordinates of a square of fixed size, and then draws the axes themselves and their guides.
+* `draw(::Geometry)` calls specialized methods for the geometry's `kind`, and returns either `nothing` or a `Vector{Float64}` with the limits of the color scale &mdash; when it is calculated by the drawing operation, e.g. in the case of hexagonal bins.
+* Legends are drawn by the method `draw(lg::Legend, geoms, location)`, where `geoms` is a vector with the geometries of the plot, and `location` is an integer code that defines the location of the legend with respect to the main plot area &mdash; as defined in [Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html). The geometries are passed down to the `guide` function, which has specialized methods for the kind of geometries that can be represented in legends.
+* Color bars are drawn by the method `draw(cb::Colorbar [, range])`,
+where the optional `range` is by default `cb.range`, but can be overriden by
+other values.
+
+## Extending GRUtils
+
+One of the purposes of GRUtils' structure is to facilitate its extension through new kinds of plots. New functions to create plots based on existing geometries (e.g. through statistical transformation of the data) can be created with the `@plotfunction` macro and a custom function that sets up the data. Histograms are an example of this: the input of a histogram is a set of values that are binned, such that the histogram itself is a bar plot with the frequencies of the bins. Now, the histogram functions are defined though something like:
+
+```julia
+@plotfunction(histogram, geom = :bar, axes = :axes2d, kind = :hist,
+setargs = _setargs_hist, docstring = doc_hist)
+```
+
+The expressions used in that macro call are:
+
+* `histogram`: the name of the function that will be created.
+* `geom = :bar`, to declare that the kind of the histogram geometries will be `:bar`.
+* `axes = :axes2d`, to declare that it will be a plot drawn on 2-D axes.
+* `kind = :hist`, an arbitrary option that helps to identify the kind of plot that will be made, although this is not currently used.
+* `setargs = _setargs_hist`: this is where the magic occurs. `_setargs_hist` is the name of a function that makes the transformation of the input data into the coordinates of the bars.
+* `docstring = doc_hist`: this is used to define the documentation string that will be associated both to `histogram` and `histogram!` (in this example contained in the variable `doc_hist`).
+
+If the new kind of plot implies the definition of a new kind of geometry, other methods should be created in addition. Let's say that this new geometry is called `mygeom`; then at least the following method should be defined:
+
+```julia
+draw(g::Geometry, ::Val{:mygeom})
+```
+
+This method should contain the low-level plotting instructions based on the functions of GR to draw the geometries (lines, markers, areas and other elements), using the data contained in `g`. The returned value should be `nothing`, unless the ends of the color scale are not given in the geometry `g`, but calculated by the functions of GR. In such case, this method can return a vector with the minimum and maximum values of the color scale (as `Float64`).
+
+If the new geometry is also meant to have a legend key, the following method of the `guide` function should also be defined:
+
+```julia
+guide(Val{:mygeom}, g, x, y)
+```
+
+This method should contain the plotting instructions to draw the key associated to the geometry `g`  in the (`x`, `y` coordinates). The dimensions of the key should not go outside a rectangular box centred in `(0.0, 0.0)`, with width equal to `0.06` and height equal to `0.03`, in NDC units.
