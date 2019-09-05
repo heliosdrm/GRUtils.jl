@@ -64,74 +64,64 @@ function Geometry(g::Geometry; kwargs...)
 end
 
 """
-    geometries(K, args...; kwargs...)
+    geometries(kind, x [, y, z, c; kwargs...]) -> Vector{Geometry}
 
-Create a vector of [`Geometry`](@ref) objects. To create a geometry of kind =
-`kind::Symbol`, use `K = Val(kind)`. The positional and keyword arguments
-are specific for each geometry kind.
+Create a vector of [`Geometry`](@ref) objects of a given `kind`, with
+`x`, `y`, `z` and `c` coordinates, and other parameters determined by the
+keyword arguments.
+
+If there is only one array `x` of real numbers given for the geometry coordinates,
+this will actually be used as Y coordinates, and X will be defined as a sequence
+of integers starting at 1. If that array contains complex numbers, the real part
+will be taken as X coordinates, and the imaginary part as Y coordinates.
+
+The last coordinate can be given as a function that will take the previous
+coordinates as inputs.
 """
 # Complex arguments processed as pair of real, imaginary values
-geometries(K, x::AbstractVecOrMat{<:Complex}, args...; kwargs...) =
-    geometries(K, real(x), imag(x), args...; kwargs...)
+geometries(kind, x::AbstractVecOrMat{<:Complex}, args...; kwargs...) =
+    geometries(kind, real.(x), imag.(x), args...; kwargs...)
 
 # Parse function arguments
-geometries(K, x::AbstractVecOrMat{<:Real},
-    f::Function, args...; kwargs...) = geometries(K, x, f.(x), args...; kwargs...)
+geometries(kind, x::AbstractVecOrMat{<:Real}, f::Function, args...; kwargs...) =
+    geometries(kind, x, f.(x), args...; kwargs...)
 
-geometries(K, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real},
+geometries(kind, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real},
     f::Function, args...; kwargs...) =
-    geometries(K, x, y, f.(x, y), args...; kwargs...)
+    geometries(kind, x, y, f.(x, y), args...; kwargs...)
 
-geometries(K, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real}, z::AbstractVecOrMat{<:Real},
-    f::Function, args...; kwargs...) = geometries(K, x, y, z, f.(x, y, z), args...; kwargs...)
+geometries(kind, x::AbstractVecOrMat{<:Real}, y::AbstractVecOrMat{<:Real}, z::AbstractVecOrMat{<:Real},
+    f::Function, args...; kwargs...) =
+    geometries(kind, x, y, z, f.(x, y, z), args...; kwargs...)
 
-# Generic functions with given x, y, z, c.
-geometries(::Val{kind},
-    x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat,
-    c::AbstractVecOrMat; kwargs...) where kind = [Geometry(kind; x=x, y=y, z=z, c=c, kwargs...)]
-
-geometries(::Val{kind},
-    x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat;
-    kwargs...) where kind = [Geometry(kind; x=x, y=y, z=z, kwargs...)]
-
-geometries(::Val{kind}, x::AbstractVecOrMat, y::AbstractVecOrMat;
-    kwargs...) where kind = [Geometry(kind; x=x, y=y, kwargs...)]
-
-geometries(::Val{kind}, y; kwargs...) where kind = [Geometry(kind; x=1:length(y), y=y, kwargs...)]
-
-# Argument matrices for groups of geometries
-
+# Functions with given x, y, z, c.
 column(a::Vector, i::Int) = a
 column(a::AbstractVector, i::Int) = collect(a)
 column(a::AbstractMatrix, i::Int) = a[:,i]
 
-for kind in ("line", "step", "stem", "polarline")
-    @eval function geometries(::Val{Symbol($kind)},
-        x::AbstractVecOrMat, y::AbstractVecOrMat, spec::String=""; kwargs...)
+function geometries(kind,
+    x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat,
+    c::AbstractVecOrMat; kwargs...)
 
-        [Geometry(Symbol($kind); x=column(x,i), y=column(y,i), spec=spec, kwargs...)
-        for i = 1:size(y,2)]
-    end
-    @eval function geometries(K::Val{Symbol($kind)},
-        y::AbstractVecOrMat, spec::String=""; kwargs...)
-
-        geometries(K, 1:size(y,1), y, spec; kwargs...)
-    end
-end
-
-function geometries(::Val{:line3d},
-    x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat, spec::String=""; kwargs...)
-
-    [Geometry(:line3d; x=column(x,i), y=column(y,i), z=column(z,i), spec=spec, kwargs...)
+    [Geometry(kind; x=column(x,i), y=column(y,i), z=column(z,i), c=column(c,i), kwargs...)
     for i = 1:size(y,2)]
 end
 
-function geometries(::Val{:scatter},
-    x::AbstractVector, y::AbstractVector,
-    z::AbstractVector=emptyvector(Float64),
-    c::AbstractVector=emptyvector(Float64); kwargs...)
+function geometries(kind,
+    x::AbstractVecOrMat, y::AbstractVecOrMat, z::AbstractVecOrMat;
+    kwargs...)
 
-    [Geometry(:scatter; x=column(x,1), y=column(y,1), z=column(z,1), c=column(c,1), kwargs...)]
+    [Geometry(kind; x=column(x,i), y=column(y,i), z=column(z,i), kwargs...)
+    for i = 1:size(y,2)]
+end
+
+function geometries(kind, x::AbstractVecOrMat, y::AbstractVecOrMat; kwargs...)
+    [Geometry(kind; x=column(x,i), y=column(y,i), kwargs...)
+    for i = 1:size(y,2)]
+end
+
+function geometries(kind, y::AbstractVecOrMat; kwargs...)
+    [Geometry(kind; x=1:size(y,1), y=column(y,i), kwargs...) for i = 1:size(y,2)]
 end
 
 ####################

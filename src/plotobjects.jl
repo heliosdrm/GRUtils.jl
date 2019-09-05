@@ -1,6 +1,6 @@
 """
     Viewport(outer::Vector{Float64}, inner::Vector{Float64})
-    Viewport(subplot, framewidhts [, ratio::Real, margins])
+    Viewport(subplot, frame::Bool [, ratio::Real, margins])
 
 The `Viewport` of a plot determines the NDC of the `outer` box that contains
 all the elements of the plot, and the `inner` box where the main items
