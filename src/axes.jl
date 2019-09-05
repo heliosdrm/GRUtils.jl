@@ -62,19 +62,39 @@ Axes(kind::Symbol; ranges = Dict{Symbol, AxisRange}(),
     options = Dict{Symbol, Int}()) =
     Axes(kind, ranges, tickdata, ticklabels, perspective, options)
 
-function Axes(K::Val{kind}, geoms::Array{<:Geometry}; panzoom=nothing, kwargs...) where kind
+function Axes(kind, geoms::Array{<:Geometry}; panzoom=nothing, kwargs...)
     # Set limits based on data
     ranges = minmax(geoms)
     adjustranges!(ranges, panzoom; kwargs...)
-    # Configure axis scale and ticks
-    tickdata = set_ticks(K, ranges; kwargs...)
-    # Tick labels
-    ticklabels = set_ticklabels(K; kwargs...)
-    perspective = set_perspective(K; kwargs...)
-    options = Dict{Symbol, Int}(
-        :scale => set_scale(K; kwargs...),
-        :grid => Int(get(kwargs, :grid, 1))
-        )
+    ticklabels = Dict{Symbol, Function}()
+    # Special cases dependin on axis kind
+    if kind == :axes2d
+        tickdata = set_ticks(ranges, 5, (:x, :y); kwargs...)
+        set_ticklabels!(ticklabels; kwargs...)
+        perspective = [0, 0]
+        options = Dict{Symbol, Int}(
+            :scale => set_scale(; kwargs...),
+            :grid => Int(get(kwargs, :grid, 1))
+            )
+    elseif kind == :axes3d
+        tickdata = set_ticks(ranges, 2, (:x, :y, :z); kwargs...)
+        perspective = [Int(get(kwargs, :rotation, 40)), Int(get(kwargs, :tilt, 70))]
+        options = Dict{Symbol, Int}(
+            :scale => set_scale(; kwargs...),
+            :grid => Int(get(kwargs, :grid, 1))
+            )
+    elseif kind == :axespolar
+        tickdata = set_ticks(ranges, 2, (:x, :y); kwargs..., xlog=false, ylog=false, xflip=false, yflip=false)
+        perspective = [0, 0]
+        options = Dict{Symbol, Int}(
+            :scale => 0,
+            :grid => Int(get(kwargs, :grid, 1))
+            )
+    else # Not defined
+        tickdata = Dict{Symbol, AxisTickData}()
+        perspective = [0, 0]
+        options = Dict{Symbol, Int}(:scale => 0, :grid => 1)
+    end
     haskey(kwargs, :tickdir) && (options[:tickdir] = kwargs[:tickdir])
     Axes(kind, ranges, tickdata, ticklabels, perspective, options)
 end
@@ -209,29 +229,9 @@ and limits if the axes are set in log scale (`xlog`, `ylog`, etc.,
 given as `Bool` values), or if they are reversed (`xflip`, `yflip`, etc.,
 also given as `Bools`).
 """
-function set_ticks(::Val{:axes2d}, ranges; kwargs...)
-    major_count = 5
-    xaxis = set_axis(:x, ranges[:x], major_count; kwargs...)
-    yaxis = set_axis(:y, ranges[:y], major_count; kwargs...)
-    Dict(:x => xaxis, :y => yaxis)
+function set_ticks(ranges, major_count, coordinates; kwargs...)
+    Dict(c => set_axis(c, ranges[c], major_count; kwargs...) for c ∈ coordinates)
 end
-
-function set_ticks(::Val{:axes3d}, ranges; kwargs...)
-    major_count = 2
-    xaxis = set_axis(:x, ranges[:x], major_count; kwargs...)
-    yaxis = set_axis(:y, ranges[:y], major_count; kwargs...)
-    zaxis = set_axis(:z, ranges[:z], major_count; kwargs...)
-    Dict(:x => xaxis, :y => yaxis, :z => zaxis)
-end
-
-function set_ticks(::Val{:polar}, ranges; kwargs...)
-    major_count = 2
-    xaxis = set_axis(:x, ranges[:x], major_count; kwargs..., xlog=false, xflip=false)
-    yaxis = set_axis(:y, ranges[:y], major_count; kwargs..., ylog=false, yflip=false)
-    Dict(:x => xaxis, :y => yaxis)
-end
-
-set_ticks(::Any, ranges; kwargs...) = Dict{Symbol, AxisTickData}()
 
 function set_axis(axname, axrange, major; kwargs...)
     if get(kwargs, Symbol(axname, :log), false)
@@ -262,16 +262,12 @@ in the first argument as a `Val` object (i.e. `Val(:axes2d)`, etc.).
 The keyword arguments may be functions that transform numbers into strings,
 or collection of strings that are associated to the sequence of integers `1, 2, ...`.
 """
-function set_ticklabels(::Val{:axes2d}; kwargs...)
-    ticklabels = Dict{Symbol, Function}()
+function set_ticklabels!(ticklabels; kwargs...)
     if haskey(kwargs, :xticklabels) || haskey(kwargs, :yticklabels)
         ticklabels[:x] = get(kwargs, :xticklabels, identity) |> ticklabel_fun
         ticklabels[:y] = get(kwargs, :yticklabels, identity) |> ticklabel_fun
     end
-    return ticklabels
 end
-
-set_ticklabels(::Any; kwargs...) = Dict{Symbol, Function}()
 
 function ticklabel_fun(f::Function)
     return (x, y, svalue, value) -> GR.textext(x, y, string(f(value)))
@@ -301,7 +297,7 @@ The kind of the axes is passed in the first argument as a `Val` object
 
 The result is an integer code used by the low level function [`GR.setscale`](@ref).
 """
-function set_scale(::Any; kwargs...)
+function set_scale(; kwargs...)
     scale = 0
     get(kwargs, :xlog, false) && (scale |= GR.OPTION_X_LOG)
     get(kwargs, :ylog, false) && (scale |= GR.OPTION_Y_LOG)
@@ -311,27 +307,6 @@ function set_scale(::Any; kwargs...)
     get(kwargs, :zflip, false) && (scale |= GR.OPTION_FLIP_Z)
     return scale
 end
-
-set_scale(::Val{:polar}; kwargs...) = 0
-
-# Set the perspective (only for axes3d)
-
-"""
-    set_perspective(K; kwargs...)
-
-Set the perspective of the plot, using the keyword arguments `rotation` and `tilt`.
-
-Scale specifications are only used for axes of `kind == :axes3d`.
-The kind of the axes is passed in the first argument as a `Val` object
-(i.e. `Val(:axes2d)`, etc.).
-"""
-function set_perspective(::Val{:axes3d}; kwargs...)
-    rotation = Int(get(kwargs, :rotation, 40))
-    tilt = Int(get(kwargs, :tilt, 70))
-    [rotation, tilt]
-end
-
-set_perspective(::Any; kwargs...) = [0, 0]
 
 ####################
 ## `draw` methods ##

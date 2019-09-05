@@ -88,7 +88,7 @@ macro plotfunction(fname, options...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
                 geoms = geometries(Symbol($geom_k), args...; geom_attributes(;kwargs...)...)
             end
-            axes = Axes(Val($axes_k), geoms; kwargs...)
+            axes = Axes(Symbol($axes_k), geoms; kwargs...)
             f.plots[end] = PlotObject(axes, geoms; kind=$plotkind, plot_specs(; kwargs...)...)
             draw(f)
         end
@@ -150,7 +150,7 @@ function _setargs_step(f, args...; kwargs...)
     else
         throw(ArgumentError("""`where` must be one of `"mid"`, `"pre"` or `"post"`"""))
     end
-    return _setargs_line(args, (step_position=step_position, where=step_position_str, kwargs...))
+    return _setargs_line(f, args...; step_position=step_position, where=step_position_str, kwargs...)
 end
 
 @plotfunction(step, geom = :step, axes = :axes2d, setargs=_setargs_step, docstring="""
@@ -1129,10 +1129,7 @@ sequentially at X = 1, 2, etc.
 for ax = ("x", "y")
     fname! = Symbol(ax, :ticklabels!)
     fname = Symbol(ax, :ticklabels)
-    @eval function $fname!(p::PlotObject, s)
-        K = Val(p.axes.kind)
-        merge!(p.axes.ticklabels, set_ticklabels(K; $fname = s))
-    end
+    @eval $fname!(p::PlotObject, s) = set_ticklabels!(p.axes.ticklabels; $fname = s)
     @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
     @eval $fname(s) = $fname!(currentplot(gcf()), s)
     @eval @doc TICKLABELS_DOC $fname!
