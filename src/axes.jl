@@ -40,10 +40,9 @@ to "empty" or "null" values if not given). Those fields are:
 
 ### Alternative constructor
 
-    Axes(K::Val{kind}, geoms::Array{<:Geometry} [; kwargs...]) where kind
+    Axes(kind, geoms::Array{<:Geometry} [; kwargs...]) where kind
 
-An `Axes` object can also be made by defining the kind of the axes in a `Val`
-object (`Val(:axes2d)`, `Val(:axes3d)`, etc.), and a vector of [`Geometry`](@ref)
+An `Axes` object can also be made by defining the `kind` of the axe, and a vector of [`Geometry`](@ref)
 objects that are used to calculate the different axis limits, ticks, etc.
 """
 struct Axes
@@ -219,12 +218,14 @@ end
 # Set ticks for the different types of axes
 
 """
-    set_ticks(K, ranges; kwargs...)
+    set_ticks(ranges, major_count, coordinates; kwargs...)
 
 Define the tick numeric specifications of a given `Axes`, taking into
-account its `kind` and calculated `ranges` &mdash; see [`minmax`](@ref).
-The `kind` is passed as a `Val` object (`Val(:axes2d)`, `Val(:axes3d)`, etc.).
-in the first argument. Keyword arguments are used to adjust the tick intervals
+account its calculated `ranges` &mdash; see [`minmax`](@ref), with a given
+number of minor ticks between major ticks (`major_count`). The specifications
+are given for the axes defined in `coordinates` as a tuple of symbols
+(e.g. `(:x, :y)` for the X and Y axes).
+Keyword arguments are used to adjust the tick intervals
 and limits if the axes are set in log scale (`xlog`, `ylog`, etc.,
 given as `Bool` values), or if they are reversed (`xflip`, `yflip`, etc.,
 also given as `Bools`).
@@ -252,12 +253,10 @@ end
 # Set tick labels - only working for axes2d
 
 """
-    set_ticklabels(K; kwargs...)
+    set_ticklabels!(ticklabels; kwargs...)
 
-Define the tick label transformation functions for `Axes`, using the
+Modify the given tick label transformation functions for `Axes`, using the
 keyword arguments `xticklabels` or `yticklabels` (if they are given).
-This is only used for axes of `kind == :axes2d`. The kind of the axes is passed
-in the first argument as a `Val` object (i.e. `Val(:axes2d)`, etc.).
 
 The keyword arguments may be functions that transform numbers into strings,
 or collection of strings that are associated to the sequence of integers `1, 2, ...`.
@@ -284,16 +283,12 @@ end
 # Set scale
 
 """
-    set_scale(K; kwargs...)
+    set_scale(; kwargs...)
 
 Set the scale characteristics of the axes (logarithmic or flipped axes),
-taking into account the kind of the axes, and keyword arguments that determine
+taking into account the and keyword arguments that determine
 which axes are in logarithmic scale (`xlog`, `ylog`, etc., given as `Bool` values)
 and which ones are flipped (`xflip`, `yflip`, etc. also given as `Bool`s).
-
-Scale specifications are ignored for axes of `kind == :polar`.
-The kind of the axes is passed in the first argument as a `Val` object
-(i.e. `Val(:axes2d)`, etc.).
 
 The result is an integer code used by the low level function [`GR.setscale`](@ref).
 """
