@@ -194,8 +194,7 @@ This constructor also accepts two optional arguments: `ratio`, which is the widt
 Geometry(kind::Symbol [; kwargs...])
 ```
 
-Most geometries do not need data for all the possible parameters that the `Geometry` type accepts. Thus, to simplify the creation of geometries, an alternative constructor takes the geometry's `kind` as the only positional argument, and the rest of fields are given
-as keyword arguments (empty by default).
+Most geometries do not need data for all the possible parameters that the `Geometry` type accepts. Thus, to simplify the creation of geometries, an alternative constructor takes the geometry's `kind` as the only positional argument, and the rest of fields are given as keyword arguments (empty by default).
 
 Besides, there is a function `geometries` to directly create a vector of `Geometry` objects from the input data easily, taking advantage of multiple dispatch:
 
@@ -215,9 +214,33 @@ In addition, the last coordinate can be given as a "broadcastable" function that
 ### `Axes` constructors
 
 ```julia
-Axes(K::Val{kind}, geoms::Array{<:Geometry} [; kwargs...]) where kind
+Axes(kind::Symbol [; kwargs...])
+Axes(kind, geoms::Array{<:Geometry} [; kwargs...])
 ```
-This `Axes` constructor takes the kind of the axes in a `Val` object (`Val(:axes2d)`, `Val(:axes3d)`, etc.), and the vector of geometries that is meant to be plotted inside the axes, in order to calculate the different axis limits, ticks, etc. The rest of parameters are passed in keyword arguments,
+
+As in the case of `Geometry`, an alternative `Axes` constructor is provided that only requires the `kind` of the axes (`:axes2d`, `:axes3d` or `:axespolar`),
+such that all the other parameters are passed as keyword arguments. Null or
+empty values are used by default for the parameters that are not given.
+
+Besides, there is another `Axes` constructor that takes the kind of the axes and the vector of geometries that is meant to be plotted inside the axes, in order to calculate the different axis limits, ticks, etc. Keyword arguments are used to modify the default calculations.
+
+### `Legend` constructors
+
+```julia
+Legend(geoms [, maxrows])
+```
+
+This `Legend` constructor takes the collection of geometries that are meant to be referred to in the legend, and calculates the dimensions of the legend frame such that it can contain guides to all the geometries that have a non-empty `label`.
+
+Optionally, this constructor takes the maximum number of items that should be represented in a column of the legend, and if the number of labelled geometries exceeds that maximum, the legend is sized to contain all needed columns.
+
+### `Colorbar` constructors
+
+```julia
+Colorbar(axes::Axes [, colors=256])
+```
+
+This `Colorbar` constructor takes the `Axes` object that is used to calculate the different properties of the color bar, depending on the kind of axis and the range of the `c` axis, which is normally meant to contain the variable that is mapped to a color scale. If the `c` axis is not defined in the axes, this constructor will return an empty `Colorbar`.
 
 
 ## Drawing plots
