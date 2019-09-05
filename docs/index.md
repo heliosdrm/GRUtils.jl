@@ -194,16 +194,30 @@ This constructor also accepts two optional arguments: `ratio`, which is the widt
 Geometry(kind::Symbol [; kwargs...])
 ```
 
-Most geometries do not need data for all the possible parameters that the `Geometry` type accepts. Thus, to simplify the creation of geometries, an alternative constructor takes the geometry `kind` as the only positional argument, and the rest of fields are given
+Most geometries do not need data for all the possible parameters that the `Geometry` type accepts. Thus, to simplify the creation of geometries, an alternative constructor takes the geometry's `kind` as the only positional argument, and the rest of fields are given
 as keyword arguments (empty by default).
 
-Besides, there is a function `geometries` to directly create a vector of `Geometry` objects from the input data easily, taking advantage of multiple dispatch. The first argument of all the methods of `geometries` should be a `Val` type `Val(kind)`, where `kind` is the corresponding parameter that describes the kind of geometry.
+Besides, there is a function `geometries` to directly create a vector of `Geometry` objects from the input data easily, taking advantage of multiple dispatch:
 
-geometries(K, args...; kwargs...)
+```julia
+geometries(kind, x [, y, z, c; kwargs...]) -> Vector{Geometry}
+```
 
-Create a vector of [`Geometry`](@ref) objects. To create a geometry of kind =
-`kind::Symbol`, use `K = Val(kind)`. The positional and keyword arguments
-are specific for each geometry kind.
+The positional arguments of this function are the `kind` of the geometry, and the variables that define the coordinates of the geometries. All the other parameters are given as keyword arguments, just as in the previously described constructor.
+
+This function accepts coordinates defined only by one array of numbers, by two variables ( `x` and `y`, typically for 2-D plots), three (`x`, `y`, `z`) or all four variables (`x`, `y`, `z` and `c`). If there is only one array `x` of real numbers given for the geometry coordinates, they will actually be used as Y coordinates, and X will be defined as a sequence of integers starting at 1. If that array contains complex numbers, the real part
+will be taken as X coordinates, and the imaginary part as Y coordinates.
+
+The coordinates can be given as vectors or matrices with the same number of rows. In the latter case, each column of the matrices will be used to define a different `Geometry`. If some coordinates are given as vectors while other are in matrices, vectors will be recycled in all the geometries. E.g. `x` is a vector with `N` numbers and `y` a matrix with `N` rows and `M` columns, the result will be a `N`-vector of geometries `g` such that `g[i]` will be a geometry whose X coordinates are the vector `x`, and whose Y coordinates are the `i`-th column of `y`.
+
+In addition, the last coordinate can be given as a "broadcastable" function that takes the previous coordinates as inputs.
+
+### `Axes` constructors
+
+```julia
+Axes(K::Val{kind}, geoms::Array{<:Geometry} [; kwargs...]) where kind
+```
+This `Axes` constructor takes the kind of the axes in a `Val` object (`Val(:axes2d)`, `Val(:axes3d)`, etc.), and the vector of geometries that is meant to be plotted inside the axes, in order to calculate the different axis limits, ticks, etc. The rest of parameters are passed in keyword arguments,
 
 
 ## Drawing plots
