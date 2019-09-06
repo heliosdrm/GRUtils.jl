@@ -361,5 +361,5 @@ end
 function draw(g::Geometry, ::Val{:image})::Nothing
     w = length(g.x)
     h = length(g.y)
-    GR.drawimage(0.0, w, h, 0.0, w, h, g.c)
+    GR.drawimage(0.0, w, 0.0, h, w, h, g.c)
 end

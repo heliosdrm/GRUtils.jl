@@ -833,20 +833,20 @@ end
 
 function _setargs_imshow(f, data; kwargs...)
     if isa(data, AbstractString)
-        w, h, data = GR.readimage(data)
+        w, h, rgbdata = GR.readimage(data)
     else
-        w, h = size(data)
+        h, w = size(data)
         cmap = colormap()
-        data = [to_rgba(value, cmap) for value ∈ data]
+        rgbdata = [to_rgba(value, cmap) for value ∈ transpose(data)]
     end
     if get(kwargs, :xflip, false)
-        data = reverse(data, dims=1)
+        rgbdata = reverse(rgbdata, dims=2)
     end
-    if get(kwargs, :yflip, true)
-        data = reverse(data, dims=2)
+    if get(kwargs, :yflip, false)
+        rgbdata = reverse(rgbdata, dims=1)
     end
     kwargs = (; xlim = (0.0, float(w)), ylim = (0.0, float(h)), ratio = w/h, kwargs...)
-    ((1.0:w, 1.0:h, emptyvector(Float64), float.(data[:])), kwargs)
+    ((1.0:w, 1.0:h, emptyvector(Float64), float.(rgbdata[:])), kwargs)
 end
 
 @plotfunction(imshow, geom = :image, axes = :axes2d, setargs = _setargs_imshow,
