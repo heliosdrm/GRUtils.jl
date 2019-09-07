@@ -363,3 +363,25 @@ function draw(g::Geometry, ::Val{:image})::Nothing
     h = length(g.y)
     GR.drawimage(0.0, w, 0.0, h, w, h, g.c)
 end
+
+function draw(g::Geometry, ::Val{:isosurf})::Nothing
+    nx = Int(g.x[1])
+    ny = Int(g.y[1])
+    nz = Int(g.z[1])
+    values = Array{UInt16,3}(undef, (nx, ny, nz))
+    values[:] .= g.c
+    color32 = round(UInt32, g.attributes[:color])
+    color = float.((color32 >> 16 & 0xff, color32 >> 8 & 0xff, color32 & 0xff)) ./ 255
+    isovalue = g.attributes[:isovalue]
+    GR.selntran(0)
+    GR.gr3.clear()
+    mesh = GR.gr3.createisosurfacemesh(values, (2/(nx-1), 2/(ny-1), 2/(nz-1)),
+            (-1., -1., -1.),
+            round(Int64, isovalue * (2^16-1)))
+    GR.gr3.setbackgroundcolor(1, 1, 1, 0)
+    GR.gr3.drawmesh(mesh, 1, (0, 0, 0), (0, 0, 1), (0, 1, 0), color, (1, 1, 1))
+    vp = GR.inqviewport()
+    GR.gr3.drawimage(vp..., 500, 500, GR.gr3.DRAWABLE_GKS)
+    GR.gr3.deletemesh(mesh)
+    GR.selntran(1)
+end

@@ -1,5 +1,5 @@
 ## Select keyword arguments from list
-KEYS_GEOM_ATTRIBUTES = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :spec, :step_position]
+KEYS_GEOM_ATTRIBUTES = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :spec, :step_position, :isovalue, :color]
 KEYS_PLOT_SPECS = [:where, :scheme, :colormap, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
     :levels, :majorlevels, :colorbar, :ratio, :overlay_axes, :noframe]
 # kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
@@ -871,6 +871,42 @@ two-dimensional array and the current colormap.
     julia> imshow(z)
     julia> # Draw an image from a file
     julia> imshow("example.png")
+""")
+
+function _setargs_isosurf(f, v; kwargs...)
+    values = round.((v .- _min(v)) ./ (_max(v) .- _min(v)) .* (2^16-1))
+    nx, ny, nz = size(v)
+    color = get(kwargs, :color, [0.0, 0.5, 0.8])
+    color32 = round(UInt32, color[1]*255) << 16 +
+              round(UInt32, color[2]*255) << 8 +
+              round(UInt32, color[3]*255)
+    isovalue = (get(kwargs, :isovalue, 0.5) - _min(v)) / (_max(v) - _min(v))
+    kwargs = (; kwargs..., color=float(color32), isovalue=isovalue)
+    (([float(nx)], [float(ny)], [float(nz)], values[:]), kwargs)
+end
+
+@plotfunction(isosurface, geom = :isosurf, axes = :axes3d, setargs = _setargs_isosurf,
+kwargs = (xticks=NULLPAIR, yticks=NULLPAIR, zticks=NULLPAIR, ratio=1.0, gr3=true), docstring="""
+Draw an isosurface.
+
+This function can draw an image either from reading a file or using a
+two-dimensional array and the current colormap. Values greater than the
+isovalue will be seen as outside the isosurface, while values less than
+the isovalue will be seen as inside the isosurface.
+
+:param v: the volume data
+:param isovalue: the isovalue
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Create example data
+    julia> s = LinRange(-1, 1, 40)
+    julia> x, y, z = meshgrid(s, s, s)
+    julia> v = 1 .- (x .^ 2 .+ y .^ 2 .+ z .^ 2) .^ 0.5
+    julia> # Draw an image from a 2d array
+    julia> isosurface(v, isovalue=0.2)
 """)
 
 ## Legends

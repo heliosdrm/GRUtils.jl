@@ -152,3 +152,7 @@ GRUtils.imshow(z/4 .+ 0.5)
 x = randn(100000)
 y = randn(100000)
 GRUtils.hexbin(x, y)
+
+s = LinRange(-1, 1, 40)
+v = 1 .- (s .^ 2 .+ s' .^ 2 .+ reshape(s,1,1,:) .^ 2) .^ 0.5
+GRUtils.isosurface(v, isovalue=0.2)
