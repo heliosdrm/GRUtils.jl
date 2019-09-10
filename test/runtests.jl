@@ -133,7 +133,7 @@ GRUtils.tricont(x, y, z)
 GRUtils.tricont(x, y, z, levels=10)
 GRUtils.tricont(x, y, z, colorbar=false)
 # Surface
-# GRUtils.surface(x, y, z)
+# GRUtils.surface(x, y, z) # gr3
 GRUtils.trisurf(x, y, z)
 # Create example grid data
 x = LinRange(-2, 2, 40)
@@ -143,8 +143,8 @@ z = sin.(x) .+ cos.(y')
 # Draw the contour plot
 GRUtils.contour(x, y, z)
 GRUtils.contourf(x, y, z)
-# GRUtils.surface(x, y, z)
-GRUtils.surface(x, y, z, accelerate=false)
+# GRUtils.surface(x, y, z) # gr3
+# GRUtils.surface(x, y, z, accelerate=false) # compile gr3
 GRUtils.wireframe(x, y, z)
 GRUtils.heatmap(z)
 GRUtils.polarheatmap(z)
