@@ -1,10 +1,10 @@
 ## Select keyword arguments from lists
 const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :clabels, :label, :linewidth, :markersize, :spec, :step_position]
-const KEYS_PLOT_SPECS = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :ratio, :scheme, :subplot, :title,
+const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
 geom_attributes(; kwargs...) = filter(p -> p.first ∈ KEYS_GEOM_ATTRIBUTES, kwargs)
-plot_specs(; kwargs...) = filter(p -> p.first ∈ KEYS_PLOT_SPECS, kwargs)
+plot_attributes(; kwargs...) = filter(p -> p.first ∈ KEYS_PLOT_ATTRIBUTES, kwargs)
 
 _setargs_default(f, args...; kwargs...) = (args, kwargs)
 
@@ -74,21 +74,21 @@ macro plotfunction(fname, options...)
             if haskey(kwargs, :hold)
                 holdstate = kwargs[:hold]
             else
-                holdstate = get(p.specs, :hold, false)
+                holdstate = get(p.attributes, :hold, false)
             end
             if holdstate
-                # Keep all specs
-                kwargs = (; p.specs..., kwargs...)
+                # Keep all attributes
+                kwargs = (; p.attributes..., kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
                 geoms = [p.geoms; geometries(Symbol($geom_k), args...; geom_attributes(;kwargs...)...)]
             else
                 # Only keep previous subplot
-                kwargs = (subplot = p.specs[:subplot], kwargs...)
+                kwargs = (subplot = p.attributes[:subplot], kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
                 geoms = geometries(Symbol($geom_k), args...; geom_attributes(;kwargs...)...)
             end
             axes = Axes(Symbol($axes_k), geoms; kwargs...)
-            f.plots[end] = PlotObject(axes, geoms; kind=$plotkind, plot_specs(; kwargs...)...)
+            f.plots[end] = PlotObject(axes, geoms; kind=$plotkind, plot_attributes(; kwargs...)...)
             draw(f)
         end
         $fname(args...; kwargs...) = $fname!(gcf(), args...; kwargs...)

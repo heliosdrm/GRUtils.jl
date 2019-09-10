@@ -1,7 +1,7 @@
 # Legend
 function legend!(p::PlotObject, args...; location=1)
     # Reset main viewport if there was a legend
-    if haskey(p.specs, :location) && p.specs[:location] ∈ LEGEND_LOCATIONS[:right_out]
+    if haskey(p.attributes, :location) && p.attributes[:location] ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] += p.legend.size[1]
     end
     for i = 1:min(length(args), length(p.geoms))
@@ -12,7 +12,7 @@ function legend!(p::PlotObject, args...; location=1)
     if p.legend.size ≠ NULLPAIR && location ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] -= p.legend.size[1]
     end
-    p.specs[:location] = location
+    p.attributes[:location] = location
 end
 
 legend!(f::Figure, args...; kwargs...) = legend!(currentplot(f), args...; kwargs...)
@@ -37,7 +37,7 @@ documentation of GR.textext.
 legend(args::AbstractString...; kwargs...) = legend!(currentplot(gcf()), args...; kwargs...)
 
 # Hold
-hold!(p::PlotObject, state::Bool) = (p.specs[:hold] = state)
+hold!(p::PlotObject, state::Bool) = (p.attributes[:hold] = state)
 
 hold!(f::Figure, state) = hold!(currentplot(f), state)
 
@@ -70,9 +70,9 @@ hold(state) = hold!(currentplot(gcf()), state)
 # Title
 function title!(p::PlotObject, s)
     if isempty(s)
-        delete!(p.specs, :title)
+        delete!(p.attributes, :title)
     else
-        p.specs[:title] = s
+        p.attributes[:title] = s
     end
     return nothing
 end
@@ -208,9 +208,9 @@ for ax = ("x", "y", "z")
     fname = Symbol(ax, :label)
     @eval function $fname!(p::PlotObject, s)
         if isempty(s)
-            delete!(p.specs, Symbol($ax, :label))
+            delete!(p.attributes, Symbol($ax, :label))
         else
-            p.specs[Symbol($ax, :label)] = s
+            p.attributes[Symbol($ax, :label)] = s
         end
         return nothing
     end
@@ -226,7 +226,7 @@ for ax = ("x", "y", "z")
         if haskey(tickdata, Symbol($ax))
             tickdata[Symbol($ax)] = (float(minor), tickdata[Symbol($ax)][2], Int(major))
         end
-        p.specs[Symbol($ax, :ticks)] = (minor, major)
+        p.attributes[Symbol($ax, :ticks)] = (minor, major)
         return nothing
     end
     @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
@@ -254,7 +254,7 @@ for ax = ("x", "y", "z")
             axisticks = tickdata[Symbol($ax)]
             tickdata[Symbol($ax)] = (axisticks[1], limits, axisticks[3])
         end
-        p.specs[Symbol($ax, :lim)] = (minval, maxval)
+        p.attributes[Symbol($ax, :lim)] = (minval, maxval)
         return nothing
     end
     @eval function $fname!(p::PlotObject, minval::Union{Nothing, Number}, maxval::Union{Nothing, Number}, adjust::Bool=false)
@@ -270,9 +270,9 @@ for ax = ("x", "y", "z")
         fname = Symbol(ax, attr)
         @eval function $fname!(p::PlotObject, flag=false)
             if p.axes.kind ∈ (:axes2d, :axes3d)
-                p.axes.options[:scale] = set_scale(; p.specs...)
+                p.axes.options[:scale] = set_scale(; p.attributes...)
             end
-            p.specs[Symbol($ax, $attr)] = flag
+            p.attributes[Symbol($ax, $attr)] = flag
             return nothing
         end
         @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
@@ -306,7 +306,7 @@ for ax = ("x", "y")
     fname = Symbol(ax, :ticklabels)
     @eval function $fname!(p::PlotObject, s)
         set_ticklabels!(p.axes.ticklabels; $fname = s)
-        p.specs[$fname] = s
+        p.attributes[Symbol($ax, :ticklabels)] = s
     end
     @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
     @eval $fname(s) = $fname!(currentplot(gcf()), s)
@@ -316,7 +316,7 @@ end
 # Grid
 function grid!(p::PlotObject, flag)
     p.axes.options[:grid] = Int(flag)
-    p.specs[:grid] = flag
+    p.attributes[:grid] = flag
 end
 
 grid!(f::Figure, flag) = grid!(currentplot(f), flag)
@@ -338,7 +338,7 @@ Set the flag to draw a grid in the plot axes.
 grid(flag) = grid!(currentplot(gcf()), flag)
 
 # Colorbar
-colorbar!(p::PlotObject, flag) = (p.specs[:colorbar] = flag)
+colorbar!(p::PlotObject, flag) = (p.attributes[:colorbar] = flag)
 
 colorbar!(f::Figure, flag) = colorbar!(currentplot(f), flag)
 
@@ -357,9 +357,9 @@ colorbar(flag) = colorbar!(currentplot(gcf()), flag)
 
 # Aspect ratio
 function aspectratio!(p::PlotObject, r)
-    margins = plotmargins(p.legend, p.colorbar; p.specs...)
+    margins = plotmargins(p.legend, p.colorbar; p.attributes...)
     set_ratio!(p.viewport.inner, r, margins)
-    p.specs[:ratio] = r
+    p.attributes[:ratio] = r
 end
 
 aspectratio!(f::Figure, r) = aspectratio!(currentplot(f), r)

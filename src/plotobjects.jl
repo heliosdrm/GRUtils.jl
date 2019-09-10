@@ -36,6 +36,7 @@ end
 function Viewport(subplot, frame::Bool, ratio::Real, margins=zeros(4))
     v = Viewport(subplot, frame)
     set_ratio!(v.inner, ratio, margins)
+    v
 end
 
 function set_ratio!(box, ratio, margins=zeros(4))
@@ -54,7 +55,7 @@ function set_ratio!(box, ratio, margins=zeros(4))
 end
 
 """
-    PlotObject(viewport, axes, geoms, legend, colorbar, specs)
+    PlotObject(viewport, axes, geoms, legend, colorbar, attributes)
     PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
 
 A `PlotObject` contains the different elements of a plot:
@@ -68,7 +69,7 @@ A `PlotObject` contains the different elements of a plot:
     different geometries (if required).
 * `colorbar`: a [`Colorbar`](@ref) object that defines how to present the guide
     to the color scale (if required)
-* `specs`: a dictionary (`Dict{Symbol, Any}`) with varied plot specifications.
+* `attributes`: a dictionary (`Dict{Symbol, Any}`) with varied plot attributes.
     Those specifications can be passed to the `PlotObject` constructor as
     keyword arguments.
 
@@ -92,8 +93,8 @@ to draw the plot components is:
 2. Set the window defined by the axes.
 3. Draw the axes.
 4. Draw the geometries.
-5. Draw the legend (if it is not null and `specs[:location] ≠ 0`).
-6. Draw the colorbar (if it is not null and `spects[:colorbar] == true`).
+5. Draw the legend (if it is not null and `attributes[:location] ≠ 0`).
+6. Draw the colorbar (if it is not null and `attributes[:colorbar] == true`).
 7. Write different labels and decorations in axes, title, etc.
 """
 mutable struct PlotObject
@@ -102,12 +103,12 @@ mutable struct PlotObject
     geoms::Vector{<:Geometry}
     legend::Legend
     colorbar::Colorbar
-    specs::Dict
+    attributes::Dict
 end
 
 function PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
-    specs = Dict(:subplot => UNITSQUARE, kwargs...)
-    PlotObject(viewport, axes, geoms, legend, colorbar, specs)
+    attributes = Dict(:subplot => UNITSQUARE, kwargs...)
+    PlotObject(viewport, axes, geoms, legend, colorbar, attributes)
 end
 
 PlotObject(; kwargs...) = PlotObject(Viewport(), Axes(:none), Geometry[], Legend(), Colorbar() ; kwargs...)
@@ -217,11 +218,11 @@ end
 function draw(p::PlotObject)
     (p.viewport == EMPTYVIEWPORT) && return nothing
     # Set color scals and paint background
-    GR.setcolormap(get(p.specs, :colormap, GR.COLORMAP_VIRIDIS))
-    setcolors(get(p.specs, :scheme, 0))
+    GR.setcolormap(get(p.attributes, :colormap, GR.COLORMAP_VIRIDIS))
+    setcolors(get(p.attributes, :scheme, 0))
     inner = p.viewport.inner
     outer = p.viewport.outer
-    haskey(p.specs, :backgroundcolor) && fillbackground(outer, cv.options[:backgroundcolor])
+    haskey(p.attributes, :backgroundcolor) && fillbackground(outer, cv.options[:backgroundcolor])
     # Define the viewport
     GR.setviewport(inner...)
     # Draw components of the plot
@@ -234,13 +235,13 @@ function draw(p::PlotObject)
         append!(colorlimits, cl)
     end
     # Overlay axes if requested
-    get(p.specs, :overlay_axes, false) && draw(p.axes)
+    get(p.attributes, :overlay_axes, false) && draw(p.axes)
     # Legend
-    location = get(p.specs, :location, 0)
+    location = get(p.attributes, :location, 0)
     draw(p.legend, p.geoms, location)
     # Colorbar
-    if get(p.specs, :colorbar, false)
-        if isempty(colorlimits) || !get(p.specs, :adjust_colorbar, true)
+    if get(p.attributes, :colorbar, false)
+        if isempty(colorlimits) || !get(p.attributes, :adjust_colorbar, true)
             draw(p.colorbar)
         else
             draw(p.colorbar, extrema(colorlimits))
@@ -255,10 +256,10 @@ end
 function drawlabels(p)
     inner = p.viewport.inner
     outer = p.viewport.outer
-    main = String(get(p.specs, :title, ""))
-    xlabel = String(get(p.specs, :xlabel, ""))
-    ylabel = String(get(p.specs, :ylabel, ""))
-    zlabel = String(get(p.specs, :zlabel, ""))
+    main = String(get(p.attributes, :title, ""))
+    xlabel = String(get(p.attributes, :xlabel, ""))
+    ylabel = String(get(p.attributes, :ylabel, ""))
+    zlabel = String(get(p.attributes, :zlabel, ""))
     GR.savestate()
     # title
     if !isempty(main)
