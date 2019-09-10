@@ -78,7 +78,6 @@ population = Dict("Africa" => 1216,
                  "Asia" => 4436,
                  "Europe" => 739,
                  "Oceania" => 38)
-k, v = collect(keys(population)), collect(values(population))
 GRUtils.barplot(keys(population), values(population))
 GRUtils.barplot(keys(population), values(population), baseline=1000)
 GRUtils.barplot(keys(population), values(population), baseline=500, ylog=true)
