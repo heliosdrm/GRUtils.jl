@@ -1,6 +1,8 @@
 using Test
 using GRUtils
 
+GRUtils.GR.inline("pdf")
+
 x = 0.1(0:66) .- 3.3
 f = t -> t^5 - 13*t^3 + 36*t
 y = f.(x)
@@ -156,3 +158,7 @@ s = LinRange(-4, 4, 50)
 v = cos.(s) .+ cos.(s)' .+ cos.(reshape(s,1,1,:))
 GRUtils.isosurface(v, 0.5, tilt=120, color=(0.6, 1.0, 0.85),
     cameradistance=3.0, twist=12)
+
+file_path = ENV["GKS_FILEPATH"]
+@test isfile(file_path)
+rm(file_path)
