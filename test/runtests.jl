@@ -78,6 +78,7 @@ population = Dict("Africa" => 1216,
                  "Asia" => 4436,
                  "Europe" => 739,
                  "Oceania" => 38)
+k, v = collect(keys(population)), collect(values(population))
 GRUtils.barplot(keys(population), values(population))
 GRUtils.barplot(keys(population), values(population), baseline=1000)
 GRUtils.barplot(keys(population), values(population), baseline=500, ylog=true)
@@ -133,7 +134,7 @@ GRUtils.tricont(x, y, z)
 GRUtils.tricont(x, y, z, levels=10)
 GRUtils.tricont(x, y, z, colorbar=false)
 # Surface
-GRUtils.surface(x, y, z)
+# GRUtils.surface(x, y, z)
 GRUtils.trisurf(x, y, z)
 # Create example grid data
 x = LinRange(-2, 2, 40)
@@ -143,7 +144,7 @@ z = sin.(x) .+ cos.(y')
 # Draw the contour plot
 GRUtils.contour(x, y, z)
 GRUtils.contourf(x, y, z)
-GRUtils.surface(x, y, z)
+# GRUtils.surface(x, y, z)
 GRUtils.surface(x, y, z, accelerate=false)
 GRUtils.wireframe(x, y, z)
 GRUtils.heatmap(z)
@@ -154,10 +155,10 @@ x = randn(100000)
 y = randn(100000)
 GRUtils.hexbin(x, y)
 
-s = LinRange(-4, 4, 50)
-v = cos.(s) .+ cos.(s)' .+ cos.(reshape(s,1,1,:))
-GRUtils.isosurface(v, 0.5, tilt=120, color=(0.6, 1.0, 0.85),
-    cameradistance=3.0, twist=12)
+# s = LinRange(-4, 4, 50)
+# v = cos.(s) .+ cos.(s)' .+ cos.(reshape(s,1,1,:))
+# GRUtils.isosurface(v, 0.5, tilt=120, color=(0.6, 1.0, 0.85),
+#     cameradistance=3.0, twist=12)
 
 file_path = ENV["GKS_FILEPATH"]
 @test isfile(file_path)
