@@ -132,7 +132,6 @@ GRUtils.tricont(x, y, z, levels=10)
 GRUtils.tricont(x, y, z, colorbar=false)
 # Surface
 GRUtils.surface(x, y, z)
-GRUtils.wireframe(x, y, z)
 GRUtils.trisurf(x, y, z)
 # Create example grid data
 x = LinRange(-2, 2, 40)
@@ -153,6 +152,7 @@ x = randn(100000)
 y = randn(100000)
 GRUtils.hexbin(x, y)
 
-s = LinRange(-1, 1, 40)
-v = 1 .- (s .^ 2 .+ s' .^ 2 .+ reshape(s,1,1,:) .^ 2) .^ 0.5
-GRUtils.isosurface(v, isovalue=0.2)
+s = LinRange(-4, 4, 50)
+v = cos.(s) .+ cos.(s)' .+ cos.(reshape(s,1,1,:))
+GRUtils.isosurface(v, 0.5, tilt=120, color=(0.6, 1.0, 0.85),
+    cameradistance=3.0, twist=12)

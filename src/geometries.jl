@@ -365,14 +365,10 @@ function draw(g::Geometry, ::Val{:image})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:isosurf})::Nothing
-    nx = Int(g.x[1])
-    ny = Int(g.y[1])
-    nz = Int(g.z[1])
-    values = Array{UInt16,3}(undef, (nx, ny, nz))
-    values[:] .= g.c
-    color32 = round(UInt32, g.attributes[:color])
-    color = float.((color32 >> 16 & 0xff, color32 >> 8 & 0xff, color32 & 0xff)) ./ 255
-    isovalue = g.attributes[:isovalue]
+    nx, ny, nz = Int.(g.x)
+    isovalue = g.y[1]
+    values = UInt16.(reshape(g.z, (nx, ny, nz)))
+    color = (g.c...,)
     GR.selntran(0)
     GR.gr3.clear()
     mesh = GR.gr3.createisosurfacemesh(values, (2/(nx-1), 2/(ny-1), 2/(nz-1)),

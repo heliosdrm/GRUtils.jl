@@ -65,7 +65,7 @@ Axes(kind::Symbol; ranges = Dict{Symbol, AxisRange}(),
     options = Dict{Symbol, Int}()) =
     Axes(kind, ranges, tickdata, ticklabels, perspective, camera, options)
 
-function Axes(kind, geoms::Array{<:Geometry}; panzoom=nothing, kwargs...)
+function Axes(kind, geoms::Array{<:Geometry}; panzoom=nothing, grid=1, kwargs...)
     # Set limits based on data
     ranges = minmax(geoms)
     adjustranges!(ranges, panzoom; kwargs...)
@@ -78,20 +78,20 @@ function Axes(kind, geoms::Array{<:Geometry}; panzoom=nothing, kwargs...)
         tickdata = set_ticks(ranges, 5, (:x, :y); kwargs...)
         set_ticklabels!(ticklabels; kwargs...)
         options[:scale] = set_scale(; kwargs...)
-        options[:grid] = Int(get(kwargs, :grid, 1))
+        options[:grid] = Int(grid)
     elseif kind == :axes3d
         tickdata = set_ticks(ranges, 2, (:x, :y, :z); kwargs...)
         perspective = [Int(get(kwargs, :rotation, 40)), Int(get(kwargs, :tilt, 70))]
         options[:scale] = set_scale(; kwargs...)
-        options[:grid] = Int(get(kwargs, :grid, 1))
-        if get(kwargs, :gr3, true)
+        options[:grid] = Int(grid)
+        if get(kwargs, :gr3, false)
             options[:gr3] = 1
-            cameradistance = get(kwargs, :cameradistance, 2.5)
+            cameradistance = get(kwargs, :cameradistance, 3.0)
             camera = set_camera(cameradistance, perspective...; kwargs...)
         end
-    elseif kind == :axespolar
+    elseif kind == :polar
         tickdata = set_ticks(ranges, 2, (:x, :y); kwargs..., xlog=false, ylog=false, xflip=false, yflip=false)
-        options[:grid] = Int(get(kwargs, :grid, 1))
+        options[:grid] = Int(grid)
     elseif kind == :camera # Not defined
         tickdata = Dict{Symbol, AxisTickData}()
     end
@@ -307,17 +307,17 @@ end
 """
     set_camera(distance, perspective; kwargs...)
 """
-function set_camera(distance, rotation, tilt; kwargs...)
-    camera_x = distance * sind(tilt) * sind(rotation)
-    camera_y = distance * cosd(tilt)
-    camera_z = distance* sind(tilt) * cosd(rotation)
-    center_x = float(get(kwargs, :center_x, 0.0))
-    center_y = float(get(kwargs, :center_y, 0.0))
-    center_z = float(get(kwargs, :center_z, 0.0))
-    up_x = float(get(kwargs, :up_x, 0.0))
-    up_y = float(get(kwargs, :up_y, 1.0))
-    up_z = float(get(kwargs, :up_z, 0.0))
-    return [camera_x, camera_y, camera_z, center_x, center_y, center_z, up_x, up_y, up_z]
+function set_camera(distance, rotation, tilt;
+    focus = (0.0, 0.0, 0.0), twist = 0.0, kwargs...)
+
+    camera_position = (distance * sind(tilt) * sind(rotation),
+                       distance * cosd(tilt),
+                       distance* sind(tilt) * cosd(rotation))
+    camera_direction = camera_position .- focus
+    up_vector = (-sind(twist) * camera_direction[3],
+                 cosd(twist),
+                 sind(twist) * camera_direction[1])
+    return [camera_position..., focus..., up_vector...]
 end
 
 ####################
@@ -327,7 +327,9 @@ end
 function draw(ax::Axes)
     # Special draw functions for polar axes and gr3
     ax.kind == :polar && return draw_polaraxes(ax)
-    ax.kind == :axes3d && ax.options[:gr3] ≠ 0 && return draw_gr3axes(ax)
+    if ax.kind == :axes3d
+        get(ax.options, :gr3, 0) ≠ 0 && return draw_gr3axes(ax)
+    end
     # Set the window of data seen
     GR.setwindow(ax.ranges[:x]..., ax.ranges[:y]...)
     # Modify scale (log or flipped axes)

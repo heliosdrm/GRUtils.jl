@@ -35,19 +35,22 @@ end
 
 function Viewport(subplot, frame::Bool, ratio::Real, margins=zeros(4))
     v = Viewport(subplot, frame)
-    w = v.inner[2] - v.inner[1] - margins[1] - margins[2]
-    h = v.inner[4] - v.inner[3] - margins[3] - margins[4]
+    set_ratio!(v.inner, ratio, margins)
+end
+
+function set_ratio!(box, ratio, margins=zeros(4))
+    w = box[2] - box[1] - margins[1] - margins[2]
+    h = box[4] - box[3] - margins[3] - margins[4]
     if w/h > ratio
         d = 0.5 * (w - h * ratio)
-        v.inner[1] += d
-        v.inner[2] -= d
+        box[1] += d
+        box[2] -= d
     else
         d = 0.5 * (h - w / ratio)
-        v.inner[3] += d
-        v.inner[4] -= d
+        box[3] += d
+        box[4] -= d
     end
-    v.inner .-= margins
-    v
+    box .-= margins
 end
 
 """
