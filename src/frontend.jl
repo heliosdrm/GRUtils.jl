@@ -1,5 +1,5 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :clabels, :label, :linewidth, :markersize, :spec, :step_position]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :clabels, :label, :linewidth, :markersize, :spec, :stair_position]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
@@ -138,22 +138,22 @@ This function can receive one or more of the following:
 
 """)
 
-function _setargs_step(f, args...; kwargs...)
-    step_position_str = get(kwargs, :where, "mid")
-    if step_position_str == "mid"
-        step_position = 0.0
-    elseif step_position_str == "post"
-        step_position = 1.0
-    elseif step_position_str == "pre"
-        step_position = -1.0
+function _setargs_stair(f, args...; kwargs...)
+    stair_position_str = get(kwargs, :where, "mid")
+    if stair_position_str == "mid"
+        stair_position = 0.0
+    elseif stair_position_str == "post"
+        stair_position = 1.0
+    elseif stair_position_str == "pre"
+        stair_position = -1.0
     else
         throw(ArgumentError("""`where` must be one of `"mid"`, `"pre"` or `"post"`"""))
     end
-    return _setargs_line(f, args...; step_position=step_position, kwargs...)
+    return _setargs_line(f, args...; stair_position=stair_position, kwargs...)
 end
 
-@plotfunction(step, geom = :step, axes = :axes2d, setargs=_setargs_step, docstring="""
-Draw one or more step or staircase plots.
+@plotfunction(stair, geom = :stair, axes = :axes2d, setargs=_setargs_stair, docstring="""
+Draw one or more staircase or step plots.
 
 This function can receive one or more of the following:
 
@@ -162,7 +162,7 @@ This function can receive one or more of the following:
 - y values only, with their indices as x values
 
 :param args: the data to plot
-:param where: pre, mid or post, to decide where the step between two y values should be placed
+:param where: pre, mid or post, to decide where the stair between two y values should be placed
 
 **Usage examples:**
 
@@ -171,17 +171,17 @@ This function can receive one or more of the following:
     julia> x = LinRange(-2, 2, 40)
     julia> y = 2 .* x .+ 4
     julia> # Plot x and y
-    julia> step(x, y)
+    julia> stair(x, y)
     julia> # Plot x and a callable
-    julia> step(x, x -> x^3 + x^2 + x)
+    julia> stair(x, x -> x^3 + x^2 + x)
     julia> # Plot y, using its indices for the x values
-    julia> step(y)
+    julia> stair(y)
     julia> # Use next y step directly after x each position
-    julia> step(y, where="pre")
+    julia> stair(y, where="pre")
     julia> # Use next y step between two x positions
-    julia> step(y, where="mid")
+    julia> stair(y, where="mid")
     julia> # Use next y step immediately before next x position
-    julia> step(y, where="post")
+    julia> stair(y, where="post")
 """)
 
 @plotfunction(stem, geom = :stem, axes = :axes2d, setargs=_setargs_line, docstring="""

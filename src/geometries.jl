@@ -153,11 +153,11 @@ function draw(g::Geometry, ::Val{:line3d})::Nothing
     GR.polyline3d(g.x, g.y, g.z)
 end
 
-function draw(g::Geometry, ::Val{:step})::Nothing
+function draw(g::Geometry, ::Val{:stair})::Nothing
     mask = GR.uselinespec(g.spec)
     if hasline(mask)
         n = length(g.x)
-        if g.attributes[:step_position] < 0 # pre
+        if g.attributes[:stair_position] < 0 # pre
             xs = zeros(2n - 1)
             ys = zeros(2n - 1)
             xs[1] = g.x[1]
@@ -168,7 +168,7 @@ function draw(g::Geometry, ::Val{:step})::Nothing
                 ys[2i]   = g.y[i+1]
                 ys[2i+1] = g.y[i+1]
             end
-        elseif g.attributes[:step_position] > 0 # post
+        elseif g.attributes[:stair_position] > 0 # post
             xs = zeros(2n - 1)
             ys = zeros(2n - 1)
             xs[1] = g.x[1]
