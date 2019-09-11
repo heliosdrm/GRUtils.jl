@@ -1,11 +1,10 @@
-## Select keyword arguments from list
-KEYS_GEOM_ATTRIBUTES = [:accelerate, :clabels, :label, :alpha, :linewidth, :markersize, :spec, :step_position]
-KEYS_PLOT_SPECS = [:where, :scheme, :colormap, :subplot, :sizepx, :location, :hold, :horizontal, :nbins, :xflip, :xlog, :yflip, :ylog, :zflip, :zlog,
-    :levels, :majorlevels, :colorbar, :ratio, :overlay_axes, :noframe]
-# kw_args = [:accelerate, :algorithm, :alpha, :backgroundcolor, :barwidth, :baseline, :clabels, :color, :colormap, :figsize, :isovalue, :labels, :levels, :location, :nbins, :rotation, :size, :tilt, :title, :where, :xflip, :xform, :xlabel, :xlim, :xlog, :yflip, :ylabel, :ylim, :ylog, :zflip, :zlabel, :zlim, :zlog, :clim]
+## Select keyword arguments from lists
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :clabels, :label, :linewidth, :markersize, :spec, :stair_position]
+const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :ratio, :scheme, :subplot, :title,
+    :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
 geom_attributes(; kwargs...) = filter(p -> p.first ∈ KEYS_GEOM_ATTRIBUTES, kwargs)
-plot_specs(; kwargs...) = filter(p -> p.first ∈ KEYS_PLOT_SPECS, kwargs)
+plot_attributes(; kwargs...) = filter(p -> p.first ∈ KEYS_PLOT_ATTRIBUTES, kwargs)
 
 _setargs_default(f, args...; kwargs...) = (args, kwargs)
 
@@ -75,21 +74,21 @@ macro plotfunction(fname, options...)
             if haskey(kwargs, :hold)
                 holdstate = kwargs[:hold]
             else
-                holdstate = get(p.specs, :hold, false)
+                holdstate = get(p.attributes, :hold, false)
             end
             if holdstate
-                # Keep all specs
-                kwargs = (; p.specs..., kwargs...)
+                # Keep all attributes
+                kwargs = (; p.attributes..., kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
                 geoms = [p.geoms; geometries(Symbol($geom_k), args...; geom_attributes(;kwargs...)...)]
             else
                 # Only keep previous subplot
-                kwargs = (subplot = p.specs[:subplot], kwargs...)
+                kwargs = (subplot = p.attributes[:subplot], kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
                 geoms = geometries(Symbol($geom_k), args...; geom_attributes(;kwargs...)...)
             end
             axes = Axes(Symbol($axes_k), geoms; kwargs...)
-            f.plots[end] = PlotObject(axes, geoms; kind=$plotkind, plot_specs(; kwargs...)...)
+            f.plots[end] = PlotObject(axes, geoms; kind=$plotkind, plot_attributes(; kwargs...)...)
             draw(f)
         end
         $fname(args...; kwargs...) = $fname!(gcf(), args...; kwargs...)
@@ -139,22 +138,22 @@ This function can receive one or more of the following:
 
 """)
 
-function _setargs_step(f, args...; kwargs...)
-    step_position_str = get(kwargs, :where, "mid")
-    if step_position_str == "mid"
-        step_position = 0.0
-    elseif step_position_str == "post"
-        step_position = 1.0
-    elseif step_position_str == "pre"
-        step_position = -1.0
+function _setargs_stair(f, args...; kwargs...)
+    stair_position_str = get(kwargs, :where, "mid")
+    if stair_position_str == "mid"
+        stair_position = 0.0
+    elseif stair_position_str == "post"
+        stair_position = 1.0
+    elseif stair_position_str == "pre"
+        stair_position = -1.0
     else
         throw(ArgumentError("""`where` must be one of `"mid"`, `"pre"` or `"post"`"""))
     end
-    return _setargs_line(f, args...; step_position=step_position, where=step_position_str, kwargs...)
+    return _setargs_line(f, args...; stair_position=stair_position, kwargs...)
 end
 
-@plotfunction(step, geom = :step, axes = :axes2d, setargs=_setargs_step, docstring="""
-Draw one or more step or staircase plots.
+@plotfunction(stair, geom = :stair, axes = :axes2d, setargs=_setargs_stair, docstring="""
+Draw one or more staircase or step plots.
 
 This function can receive one or more of the following:
 
@@ -163,7 +162,7 @@ This function can receive one or more of the following:
 - y values only, with their indices as x values
 
 :param args: the data to plot
-:param where: pre, mid or post, to decide where the step between two y values should be placed
+:param where: pre, mid or post, to decide where the stair between two y values should be placed
 
 **Usage examples:**
 
@@ -172,17 +171,17 @@ This function can receive one or more of the following:
     julia> x = LinRange(-2, 2, 40)
     julia> y = 2 .* x .+ 4
     julia> # Plot x and y
-    julia> step(x, y)
+    julia> stair(x, y)
     julia> # Plot x and a callable
-    julia> step(x, x -> x^3 + x^2 + x)
+    julia> stair(x, x -> x^3 + x^2 + x)
     julia> # Plot y, using its indices for the x values
-    julia> step(y)
+    julia> stair(y)
     julia> # Use next y step directly after x each position
-    julia> step(y, where="pre")
+    julia> stair(y, where="pre")
     julia> # Use next y step between two x positions
-    julia> step(y, where="mid")
+    julia> stair(y, where="mid")
     julia> # Use next y step immediately before next x position
-    julia> step(y, where="post")
+    julia> stair(y, where="post")
 """)
 
 @plotfunction(stem, geom = :stem, axes = :axes2d, setargs=_setargs_line, docstring="""
@@ -264,9 +263,8 @@ function barcoordinates(heights; barwidth=0.8, baseline=0.0, kwargs...)
     (wc, hc)
 end
 
-function _setargs_bar(f, labels, heights; kwargs...)
+function _setargs_bar(f, labels, heights; horizontal=false, kwargs...)
     wc, hc = barcoordinates(heights; kwargs...)
-    horizontal = get(kwargs, :horizontal, false)
     if horizontal
         args = (hc, wc)
         tickoptions = (yticks = (1,1), yticklabels = string.(labels))
@@ -318,7 +316,7 @@ function hist(x, nbins=0, baseline=0.0)
     end
 
     xmin, xmax = extrema(x)
-    edges = linspace(xmin, xmax, nbins + 1)
+    edges = range(xmin, stop = xmax, length = nbins + 1)
     counts = zeros(nbins)
     buckets = Int[max(2, min(searchsortedfirst(edges, xᵢ), length(edges)))-1 for xᵢ in x]
     for b in buckets
@@ -335,9 +333,7 @@ function hist(x, nbins=0, baseline=0.0)
     (wc, hc)
 end
 
-function _setargs_hist(f, x; kwargs...)
-    nbins = get(kwargs, :nbins, 0)
-    horizontal = get(kwargs, :horizontal, false)
+function _setargs_hist(f, x; nbins = 0, horizontal = false, kwargs...)
     # Define baseline - 0.0 by default, unless using log scale
     if get(kwargs, :ylog, false) || horizontal && get(kwargs, :xlog, false)
         baseline = 1.0
@@ -489,12 +485,12 @@ function _setargs_contour(f, x, y, z, h; kwargs...)
 end
 
 # Coordinates (x, y, z) with countor lines automatically calculated
-function _setargs_contour(f, x, y, z; kwargs...)
+function _setargs_contour(f, x, y, z; levels = 20, kwargs...)
     (x, y, z, _), kwargs = _setargs_contour(f, x, y, z, []; kwargs...)
-    levels = Int(get(kwargs, :levels, 20))
+    levels = Int(levels)
     zmin, zmax = get(kwargs, :zlim, (_min(z), _max(z)))
     hmin, hmax = GR.adjustrange(zmin, zmax)
-    h = linspace(hmin, hmax, levels + 1)
+    h = range(hmin, stop = hmax, length = levels + 1)
     return ((x, y, z, h), kwargs)
 end
 
@@ -584,11 +580,11 @@ provided points, a value of 0 will be used.
 
 _setargs_tricont(f, x, y, z, h; kwargs...) = ((x, y, z, h), kwargs...)
 
-function _setargs_tricont(f, x, y, z; kwargs...)
-    levels = Int(get(kwargs, :levels, 20))
+function _setargs_tricont(f, x, y, z; levels = 20, kwargs...)
+    levels = Int(levels)
     zmin, zmax = get(kwargs, :zlim, (_min(z), _max(z)))
     hmin, hmax = GR.adjustrange(zmin, zmax)
-    h = linspace(hmin, hmax, levels)
+    h = range(hmin, stop = hmax, length = levels)
     return ((x, y, z, h), kwargs)
 end
 
@@ -623,11 +619,11 @@ plot, as the interpolation may occur in very acute triangles.
     julia> tricont(x, y, z)
 """)
 
-function _setargs_surface(f, x, y, z; kwargs...)
+function _setargs_surface(f, x, y, z; accelerate = true, kwargs...)
     if length(x) == length(y) == length(z)
         x, y, z = GR.gridit(vec(x), vec(y), vec(z), 200, 200)
     end
-    accelerate = Bool(get(kwargs, :accelerate, true)) ? 1.0 : 0.0
+    accelerate = Bool(accelerate) ? 1.0 : 0.0
     ((vec(x), vec(y), vec(z), vec(z)), (; accelerate = accelerate, kwargs...))
 end
 
@@ -751,12 +747,12 @@ kwargs = (colorbar=true, tickdir=-1), docstring="""
 Draw a heatmap.
 
 This function uses the current colormap to display a two-dimensional
-array as a heatmap. The array is drawn with its first value in the upper
+array as a heatmap. The array is drawn with its first value in the bottom
 left corner, so in some cases it may be neccessary to flip the columns
 (see the example below).
 
-By default the function will use the row and column indices for the x- and
-y-axes, so setting the axis limits is recommended. Also note that the
+By default the function will use the column and row indices for the x- and
+y-axes, respectively, so setting the axis limits is recommended. Also note that the
 values in the array must lie within the current z-axis limits so it may
 be neccessary to adjust these limits or clip the range of array values.
 
@@ -833,20 +829,20 @@ end
 
 function _setargs_imshow(f, data; kwargs...)
     if isa(data, AbstractString)
-        w, h, data = GR.readimage(data)
+        w, h, rgbdata = GR.readimage(data)
     else
-        w, h = size(data)
+        h, w = size(data)
         cmap = colormap()
-        data = [to_rgba(value, cmap) for value ∈ data]
+        rgbdata = [to_rgba(value, cmap) for value ∈ transpose(data)]
     end
     if get(kwargs, :xflip, false)
-        data = reverse(data, dims=1)
+        rgbdata = reverse(rgbdata, dims=2)
     end
-    if get(kwargs, :yflip, true)
-        data = reverse(data, dims=2)
+    if get(kwargs, :yflip, false)
+        rgbdata = reverse(rgbdata, dims=1)
     end
     kwargs = (; xlim = (0.0, float(w)), ylim = (0.0, float(h)), ratio = w/h, kwargs...)
-    ((1.0:w, 1.0:h, emptyvector(Float64), float.(data[:])), kwargs)
+    ((1.0:w, 1.0:h, emptyvector(Float64), float.(rgbdata[:])), kwargs)
 end
 
 @plotfunction(imshow, geom = :image, axes = :axes2d, setargs = _setargs_imshow,
@@ -873,288 +869,37 @@ two-dimensional array and the current colormap.
     julia> imshow("example.png")
 """)
 
-## Legends
-
-const LEGEND_DOC = """
-Set the legend of the plot.
-
-The plot legend is drawn using the extended text function GR.textext.
-You can use a subset of LaTeX math syntax, but will need to escape
-certain characters, e.g. parentheses. For more information see the
-documentation of GR.textext.
-
-:param args: The legend strings
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Set the legends to "a" and "b"
-    julia> legend("a", "b")
-"""
-
-@doc LEGEND_DOC function legend!(p::PlotObject, args...; location=1)
-    # Reset main viewport if there was a legend
-    if haskey(p.specs, :location) && p.specs[:location] ∈ LEGEND_LOCATIONS[:right_out]
-        p.viewport.inner[2] += p.legend.size[1]
-    end
-    for i = 1:min(length(args), length(p.geoms))
-        p.geoms[i] = Geometry(p.geoms[i], label=args[i])
-    end
-    p.legend = Legend(p.geoms)
-    # Redefine viewport if legend is set outside
-    if p.legend.size ≠ NULLPAIR && location ∈ LEGEND_LOCATIONS[:right_out]
-        p.viewport.inner[2] -= p.legend.size[1]
-    end
-    p.specs[:location] = location
+function _setargs_isosurf(f, v, isovalue; color = [0.0, 0.5, 0.8], kwargs...)
+    values = round.((v .- _min(v)) ./ (_max(v) .- _min(v)) .* (2^16-1))
+    dimensions = float.(collect(size(v)))
+    isoval_norm = (isovalue - _min(v)) / (_max(v) - _min(v))
+    # x = dimensions, y = isovalue, z = values, c = color
+    ((dimensions, [isoval_norm], values[:], collect(color)), kwargs)
 end
 
-legend!(f::Figure, args...; kwargs...) = legend!(currentplot(f), args...; kwargs...)
-@doc LEGEND_DOC legend(args::AbstractString...; kwargs...) = legend!(currentplot(gcf()), args...; kwargs...)
+@plotfunction(isosurface, geom = :isosurf, axes = :axes3d, setargs = _setargs_isosurf,
+kwargs = (xticks=NULLPAIR, yticks=NULLPAIR, zticks=NULLPAIR, ratio=1.0, gr3=true), docstring="""
+Draw an isosurface.
 
+This function can draw an image either from reading a file or using a
+two-dimensional array and the current colormap. Values greater than the
+isovalue will be seen as outside the isosurface, while values less than
+the isovalue will be seen as inside the isosurface.
 
-const HOLD_DOC = """
-Set the hold flag for combining multiple plots.
-
-The hold flag prevents drawing of axes and clearing of previous plots, so
-that the next plot will be drawn on top of the previous one.
-
-:param flag: the value of the hold flag
+:param v: the volume data
+:param isovalue: the isovalue
 
 **Usage examples:**
 
 .. code-block:: julia
 
     julia> # Create example data
-    julia> x = LinRange(0, 1, 100)
-    julia> # Draw the first plot
-    julia> plot(x, x.^2)
-    julia> # Set the hold flag
-    julia> hold(true)
-    julia> # Draw additional plots
-    julia> plot(x, x.^4)
-    julia> plot(x, x.^8)
-    julia> # Reset the hold flag
-    julia> hold(false)
-"""
-
-@doc HOLD_DOC hold!(p::PlotObject, state::Bool) = (p.specs[:hold] = state)
-hold!(f::Figure, state) = hold!(currentplot(f), state)
-@doc HOLD_DOC hold(state) = hold!(currentplot(gcf()), state)
-
-const TITLE_DOC = """
-Set the plot title.
-
-The plot title is drawn using the extended text function GR.textext.
-You can use a subset of LaTeX math syntax, but will need to escape
-certain characters, e.g. parentheses. For more information see the
-documentation of GR.textext.
-
-:param title: the plot title
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Set the plot title to "Example Plot"
-    julia> title("Example Plot")
-    julia> # Clear the plot title
-    julia> title("")
-"""
-
-@doc TITLE_DOC function title!(p::PlotObject, s)
-    if isempty(s)
-        delete!(p.specs, :title)
-    else
-        p.specs[:title] = s
-    end
-end
-
-title!(f::Figure, s) = title!(currentplot(f), s)
-@doc TITLE_DOC title(s::AbstractString) = title!(currentplot(gcf()), s)
-
-const AXISLABEL_DOC = """
-Set the X, Y or Z axis labels.
-
-The axis labels are drawn using the extended text function GR.textext.
-You can use a subset of LaTeX math syntax, but will need to escape
-certain characters, e.g. parentheses. For more information see the
-documentation of GR.textext.
-
-:param label: the axis label
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Set the x-axis label to "x"
-    julia> xlabel("x")
-    julia> # Clear the y-axis label
-    julia> ylabel("")
-"""
-
-const TICKS_DOC = """
-Set the intervals of the ticks for the X, Y or Z axis.
-
-Use the function `xticks`, `yticks` or `zticks` for the corresponding axis.
-
-:param minor: the interval between minor ticks.
-:param major: (optional) the number of minor ticks between major ticks.
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Minor ticks every 0.2 units in the X axis
-    julia> xticks(0.2)
-    julia> # Major ticks every 1 unit (5 minor ticks) in the Y axis
-    julia> yticks(0.2, 5)
-"""
-
-const AXISLIM_DOC = """
-Set the limits for the plot axis.
-
-The axis limits can either be passed as individual arguments or as a
-tuple of (**min**, **max**). Setting either limit to **nothing** will
-cause it to be automatically determined based on the data, which is the
-default behavior.
-
-:param min:
-	- the axis lower limit, or
-	- **nothing** to use an automatic lower limit, or
-	- a tuple of both axis limits
-:param x_max:
-	- the axis upper limit, or
-	- **nothing** to use an automatic upper limit, or
-	- **nothing** if both axis limits were passed as first argument
-:param adjust: whether or not the limits may be adjusted
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Set the x-axis limits to -1 and 1
-    julia> xlim((-1, 1))
-    julia> # Reset the x-axis limits to be determined automatically
-    julia> xlim()
-    julia> # Set the y-axis upper limit and set the lower limit to 0
-    julia> ylim((0, nothing))
-    julia> # Reset the y-axis lower limit and set the upper limit to 1
-    julia> ylim((nothing, 1))
-"""
-
-for ax = ("x", "y", "z")
-    # xlabel, etc.
-    fname! = Symbol(ax, :label!)
-    fname = Symbol(ax, :label)
-    @eval function $fname!(p::PlotObject, s)
-        if isempty(s)
-            delete!(p.specs, Symbol($ax, :label))
-        else
-            p.specs[Symbol($ax, :label)] = s
-        end
-    end
-    @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
-    @eval $fname(s::AbstractString) = $fname!(currentplot(gcf()), s)
-    @eval @doc AXISLABEL_DOC $fname!
-    @eval @doc AXISLABEL_DOC $fname
-
-    # xticks, etc.
-    fname! = Symbol(ax, :ticks!)
-    fname = Symbol(ax, :ticks)
-    @eval function $fname!(p::PlotObject, minor, major=1)
-        tickdata = p.axes.tickdata
-        if haskey(tickdata, Symbol($ax))
-            tickdata[Symbol($ax)] = (float(minor), tickdata[Symbol($ax)][2], Int(major))
-        end
-        return nothing
-    end
-    @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
-    @eval $fname(args...) = $fname!(currentplot(gcf()), args...)
-    @eval @doc TICKS_DOC $fname!
-    @eval @doc TICKS_DOC $fname
-
-    # xlim, etc.
-    fname! = Symbol(ax, :lim!)
-    fname = Symbol(ax, :lim)
-    @eval function $fname!(p::PlotObject, (minval, maxval), adjust::Bool=false)
-        nomin = isa(minval, Nothing)
-        nomax = isa(maxval, Nothing)
-        fullrange = (nomin || nomax) ? minmax(p.geoms)[Symbol($ax)] : float.((minval, maxval))
-        if nomin && !nomax     # (::Nothing, ::Number)
-            limits = (fullrange[1], float(maxval))
-        elseif !nomin && nomax # (::Number, Nothing)
-            limits = (float(minval), fullrange[2])
-        else # (::Number, ::Number) or (::Nothing, ::Nothing)
-            limits = fullrange
-        end
-        adjust && (limits = GR.adjustlimits(limits...))
-        p.axes.ranges[Symbol($ax)] = limits
-        tickdata = p.axes.tickdata
-        if haskey(tickdata, Symbol($ax))
-            axisticks = tickdata[Symbol($ax)]
-            tickdata[Symbol($ax)] = (axisticks[1], limits, axisticks[3])
-        end
-        return nothing
-    end
-    @eval function $fname!(p::PlotObject, minval::Union{Nothing, Number}, maxval::Union{Nothing, Number}, adjust::Bool=false)
-        $fname!(p, (minval, maxval), adjust)
-    end
-    @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
-    @eval $fname(args...) = $fname!(currentplot(gcf()), args...)
-    @eval @doc AXISLIM_DOC $fname!
-    @eval @doc AXISLIM_DOC $fname
-end
-
-const TICKLABELS_DOC = """
-Customize the string of the X and Y axes tick labels.
-
-The labels of the tick axis can be defined through a function
-with one argument (the numeric value of the tick position) and
-returns a string, or through an array of strings that are located
-sequentially at X = 1, 2, etc.
-
-:param s: function or array of strings that define the tick labels.
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Label the range (0-1) of the Y-axis as percent values
-    julia> yticklabels(p -> Base.Printf.@sprintf("%0.0f%%", 100p))
-    julia> # Label the X-axis with a sequence of strings
-    julia> xticklabels(["first", "second", "third"])
-"""
-
-for ax = ("x", "y")
-    fname! = Symbol(ax, :ticklabels!)
-    fname = Symbol(ax, :ticklabels)
-    @eval $fname!(p::PlotObject, s) = set_ticklabels!(p.axes.ticklabels; $fname = s)
-    @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
-    @eval $fname(s) = $fname!(currentplot(gcf()), s)
-    @eval @doc TICKLABELS_DOC $fname!
-    @eval @doc TICKLABELS_DOC $fname
-end
-
-const GRID_DOC = """
-Set the flag to draw a grid in the plot axes.
-
-:param flag: the value of the grid flag (`true` by default)
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Hid the grid on the next plot
-    julia> grid(false)
-    julia> # Restore the grid
-    julia> grid(true)
-"""
-
-@doc GRID_DOC grid!(p::PlotObject, flag) = (p.axes.options[:grid] = Int(flag))
-
-grid!(f::Figure, flag) = grid!(currentplot(f), flag)
-@doc GRID_DOC grid(flag) = grid!(currentplot(gcf()), flag)
+    julia> s = LinRange(-1, 1, 40)
+    julia> x, y, z = meshgrid(s, s, s)
+    julia> v = 1 .- (x .^ 2 .+ y .^ 2 .+ z .^ 2) .^ 0.5
+    julia> # Draw an image from a 2d array
+    julia> isosurface(v, isovalue=0.2)
+""")
 
 
 """

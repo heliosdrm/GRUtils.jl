@@ -153,11 +153,11 @@ function draw(g::Geometry, ::Val{:line3d})::Nothing
     GR.polyline3d(g.x, g.y, g.z)
 end
 
-function draw(g::Geometry, ::Val{:step})::Nothing
+function draw(g::Geometry, ::Val{:stair})::Nothing
     mask = GR.uselinespec(g.spec)
     if hasline(mask)
         n = length(g.x)
-        if g.attributes[:step_position] < 0 # pre
+        if g.attributes[:stair_position] < 0 # pre
             xs = zeros(2n - 1)
             ys = zeros(2n - 1)
             xs[1] = g.x[1]
@@ -168,7 +168,7 @@ function draw(g::Geometry, ::Val{:step})::Nothing
                 ys[2i]   = g.y[i+1]
                 ys[2i+1] = g.y[i+1]
             end
-        elseif g.attributes[:step_position] > 0 # post
+        elseif g.attributes[:stair_position] > 0 # post
             xs = zeros(2n - 1)
             ys = zeros(2n - 1)
             xs[1] = g.x[1]
@@ -361,5 +361,23 @@ end
 function draw(g::Geometry, ::Val{:image})::Nothing
     w = length(g.x)
     h = length(g.y)
-    GR.drawimage(0.0, w, h, 0.0, w, h, g.c)
+    GR.drawimage(0.0, w, 0.0, h, w, h, g.c)
+end
+
+function draw(g::Geometry, ::Val{:isosurf})::Nothing
+    nx, ny, nz = Int.(g.x)
+    isovalue = g.y[1]
+    values = UInt16.(reshape(g.z, (nx, ny, nz)))
+    color = (g.c...,)
+    GR.selntran(0)
+    GR.gr3.clear()
+    mesh = GR.gr3.createisosurfacemesh(values, (2/(nx-1), 2/(ny-1), 2/(nz-1)),
+            (-1., -1., -1.),
+            round(Int64, isovalue * (2^16-1)))
+    GR.gr3.setbackgroundcolor(1, 1, 1, 0)
+    GR.gr3.drawmesh(mesh, 1, (0, 0, 0), (0, 0, 1), (0, 1, 0), color, (1, 1, 1))
+    vp = GR.inqviewport()
+    GR.gr3.drawimage(vp..., 500, 500, GR.gr3.DRAWABLE_GKS)
+    GR.gr3.deletemesh(mesh)
+    GR.selntran(1)
 end

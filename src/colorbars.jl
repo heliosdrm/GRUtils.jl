@@ -63,11 +63,11 @@ end
 ## `draw` methods ##
 ####################
 
-function draw(cb::Colorbar, range=cb.range)
+function draw(cb::Colorbar, crange=cb.range)
     cb == EMPTYCOLORBAR && return nothing
-    zmin, zmax = range
+    zmin, zmax = crange
     # Redefine ticks if the range does not coincide with the default
-    tick = (range == cb.range) ? cb.tick : 0.5 * GR.tick(zmin, zmax)
+    tick = (crange == cb.range) ? cb.tick : 0.5 * GR.tick(zmin, zmax)
     mainvp = GR.inqviewport()
     _, charheight = _tickcharheight(mainvp)
     GR.savestate()
@@ -75,7 +75,7 @@ function draw(cb::Colorbar, range=cb.range)
     GR.setscale(cb.scale)
     GR.setwindow(0, 1, zmin, zmax)
     # Draw grade of colors
-    l = round.(Int32, linspace(1000, 1255, cb.colors))
+    l = round.(Int32, range(1000, stop=1255, length=cb.colors))
     GR.cellarray(0, 1, zmax, zmin, 1, cb.colors, l)
     # Draw ruled box
     GR.setlinecolorind(1)

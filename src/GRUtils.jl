@@ -2,13 +2,20 @@ module GRUtils
 
 import GR
 
+export Figure, gcf, subplot, currentplot, draw,
+    plot, plot3, polar, scatter, scatter3, stair, stem,
+    barplot, histogram, polarhistogram,
+    contour, contourf, tricont, trisurf, surface, wireframe,
+    heatmap, polarheatmap, hexbin, imshow, isosurface,
+    aspectratio, colorbar, grid, hold, legend, title,
+    xflip, xlabel, xlim, xlog, xticks, xticklabels,
+    yflip, ylabel, ylim, ylog, yticks, xticklabels,
+    zflip, zlabel, zlim, zlog, zticks
+
+
 function search(s::AbstractString, c::Char)
     result = findfirst(isequal(c), s)
     result != nothing ? result : 0
-end
-
-macro _tuple(t)
-    :( Tuple{$t} )
 end
 
 const COLORS = [
@@ -19,13 +26,6 @@ const DISTINCT_CMAP = [ 0, 1, 984, 987, 989, 983, 994, 988 ]
 
 const UNITSQUARE = [0.0, 1.0, 0.0, 1.0]
 const NULLPAIR = (0.0, 0.0)
-
-@static if VERSION > v"0.7-"
-  function linspace(start, stop, length)
-    range(start, stop=stop, length=length)
-  end
-  repmat(A::AbstractArray, m::Int, n::Int) = repeat(A::AbstractArray, m::Int, n::Int)
-end
 
 function _min(a)
   minimum(filter(!isnan, a))
@@ -43,6 +43,7 @@ include("plotobjects.jl")
 include("text.jl")
 include("figures.jl")
 include("frontend.jl")
+include("attributes.jl")
 
 const EMPTYFIGURE = Figure((0.0, 0.0), [PlotObject()])
 const CURRENTFIGURE = Ref(EMPTYFIGURE)

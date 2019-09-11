@@ -29,6 +29,7 @@ to "empty" or "null" values if not given). Those fields are:
     text that must be written at major ticks. (This only works for the X and Y axes).
 * `perspective`: A `Vector{Int}` that contains the "rotation" and "tilt" angles
     that are used to project 3-D axes on the plot plane. (Only for 3-D plots)
+* `camera`: A `Vector{Float64}` with the camera parameters. (Only used for 3-D plots)
 * `options`: A `Dict{Symbol, Int}` with extra options that control the visualization
     of the axes. Currently supported options are:
     + `options[:scale]`, an integer code that defines what axes are must be
@@ -37,6 +38,7 @@ to "empty" or "null" values if not given). Those fields are:
     + `options[:tickdir]` to determine how the ticks are drawn
         (positive value to draw them inside the plot area, negative value to
         draw them outside, or `0` to hide them).
+    + `options[:gr3] = 0` to identify if the axes are a 3-D scene defined for the `gr3` interface.
 
 ### Alternative constructor
 
@@ -51,6 +53,7 @@ struct Axes
     tickdata::Dict{Symbol, AxisTickData}
     ticklabels::Dict{Symbol, <:Function}
     perspective::Vector{Int}
+    camera::Vector{Float64}
     options::Dict{Symbol, Int}
 end
 
@@ -58,44 +61,42 @@ Axes(kind::Symbol; ranges = Dict{Symbol, AxisRange}(),
     tickdata = Dict{Symbol, AxisTickData}(),
     ticklabels = Dict{Symbol, Function}(),
     perspective = Int[],
+    camera = Float64[],
     options = Dict{Symbol, Int}()) =
-    Axes(kind, ranges, tickdata, ticklabels, perspective, options)
+    Axes(kind, ranges, tickdata, ticklabels, perspective, camera, options)
 
-function Axes(kind, geoms::Array{<:Geometry}; panzoom=nothing, kwargs...)
+function Axes(kind, geoms::Array{<:Geometry}; panzoom=nothing, grid=1, kwargs...)
     # Set limits based on data
     ranges = minmax(geoms)
     adjustranges!(ranges, panzoom; kwargs...)
     ticklabels = Dict{Symbol, Function}()
+    perspective = [0, 0]
+    camera = zeros(9)
+    options = Dict{Symbol, Int}(:scale => 0, :grid => 1)
     # Special cases dependin on axis kind
     if kind == :axes2d
         tickdata = set_ticks(ranges, 5, (:x, :y); kwargs...)
         set_ticklabels!(ticklabels; kwargs...)
-        perspective = [0, 0]
-        options = Dict{Symbol, Int}(
-            :scale => set_scale(; kwargs...),
-            :grid => Int(get(kwargs, :grid, 1))
-            )
+        options[:scale] = set_scale(; kwargs...)
+        options[:grid] = Int(grid)
     elseif kind == :axes3d
         tickdata = set_ticks(ranges, 2, (:x, :y, :z); kwargs...)
         perspective = [Int(get(kwargs, :rotation, 40)), Int(get(kwargs, :tilt, 70))]
-        options = Dict{Symbol, Int}(
-            :scale => set_scale(; kwargs...),
-            :grid => Int(get(kwargs, :grid, 1))
-            )
-    elseif kind == :axespolar
+        options[:scale] = set_scale(; kwargs...)
+        options[:grid] = Int(grid)
+        if get(kwargs, :gr3, false)
+            options[:gr3] = 1
+            cameradistance = get(kwargs, :cameradistance, 3.0)
+            camera = set_camera(cameradistance, perspective...; kwargs...)
+        end
+    elseif kind == :polar
         tickdata = set_ticks(ranges, 2, (:x, :y); kwargs..., xlog=false, ylog=false, xflip=false, yflip=false)
-        perspective = [0, 0]
-        options = Dict{Symbol, Int}(
-            :scale => 0,
-            :grid => Int(get(kwargs, :grid, 1))
-            )
-    else # Not defined
+        options[:grid] = Int(grid)
+    elseif kind == :camera # Not defined
         tickdata = Dict{Symbol, AxisTickData}()
-        perspective = [0, 0]
-        options = Dict{Symbol, Int}(:scale => 0, :grid => 1)
     end
     haskey(kwargs, :tickdir) && (options[:tickdir] = kwargs[:tickdir])
-    Axes(kind, ranges, tickdata, ticklabels, perspective, options)
+    Axes(kind, ranges, tickdata, ticklabels, perspective, camera, options)
 end
 
 # Calculation of data ranges
@@ -303,13 +304,32 @@ function set_scale(; kwargs...)
     return scale
 end
 
+"""
+    set_camera(distance, perspective; kwargs...)
+"""
+function set_camera(distance, rotation, tilt;
+    focus = (0.0, 0.0, 0.0), twist = 0.0, kwargs...)
+
+    camera_position = (distance * sind(tilt) * sind(rotation),
+                       distance * cosd(tilt),
+                       distance* sind(tilt) * cosd(rotation))
+    camera_direction = camera_position .- focus
+    up_vector = (-sind(twist) * camera_direction[3],
+                 cosd(twist),
+                 sind(twist) * camera_direction[1])
+    return [camera_position..., focus..., up_vector...]
+end
+
 ####################
 ## `draw` methods ##
 ####################
 
 function draw(ax::Axes)
-    # Special draw function for polar axes
+    # Special draw functions for polar axes and gr3
     ax.kind == :polar && return draw_polaraxes(ax)
+    if ax.kind == :axes3d
+        get(ax.options, :gr3, 0) ≠ 0 && return draw_gr3axes(ax)
+    end
     # Set the window of data seen
     GR.setwindow(ax.ranges[:x]..., ax.ranges[:y]...)
     # Modify scale (log or flipped axes)
@@ -395,6 +415,8 @@ function draw_polaraxes(ax)
     GR.restorestate()
     return nothing
 end
+
+draw_gr3axes(ax) = GR.gr3.cameralookat(ax.camera...)
 
 """
     _tickcharheight(vp)

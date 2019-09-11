@@ -114,14 +114,14 @@ end
 
 function replaceplot!(plotcollection, p)
     # If subplot is not specified in p, empty the whole collection
-    if !haskey(p.specs, :subplot)
+    if !haskey(p.attributes, :subplot)
         empty!(plotcollection)
     else
-        coords = p.specs[:subplot]
+        coords = p.attributes[:subplot]
         i = 1
         while i ≤ length(plotcollection)
             # Check intersection
-            coords_i = get(plotcollection[i].specs, :subplot, [0.0, 1.0, 0.0, 1.0])
+            coords_i = get(plotcollection[i].attributes, :subplot, [0.0, 1.0, 0.0, 1.0])
             bottomleft = (max(coords[1], coords_i[1]), max(coords[3], coords_i[3]))
             topright = (min(coords[2], coords_i[2]), min(coords[4], coords_i[4]))
             if all(bottomleft .< topright)
