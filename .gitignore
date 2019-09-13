@@ -3,4 +3,3 @@
 *.jl.*.cov
 *.jl.mem
 Manifest.toml
-docs/_site/
