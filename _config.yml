@@ -9,3 +9,5 @@ include:
   - createplots.md
   - drawplots.md
   - extending.md
+
+theme: jekyll-theme-slate
