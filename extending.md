@@ -19,6 +19,7 @@ The expressions used in that macro call are:
 * `kind = :hist`, an arbitrary option that helps to identify the kind of plot that will be made, although this is not currently used.
 * `setargs = _setargs_hist`: this is where the magic occurs. `_setargs_hist` is the name of a function that makes the transformation of the input data into the coordinates of the bars.
 * `docstring = doc_hist`: this is used to define the documentation string that will be associated both to `histogram` and `histogram!` (in this example contained in the variable `doc_hist`).
+* `kwargs` (not used in this example): this should be a named tuple with extra keyword arguments that are passed to the constructors of geometries, axes and the plot object.
 
 If the new kind of plot implies the definition of a new kind of geometry, other methods should be created in addition. Let's say that this new geometry is called `mygeom`; then at least the following method should be defined:
 
@@ -35,3 +36,7 @@ guide(Val{:mygeom}, g, x, y)
 ```
 
 This method should contain the plotting instructions to draw the key associated to the geometry `g`  in the (`x`, `y` coordinates). The dimensions of the key should not go outside a rectangular box centred in `(0.0, 0.0)`, with width equal to `0.06` and height equal to `0.03`, in NDC units.
+
+If the geometry also needs attributes that are not defined for other geometries (normally passed to the plotting function as keyword arguments), their name should also be added to the constant `KEYS_GEOM_ATTRIBUTES` in the first lines of `frontend.jl`.
+
+Take into account that the dictionary of geometry attributes only accepts `Float64` numbers, so they should be coded as numbers. If from the user perspective it is more convenient to define them as other types, the function indicated by `setargs` may be used to transform the user-provided argument into a suitable number. (See `_setargs_stair` for an example of this.)

@@ -105,3 +105,5 @@ The first of those functions (the one whose name ends with an exclamation) edits
 * **`setargs`**: a function that takes the positional and keyword arguments that are passed to the functions, and transforms and extends them to return: (a) a tuple of positional arguments to be passed to the function `geometries`, and (b) the set of keyword arguments that are passed to the constructor of geometries, axes, and the plot object. If `setargs` is not defined, the positional and keyword arguments are returned untransformed.
 * **`kwargs`**: a named tuple with extra keyword arguments that are passed to the constructors of geometries, axes and the plot object.
 * **`docstring`**: the documentation string that will be assigned to those functions.
+
+*Now, continue reading about [Drawing plots](./drawplots.md)*

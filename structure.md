@@ -4,7 +4,7 @@ title: Structure of plots in GRUtils
 ---
 # Structure of plots in GRUtils
 
-GRUtils replaces some long, convoluted functions of `jlgr` with many `if-else` blocks by more numerous but smaller functions based on type-dispatch, and takes advantage of meta-programming, such that those functions can be revised and debugged more easily, and new utilities can be added with new functions and methods without having to modify the existing ones.
+GRUtils replaces some long, convoluted functions of `jlgr` with many `if-else` blocks by more numerous, but smaller functions based on type-dispatch, and takes advantage of meta-programming, such that those functions can be revised and debugged easily, and new utilities can be added with new functions and methods, without having to modify the existing ones.
 
 Plots are composed by a set of objects of different types, which are defined in separate source files, as described next.
 
@@ -36,7 +36,7 @@ mutable struct PlotObject
     geoms::Vector{<:Geometry}
     legend::Legend
     colorbar::Colorbar
-    specs::Dict
+    attributes::Dict
 end
 ```
 
@@ -47,9 +47,11 @@ The objects of the type `PlotObject` represent what can be considered a "complet
 * **`geoms`**: a vector of `Geometry` objects that are plotted in the axes (roughly equivalent to the `args` field in `PlotObject` items of `jlgr`).
 * **`legend`**: a `Legend` object that defines how to present a legend of the different geometries (if required).
 * **`colorbar`**: a `Colorbar` object that defines how to present the guide to the color scale (if required).
-* **`specs`**: a dictionary (`Dict{Symbol, Any}`) with varied plot specifications, including the title, axis labels, and other data that modify the default way of representing the different components of the plot.
+* **`attributes`**: a dictionary (`Dict{Symbol, Any}`) with varied plot attributes, including the title, axis labels, and other data that modify the default way of representing the different components of the plot.
 
-The last plot of a figure `f` is considered itself its "current plot", and can be referred to by the function `currentplot(f)`. If no argument is given to `currentplot()`, the last plot of the current figure is returned &mdash; equivalent to `currentplot(gcf())`. In `jlgr`, the function `gcf()` directly returns the global current plot, which can also be identified by `jlgr.plt`.
+The last plot of a figure `f` is considered itself its "current plot", and can be referred to by the function `currentplot(f)`. If no argument is given to `currentplot()`, the last plot of the current figure is returned &mdash; equivalent to `currentplot(gcf())`.
+
+(In `jlgr`, the function `gcf()` directly returns the global current plot, which can also be identified by `jlgr.plt`.)
 
 ### Viewport
 
@@ -68,7 +70,7 @@ Such boxes are defined by 4 coordinates; the first and second coordinates are th
 
 NDC are given in dimensionless units between 0 and 1, such that `(0, 1, 0, 1)` means a box that spans over the whole device.
 
-In `jlgr`, the outer and inner boxes of a plot are described in the field `kvs` of the corresponding `PlotObject` item. For instance, for the global "current plot" `plt`, the coordinates of the outer box are `plt.kvs[:viewport]`, and for the inner box they are `plt.kvs[:vp]`.
+(In `jlgr`, the outer and inner boxes of a plot are described in the field `kvs` of the corresponding `PlotObject` item. For instance, for the global "current plot" `plt`, the coordinates of the outer box are `plt.kvs[:viewport]`, and for the inner box they are `plt.kvs[:vp]`.)
 
 ### Geometries
 
@@ -94,7 +96,7 @@ Each `Geometry` has a `kind`, given by a `Symbol` with the name of the geometric
 * **`label`**: a `String` with the label used to identify the geometry in the plot legend.
 * **`attributes`**: a `Dict{Symbol, Float64}` with extra attributes to control how geometries are plotted.
 
-In `jlgr`, all those data except the ones contained in the field `attributes` are given in the elements of the `args` vector of the corresponding `PlotObject` item.
+(In `jlgr`, all those data except the ones contained in the field `attributes` are given in the elements of the `args` vector of the corresponding `PlotObject` item.)
 
 ### Axes
 
@@ -117,9 +119,10 @@ Axes are determined by their **`kind`**, which may be `:axes2d` for 2-D plots, `
 * `tickdata`: numeric specifications of the "ticks" that are drawn on the axes. They are given as a dictionary whose keys are the names of the axis (as for `range`), and whose values are tuples that contain for that axis: (1) the "minor" value between consecutive ticks; (2) a tuple with the two ends of the axis ticks; and (3) the number of minor ticks between "major", numbered ticks.
 * **`ticklabels`**: transformations between tick values and labels. They are given as a dictionary whose keys are the names of the axis, and whose values are functions that accept a number as argument, and return a string with the text that must be written at major ticks. (This only works for the X and Y axes).
 * **`perspective`**: A `Vector{Int}` that contains the "rotation" and "tilt" angles that are used to project 3-D axes on the plot plane. (Only for 3-D plots)
+* **`camera`**: A `Vector{Float64}` with the camera parameters (camera position, view center and "up" vector, only used in 3-D plots)
 * **`options`**: A `Dict{Symbol, Int}` with extra options that control the visualization of the axes.
 
-In `jlgr`, all those data are described in the dictionary `kvs` contained in the corresponding `PlotObject` item.
+(In `jlgr`, most of those data are described in the dictionary `kvs` contained in the corresponding `PlotObject` item, or calculated during plotting operations without being stored.)
 
 ### Legends
 
@@ -137,7 +140,7 @@ end
 
 The symbols and labels that should be shown in the legend are not described in the `Legend` object, but they are fetched from the `Geometry` objects used in the plot where the legend is defined.
 
-In `jlgr`, those values are not stored in any parameter of plot objects. Only the relative position of the legend with respect to the axes area is stored, and everything is calculated in the moment of drawing the plot.
+(In `jlgr`, those values are not stored in any parameter of plot objects. Only the relative position of the legend with respect to the axes area is stored, and everything is calculated in the moment of drawing the plot.)
 
 ### Color bars
 
@@ -159,4 +162,6 @@ A `Colorbar` object contains the data that defines the colorbar associated to a 
 * **`margin`**: size of the extra margin between the main plot frame and the bar.
 * **`colors`**: number of different grades into which the color scale is divided.
 
-In `jlgr`, those values are not stored in any parameter of plot objects, and everything is calculated in the moment of drawing the plot, if suitable.
+(In `jlgr`, those values are not stored in any parameter of plot objects, and everything is calculated in the moment of drawing the plot, if suitable.)
+
+*Now, continue reading about [Creating plots](./createplots.md)*
