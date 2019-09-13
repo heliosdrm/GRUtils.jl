@@ -1,0 +1,11 @@
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - index.md
+  - structure.md
+  - createplots.md
+  - drawplots.md
+  - extending.md

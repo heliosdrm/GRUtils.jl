@@ -1,3 +1,7 @@
+---
+layout: default
+title: Structure of plots in GRUtils
+---
 # Structure of plots in GRUtils
 
 GRUtils replaces some long, convoluted functions of `jlgr` with many `if-else` blocks by more numerous but smaller functions based on type-dispatch, and takes advantage of meta-programming, such that those functions can be revised and debugged more easily, and new utilities can be added with new functions and methods without having to modify the existing ones.

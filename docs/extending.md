@@ -1,6 +1,7 @@
-[Back to index](./index.md)
-[Drawing plots](./)
-
+---
+layout: default
+title: Extending GRUtils
+---
 # Extending GRUtils
 
 One of the purposes of GRUtils' structure is to facilitate its extension through new kinds of plots. New functions to create plots based on existing geometries (e.g. through statistical transformation of the data) can be created with the `@plotfunction` macro and a custom function that sets up the data. Histograms are an example of this: the input of a histogram is a set of values that are binned, such that the histogram itself is a bar plot with the frequencies of the bins. Now, the histogram functions are defined though something like:

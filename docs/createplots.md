@@ -1,3 +1,7 @@
+---
+layout: default
+title: Creating plots
+---
 ## Creating plots
 
 At the lowest level, a single plot can be created through the following steps:

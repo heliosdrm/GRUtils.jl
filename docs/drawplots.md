@@ -1,3 +1,7 @@
+---
+layout: default
+title: Drawing plots
+---
 ## Drawing plots
 
 The function `draw` executes the instructions that create the graphical visualization of a plot and its components. That function has specialized methods for the different types that have been defined above. In a top-down order:

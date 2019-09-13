@@ -1,3 +1,7 @@
+---
+layout: default
+title: Introduction to GRUTils
+---
 # Introduction to GRUtils
 
 GRUtils This package is a refactoring of the module `jlgr` from [GR](https://github.com/jheinen/GR.jl). The purpose of GRUtils is to provide the main utilities of `jlgr` in a more "Julian" and modular style, easier to read, and facilitate code contributions by others.
