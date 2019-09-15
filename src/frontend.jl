@@ -468,6 +468,8 @@ otherwise the given number of bins is used for the histogram.
 function _setargs_contour(f, x, y, z, h; kwargs...)
     if length(x) == length(y) == length(z)
         x, y, z = GR.gridit(vec(x), vec(y), vec(z), 200, 200)
+    else
+        z = z'
     end
     if get(kwargs, :colorbar, true)
         majorlevels = get(kwargs, :majorlevels, 0)
@@ -509,8 +511,8 @@ points or a two-dimensional array as a contour plot. It can receive one
 or more of the following:
 
 - x values, y values and z values, or
-- N x values, M y values and z values on a NxM grid, or
-- N x values, M y values and a callable to determine z values
+- M x values, N y values and z values on a NxM grid, or
+- M x values, N y values and a callable to determine z values
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
@@ -548,8 +550,8 @@ points or a two-dimensional array as a filled contour plot. It can
 receive one or more of the following:
 
 - x values, y values and z values, or
-- N x values, M y values and z values on a NxM grid, or
-- N x values, M y values and a callable to determine z values
+- M x values, N y values and z values on a NxM grid, or
+- M x values, N y values and a callable to determine z values
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
@@ -622,6 +624,8 @@ plot, as the interpolation may occur in very acute triangles.
 function _setargs_surface(f, x, y, z; accelerate = true, kwargs...)
     if length(x) == length(y) == length(z)
         x, y, z = GR.gridit(vec(x), vec(y), vec(z), 200, 200)
+    else
+        z = z'
     end
     accelerate = Bool(accelerate) ? 1.0 : 0.0
     ((vec(x), vec(y), vec(z), vec(z)), (; accelerate = accelerate, kwargs...))
@@ -636,8 +640,8 @@ points or a two-dimensional array as a surface plot. It can receive one or
 more of the following:
 
 - x values, y values and z values, or
-- N x values, M y values and z values on a NxM grid, or
-- N x values, M y values and a callable to determine z values
+- M x values, N y values and z values on a NxM grid, or
+- M x values, N y values and a callable to determine z values
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
@@ -674,8 +678,8 @@ points or a two-dimensional array as a wireframe plot. It can receive one
 or more of the following:
 
 - x values, y values and z values, or
-- N x values, M y values and z values on a NxM grid, or
-- N x values, M y values and a callable to determine z values
+- M x values, N y values and z values on a NxM grid, or
+- M x values, N y values and a callable to determine z values
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
@@ -731,7 +735,7 @@ plot, as the interpolation may occur in very acute triangles.
 """)
 
 function _setargs_heatmap(f, data; kwargs...)
-    w, h = size(data)
+    h, w = size(data)
     if get(kwargs, :xflip, false)
         data = reverse(data, dims=1)
     end
@@ -739,7 +743,7 @@ function _setargs_heatmap(f, data; kwargs...)
         data = reverse(data, dims=2)
     end
     kwargs = (; xlim = (0.0, float(w)), ylim = (0.0, float(h)), kwargs...)
-    ((1.0:w, 1.0:h, emptyvector(Float64), data[:]), kwargs)
+    ((1.0:w, 1.0:h, emptyvector(Float64), vec(data')), kwargs)
 end
 
 @plotfunction(heatmap, geom = :heatmap, axes = :axes2d, setargs = _setargs_heatmap,
