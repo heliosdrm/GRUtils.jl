@@ -1,5 +1,8 @@
 using Test
+using Random
 using GRUtils
+
+Random.seed!(111)
 
 GRUtils.GR.inline("pdf")
 

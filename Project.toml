@@ -9,6 +9,7 @@ GR = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
 [extras]
 GR = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [targets]
-test = ["GR", "Test"]
+test = ["GR", "Test", "Random"]
