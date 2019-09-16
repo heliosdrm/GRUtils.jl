@@ -34,7 +34,11 @@ documentation of GR.textext.
     julia> # Set the legends to "a" and "b"
     julia> legend("a", "b")
 """
-legend(args::AbstractString...; kwargs...) = legend!(currentplot(gcf()), args...; kwargs...)
+function legend(args::AbstractString...; kwargs...)
+    f = gcf()    
+    legend!(currentplot(f), args...; kwargs...)
+    draw(f)
+end
 
 # Hold
 hold!(p::PlotObject, state::Bool) = (p.attributes[:hold] = state)
@@ -65,7 +69,11 @@ that the next plot will be drawn on top of the previous one.
     julia> # Reset the hold flag
     julia> hold(false)
 """
-hold(state) = hold!(currentplot(gcf()), state)
+function hold(state)
+    f = gcf()    
+    hold!(currentplot(f), state)
+    draw(f)
+end
 
 # Title
 function title!(p::PlotObject, s)
@@ -98,7 +106,11 @@ documentation of GR.textext.
     julia> # Clear the plot title
     julia> title("")
 """
-title(s::AbstractString) = title!(currentplot(gcf()), s)
+function title(s::AbstractString)
+    f = gcf()    
+    title!(currentplot(f), s)
+    draw(f)
+end
 
 const AXISLABEL_DOC = """
 Set the X, Y or Z axis labels.
@@ -215,8 +227,11 @@ for ax = ("x", "y", "z")
         return nothing
     end
     @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
-    @eval $fname(s::AbstractString) = $fname!(currentplot(gcf()), s)
-    @eval @doc AXISLABEL_DOC $fname
+    @eval @doc AXISLABEL_DOC function $fname(s::AbstractString) 
+        f = gcf()
+        $fname!(currentplot(f), s)
+        draw(f)
+    end
 
     # xticks, etc.
     fname! = Symbol(ax, :ticks!)
@@ -230,8 +245,11 @@ for ax = ("x", "y", "z")
         return nothing
     end
     @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
-    @eval $fname(args...) = $fname!(currentplot(gcf()), args...)
-    @eval @doc TICKS_DOC $fname
+    @eval @doc TICKS_DOC function $fname(args...)
+        f = gcf()
+        $fname!(currentplot(f), args...)
+        draw(f)
+    end
 
     # xlim, etc.
     fname! = Symbol(ax, :lim!)
@@ -261,8 +279,11 @@ for ax = ("x", "y", "z")
         $fname!(p, (minval, maxval), adjust)
     end
     @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
-    @eval $fname(args...) = $fname!(currentplot(gcf()), args...)
-    @eval @doc AXISLIM_DOC $fname
+    @eval @doc AXISLIM_DOC function $fname(args...)
+        f = gcf()
+        $fname!(currentplot(f), args...)
+        draw(f)
+    end
 
     # xlog, xflip, etc.
     for (attr, docstr) ∈ ((:log, :AXISLOG_DOC), (:flip, :AXISFLIP_DOC))
@@ -276,8 +297,11 @@ for ax = ("x", "y", "z")
             return nothing
         end
         @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
-        @eval $fname(args...) = $fname!(currentplot(gcf()), args...)
-        @eval @doc $docstr $fname
+        @eval @doc $docstr function $fname(args...)
+            f = gcf()
+            $fname!(currentplot(f), args...)
+            draw(f)
+        end
     end
 end
 
@@ -309,8 +333,11 @@ for ax = ("x", "y")
         p.attributes[Symbol($ax, :ticklabels)] = s
     end
     @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
-    @eval $fname(s) = $fname!(currentplot(gcf()), s)
-    @eval @doc TICKLABELS_DOC $fname
+    @eval @doc TICKLABELS_DOC function $fname(s)
+        f = gcf()
+        $fname!(currentplot(f), s)
+        draw(f)
+    end
 end
 
 # Grid
@@ -335,7 +362,11 @@ Set the flag to draw a grid in the plot axes.
     julia> # Restore the grid
     julia> grid(true)
 """
-grid(flag) = grid!(currentplot(gcf()), flag)
+function grid(flag)
+    f = gcf()    
+    grid!(currentplot(f), flag)
+    draw(f)
+end
 
 # Colorbar
 colorbar!(p::PlotObject, flag) = (p.attributes[:colorbar] = flag)
@@ -353,7 +384,11 @@ Set the flag to print a color bar if available
 
     julia> colorbar(true)
 """
-colorbar(flag) = colorbar!(currentplot(gcf()), flag)
+function colorbar(flag)
+    f = gcf()    
+    colorbar!(currentplot(f), flag)
+    draw(f)
+end
 
 # Aspect ratio
 function aspectratio!(p::PlotObject, r)
@@ -375,4 +410,9 @@ Set the aspect ratio of the plot
 
     julia> aspectratio(16/9) # Panoramic ratio
 """
-aspectratio(flag) = aspectratio!(currentplot(gcf()), r)
+function aspectratio(r)
+    f = gcf()    
+    aspectratio!(currentplot(f), r)
+    draw(f)
+end
+

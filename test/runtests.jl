@@ -110,9 +110,7 @@ hold(true)
 plot(x, x.^4, label="power 4")
 plot(x, x.^8)
 legend(location=11)
-draw(gcf())
 legend("square", location=2)
-draw(gcf())
 hold(false)
 
 # Create example point data
