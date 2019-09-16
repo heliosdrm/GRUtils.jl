@@ -95,10 +95,7 @@ macro plotfunction(fname, options...)
     end
     # Add docstrings if available
     if haskey(dict_op, :docstring)
-        push!(expr.args, quote
-            @doc $(dict_op[:docstring]) $fname
-            @doc $(dict_op[:docstring]) $fname!
-        end)
+        push!(expr.args, quote @doc $(dict_op[:docstring]) $fname end)
     end
     esc(expr)
 end
@@ -905,6 +902,36 @@ the isovalue will be seen as inside the isosurface.
     julia> isosurface(v, isovalue=0.2)
 """)
 
+
+function oplot!(f::Figure, args...; kwargs...)
+    p = currentplot(f)
+    kwargs = (; p.attributes..., kwargs...)
+    if typeof(args[end]) <: AbstractString
+        kwargs = (spec=args[end], kwargs...)
+        args = args[1:end-1]
+    end
+    append!(p.geoms, geometries(:line, args...; geom_attributes(; kwargs...)...))
+    draw(f)
+end
+
+"""
+Draw one or more line plots over another plot.
+This function can receive one or more of the following:
+- x values and y values, or
+- x values and a callable to determine y values, or
+- y values only, with their indices as x values
+:param args: the data to plot
+**Usage examples:**
+.. code-block:: julia
+    julia> # Create example data
+    julia> x = LinRange(-2, 2, 40)
+    julia> y = 2 .* x .+ 4
+    julia> # Draw the first plot
+    julia> plot(x, y)
+    julia> # Plot graph over it
+    julia> oplot(x, x -> x^3 + x^2 + x)
+"""
+oplot(args...; kwargs...) = oplot!(gcf(), args...; kwargs...)
 
 """
 Save the current figure to a file.

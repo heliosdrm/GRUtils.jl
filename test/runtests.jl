@@ -30,6 +30,7 @@ draw(gcf())
 
 
 plot(x, y, ratio = 16//9)
+oplot(x, x -> x^3 + x^2 + x)
 
 x = LinRange(-2, 2, 40)
 y = 2 .* x .+ 4
