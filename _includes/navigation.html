@@ -3,7 +3,7 @@
       {% for item in site.data.navigation.sections %}
         <li class="toplevel">
           {% if item.url %}
-            <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
+            <a href="{{ item.url | relative_url }}"><div>{{ item.title }}</div></a>
           {% else %}
             {{ item.title }}
           {% endif %}
@@ -12,7 +12,7 @@
               {% for subitem in item.pages %}
                 <li>
                   {% if subitem.url %}
-                    <a href="{{ subitem.url | relative_url }}">{{ subitem.title }}</a>
+                    <a href="{{ subitem.url | relative_url }}"><div>{{ subitem.title }}</div></a>
                   {% else %}
                     {{ subitem.title }}
                   {% endif %}
