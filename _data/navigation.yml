@@ -4,16 +4,16 @@ sections:
   - title: USAGE
     pages:
       - title: Basic instructions
-        url: usage/basics.html
+        url: /usage/basics.html
       - title: Multiple plots
-        url: usage/multipleplots.html
+        url: /usage/multipleplots.html
   - title: INTERNALS
     pages:
       - title: Structure of the plots
-        url: internals/structure.html
+        url: /internals/structure.html
       - title: Creating plots
-        url: internals/createplots.html
+        url: /internals/createplots.html
       - title: Drawing plots
-        url: internals/drawplots.html
+        url: /internals/drawplots.html
       - title: Extending GRUtils
-        url: internals/extending.html
+        url: /internals/extending.html
