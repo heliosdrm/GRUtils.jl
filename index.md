@@ -6,17 +6,15 @@ title: Introduction to GRUtils
 
 This package is a refactoring of the module `jlgr` from [GR](https://github.com/jheinen/GR.jl). The purpose of GRUtils is to provide the main utilities of `jlgr` in a more "Julian" and modular style, easier to read, and facilitate code contributions by others.
 
-GRUtils is being maintained in a package apart from GR, in order to make its development faster. However it is not yet registered, so to install and test it you will need to do:
+GRUtils is being maintained in a package apart from GR, in order to make its development faster, assuming a temporary duplication of development efforts. Hopefully in a near future it will be clearer if the interface to GR provided in GRUtils deserves maintenance in such an independent "plug-in", or if its code should be integrated in GR itself.
 
-```julia
-Pkg.clone("https://github.com/heliosdrm/GRUtils.jl")
-```
+Read more to learn:
 
-The reason for GRUtils not being registered is that its author does not feel totally right duplicating code. Hopefully in a near future it will be clearer if the interface to GR provided in GRUtils deserves maintenance in such an independent "plug-in", or integrated in GR itself, or if it just becomes a failed experiment.
-
-Read more to learn about:
-
-* [Structure of plots in GRUtils](./structure.md)
-* [Creating plots](./createplots.md)
-* [Drawing plots](./drawplots.md)
-* [Extending GRUtils](./extending.md)
+* How to use GRUtils:
+  - [Installation and basic usage](./usage/basics.md)
+  - [Working with multiple plots](./usage/multipleplots.md)
+* The internals of GRUtils, and how to contribute to its development:
+  - [Structure of plots in GRUtils](./internals/structure.md)
+  - [Creating plots](./internals/createplots.md)
+  - [Drawing plots](./internals/drawplots.md)
+  - [Extending GRUtils](./internals/extending.md)

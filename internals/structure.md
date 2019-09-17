@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Structure of plots in GRUtils
+title: Structure of the plots
 ---
-# Structure of plots in GRUtils
+# Structure of the plots
 
 GRUtils replaces some long, convoluted functions of `jlgr` with many `if-else` blocks by more numerous, but smaller functions based on type-dispatch, and takes advantage of meta-programming, such that those functions can be revised and debugged easily, and new utilities can be added with new functions and methods, without having to modify the existing ones.
 
@@ -66,7 +66,7 @@ The `Viewport` of a plot defines the "normalized device coordinates" (NDC) of th
 
 Such boxes are defined by 4 coordinates; the first and second coordinates are the distances between the left margin of the device and the left and right borders of the box, respectively; the third and fourth coordinates are the distances between the bottom of the device and the bottom and top borders, respectively.
 
-![Box coordinates](img/boxcoordinates.png)
+![Box coordinates](../img/boxcoordinates.png)
 
 NDC are given in dimensionless units between 0 and 1, such that `(0, 1, 0, 1)` means a box that spans over the whole device.
 
@@ -164,4 +164,3 @@ A `Colorbar` object contains the data that defines the colorbar associated to a 
 
 (In `jlgr`, those values are not stored in any parameter of plot objects, and everything is calculated in the moment of drawing the plot, if suitable.)
 
-*Now, continue reading about [Creating plots](./createplots.md)*

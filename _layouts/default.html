@@ -29,20 +29,15 @@
             </section>
           {% endif %}
 
-          <nav>
-            <ul>
-              {% for item in site.data.navigation.docs %}
-                <li><a href="{{ item.url }}">{{ item.title }}</a></li>
-              {% endfor %}
-            </ul>
-          </nav>
-
         </header>
     </div>
 
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
+
+      {% include navigation.html %}
+
         {{ content }}
       </section>
     </div>

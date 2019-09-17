@@ -106,4 +106,3 @@ The first of those functions (the one whose name ends with an exclamation) edits
 * **`kwargs`**: a named tuple with extra keyword arguments that are passed to the constructors of geometries, axes and the plot object.
 * **`docstring`**: the documentation string that will be assigned to those functions.
 
-*Now, continue reading about [Drawing plots](./drawplots.md)*

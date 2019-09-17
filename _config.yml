@@ -5,9 +5,11 @@ relative_links:
   collections: true
 include:
   - index.md
-  - structure.md
-  - createplots.md
-  - drawplots.md
-  - extending.md
+  - usage/basics.md
+  - usage/multipleplots.md
+  - internals/structure.md
+  - internals/createplots.md
+  - internals/drawplots.md
+  - internals/extending.md
 
 theme: jekyll-theme-slate

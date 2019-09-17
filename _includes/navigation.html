@@ -1,0 +1,27 @@
+  <nav>
+    <ul>
+      {% for item in site.data.navigation.sections %}
+        <li class="toplevel">
+          {% if item.url %}
+            <a href="{{ item.url }}">{{ item.title }}</a>
+          {% else %}
+            {{ item.title }}
+          {% endif %}
+          {% if item.pages %}
+            <ul>
+              {% for subitem in item.pages %}
+                <li>
+                  {% if subitem.url %}
+                    <a href="{{ subitem.url }}">{{ subitem.title }}</a>
+                  {% else %}
+                    {{ subitem.title }}
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+

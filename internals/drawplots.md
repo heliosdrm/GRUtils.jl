@@ -19,4 +19,3 @@ The function `draw` executes the instructions that create the graphical visualiz
 * Legends are drawn by the method `draw(lg::Legend, geoms, location)`, where `geoms` is a vector with the geometries of the plot, and `location` is an integer code that defines the location of the legend with respect to the main plot area &mdash; as defined in [Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html). The geometries are passed down to the `guide` function, which has specialized methods for the kind of geometries that can be represented in legends.
 * Color bars are drawn by the method `draw(cb::Colorbar [, range])`, where the optional `range` is by default `cb.range`, but can be overriden by other values.
 
-*Now, continue reading about [Extending GRUtils](./extending.md)*
