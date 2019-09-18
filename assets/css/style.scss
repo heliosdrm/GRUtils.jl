@@ -10,7 +10,7 @@ nav {
   margin-bottom: 2rem;
 }
 
-nav a {color: #000000}
+nav a {color: white}
 
 nav ul {
   font-size: 1em;
@@ -22,22 +22,23 @@ nav ul {
 
 nav .toplevel {
   font-weight: bold;
+  background: none;
   min-width: 10rem;
   margin: 0
 }
 
 nav li {
- position: relative;
- display: block;
- float: left;
- background: white;
- padding: 0.5rem;
- padding-top: 0
+  position: relative;
+  display: block;
+  float: left;
+  color: white;
+  background: #373737;
+  padding: 0.5rem;
+  padding-top: 0
 }
 
 nav li:hover, nav :hover > a {
-  background: #373737;
-  color: white;
+  background: #0090ff;
   cursor: pointer;
 }
 
