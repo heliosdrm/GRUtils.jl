@@ -26,9 +26,7 @@ The expressions used in that macro call are:
 The macro `@plotfunction` creates two functions, which in this example are:
 
 * `histogram(args...; kwargs...)`, a function that creates a histogram on the current plot of the current figure.
-* `histogram!(p, args...; kwargs...)`, which creates the histogram on a plot identified by `p`:
-   - if `p` is a `PlotObject`, the histogram is created on that plot;
-   - if `p` is a `Figure`, it is created on the last element of its `plots`.
+* `histogram!(fig, args...; kwargs...)`, which creates the histogram on the current plot of the figure given as `fig`.
 
 In the most simple cases, the input passed by the user to the new plotting function may be directly the variables that go straight to the `x`, `y`, etc. parameters of the geometries. But often (as in the case of histograms) it is not. In such case it is necessary to define the function that is identified by the `setargs` parameter in the macro. The signature of such a function must be:
 

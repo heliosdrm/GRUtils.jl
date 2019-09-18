@@ -11,9 +11,9 @@ sections:
     pages:
       - title: Structure of the plots
         url: /internals/structure.html
-      - title: Creating plots
-        url: /internals/createplots.html
       - title: Drawing plots
         url: /internals/drawplots.html
+      - title: Creating plots
+        url: /internals/createplots.html
       - title: Extending GRUtils
         url: /internals/extending.html

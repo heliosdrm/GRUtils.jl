@@ -23,7 +23,7 @@ make those steps easier, as presented next.
 Viewport(subplot, frame::Bool [, ratio::Real, margins])
 ```
 
-This method makes a `Viewport` for a plot taking the normalized coordinates of the box that contains it (`subplot`, which are normalized with respect to the size of the figure, not the whole device), and a flag (`frame::Bool`) telling whether there should be a frame between the outer and inner boxes. The size of that frame is calculated automatically.
+This method makes a `Viewport` for a plot taking the normalized coordinates of the box that contains it (the argument `subplot`, which are normalized with respect to the size of the figure, not the whole device), and a flag (`frame::Bool`) telling whether there should be a frame between the outer and inner boxes. The size of that frame is calculated automatically.
 
 This constructor also accepts two optional arguments: `ratio`, which is the width:height ratio of the inner box, and `margins`, a 4-vector with extra margins that there should be between the outer and inner boxes, in addition to the default size of the frame (in the order left-right-bottom-top).
 
@@ -105,4 +105,6 @@ The first of those functions (the one whose name ends with an exclamation) edits
 * **`setargs`**: a function that takes the positional and keyword arguments that are passed to the functions, and transforms and extends them to return: (a) a tuple of positional arguments to be passed to the function `geometries`, and (b) the set of keyword arguments that are passed to the constructor of geometries, axes, and the plot object. If `setargs` is not defined, the positional and keyword arguments are returned untransformed.
 * **`kwargs`**: a named tuple with extra keyword arguments that are passed to the constructors of geometries, axes and the plot object.
 * **`docstring`**: the documentation string that will be assigned to those functions.
+
+Read more details about how this macro to [extend GRUtils](./extending.md).
 

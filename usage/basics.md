@@ -6,7 +6,7 @@ title: Basic instructions
 
 ## Installation
 
-Add GRUtils to your library of Julia packages, hitting `]` to enter in the "package management" mode and then typing:
+Add GRUtils to your library of Julia packages, hitting `]` to enter in the "package management mode" and then typing:
 
 ```julia-repl
 add GRUtils
@@ -18,7 +18,7 @@ Or if you feel like looking into GRUtil's code and maybe trying your own fixes a
 dev GRUtils
 ```
 
-This package depends on [GR](https://github.com/jheinen/GR.jl). If you don't have it installed before, GRUtils will install it and its dependencies. Building GR ocassionally fails; so to ensure that everything will work, check the messages printed after the installation, and if there is some error related to "Building GR", retry:
+This package depends on [GR](https://github.com/jheinen/GR.jl). If you don't have it installed before, GRUtils will install GR and its dependencies. Building GR ocassionally fails; so to ensure that everything will work, check the messages printed after the installation, and if there is some error related to "Building GR", retry:
 
 ```julia-console
 # In "normal" REPL
@@ -37,3 +37,5 @@ The documentation of [GR's API for Julia](https://gr-framework.org/julia-jlgr.ht
 * Matrices passed to [`imshow`](https://gr-framework.org/julia-jlgr.html#imshow-404f4e72a2ec356c3761e3179229e416) must contain numbers in the range [0, 1].
 * Staircase plots (not present in the documentation) are made with the function `stair` instead of `step`, in order to avoid name conflicts with [Base.step](https://docs.julialang.org/en/latest/base/collections/#Base.step).
 * The [functions that modify plot attributes](https://gr-framework.org/julia-jlgr.html#attribute-functions) update the visualization of the plot automatically.
+
+Continue in the next section to read about how to [work with multiple plots](./multipleplots.md).

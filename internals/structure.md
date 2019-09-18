@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Structure of the plots
+title: Structure of plots
 ---
-# Structure of the plots
+# Structure of plots in GRUtils
 
 GRUtils replaces some long, convoluted functions of `jlgr` with many `if-else` blocks by more numerous, but smaller functions based on type-dispatch, and takes advantage of meta-programming, such that those functions can be revised and debugged easily, and new utilities can be added with new functions and methods, without having to modify the existing ones.
 
@@ -10,7 +10,7 @@ Plots are composed by a set of objects of different types, which are defined in 
 
 ### Figures
 
-*Figures* are the "top-level" objects, that contain all the information of a plot or set of "subplots" that are meant to be drawn together. This is represented by the type `Figure`:
+Figures are the "top-level" objects, that contain all the information of a plot or set of "subplots" that are meant to be drawn together. This is represented by the type `Figure`, defined in the file [`figures.jl`](https://github.com/heliosdrm/GRUtils.jl/blob/master/src/figures.jl):
 
 ```julia
 struct Figure
@@ -25,8 +25,6 @@ The parameters contained in a figure are:
 
 * **`plots`**: a vector of `PlotObject` elements, which contain the information of the individual plots included in the figure.
 
-There is a global "current figure" that can be obtained by the function `gcf()` &mdash; with no arguments.
-
 ### Plot objects
 
 ```julia
@@ -40,7 +38,7 @@ mutable struct PlotObject
 end
 ```
 
-The objects of the type `PlotObject` represent what can be considered a "complete" single plot. This type is roughly equivalent to the type of the same name defined in `jlgr`, although its structure is quite different. A plot object contains the following parameters, which are defined in subsequent sections:
+The objects of the type `PlotObject` represent what can be considered a "complete" single plot. This type is defined in [`plotobjects.jl`](https://github.com/heliosdrm/GRUtils.jl/blob/master/src/plotobjects.jl), and it roughly equivalent to the type of the same name defined in `jlgr`, although its structure is quite different. A plot object contains the following parameters, which are defined in subsequent sections:
 
 * **`viewport`**: a `Viewport` object, which defines the area covered by the plot and the coordinate axes in the display.
 * **`axes`**: an `Axes` object that defines how to represent the coordinate axes of the space where the plot is contained.
@@ -87,7 +85,7 @@ struct Geometry
 end
 ```
 
-The objects of type `Geometry` contain the data represented in a plot by means of geometric elements (lines, markers, shapes, etc.).
+The objects of type `Geometry` contain the data represented in a plot by means of geometric elements (lines, markers, shapes, etc.). They are defined in the file [`geometries.jl`](https://github.com/heliosdrm/GRUtils.jl/blob/master/src/geometries.jl).
 
 Each `Geometry` has a `kind`, given by a `Symbol` with the name of the geometric element that it represents, such as `:line` for lines, `:scatter` for scattered points, `:bar` for bars, etc. In addition it has the following fields:
 
@@ -107,18 +105,19 @@ struct Axes
     tickdata::Dict{Symbol, Tuple{Float64, Tuple{Float64,Float64}, Int}}
     ticklabels::Dict{Symbol, <:Function}
     perspective::Vector{Int}
+    camera::Vector{Floata64}
     options::Dict{Symbol, Int}
 end
 ```
 
-`Axes` is a type of objects that contain the graphical specifications of the coordinate system of a plot.
+`Axes` is a type of objects that contain the graphical specifications of the coordinate system of a plot. It is defined in the file [`axes.jl`](https://github.com/heliosdrm/GRUtils.jl/blob/master/src/axes.jl).
 
-Axes are determined by their **`kind`**, which may be `:axes2d` for 2-D plots, `:axes3d` for 3-D plots, and `:axespolar` for polar plots. The rest of its fields are:
+Axes are determined by their `kind`, which may be `:axes2d` for 2-D plots, `:axes3d` for 3-D plots, and `:axespolar` for polar plots. The rest of its fields are:
 
 * **`ranges`**: boundaries of the different axes/scales. They are given as a dictionary whose keys are symbols with the name of the axis (`:x`, `:y`, `:z`, `:c`), and whose values are tuples with two float values &mdash; the minimum and maximum values, respectively.
-* `tickdata`: numeric specifications of the "ticks" that are drawn on the axes. They are given as a dictionary whose keys are the names of the axis (as for `range`), and whose values are tuples that contain for that axis: (1) the "minor" value between consecutive ticks; (2) a tuple with the two ends of the axis ticks; and (3) the number of minor ticks between "major", numbered ticks.
+* **`tickdata`**: numeric specifications of the "ticks" that are drawn on the axes. They are given as a dictionary whose keys are the names of the axis (as for `range`), and whose values are tuples that contain for that axis: (1) the "minor" value between consecutive ticks; (2) a tuple with the two ends of the axis ticks; and (3) the number of minor ticks between "major", numbered ticks.
 * **`ticklabels`**: transformations between tick values and labels. They are given as a dictionary whose keys are the names of the axis, and whose values are functions that accept a number as argument, and return a string with the text that must be written at major ticks. (This only works for the X and Y axes).
-* **`perspective`**: A `Vector{Int}` that contains the "rotation" and "tilt" angles that are used to project 3-D axes on the plot plane. (Only for 3-D plots)
+* **`perspective`**: A `Vector{Int}` that contains the "rotation" and "tilt" angles (in degrees), used to project 3-D axes on the plot plane. (Only for 3-D plots)
 * **`camera`**: A `Vector{Float64}` with the camera parameters (camera position, view center and "up" vector, only used in 3-D plots)
 * **`options`**: A `Dict{Symbol, Int}` with extra options that control the visualization of the axes.
 
@@ -133,7 +132,7 @@ struct Legend
 end
 ```
 
-`Legend` objects contain the data that defines the frame where legends are drawn. They contain two fields:
+`Legend` objects contain the data that defines the frame where legends are drawn. They are defined in [`legends.jl`](https://github.com/heliosdrm/GRUtils.jl/blob/master/src/legends.jl), and contain two fields:
 
 * **`size`**: a 2-tuple that defines the width and height of the legend frame in NDC.
 * **`cursors`**: a vector of 2-tuples that marks the positions of the legend items inside the legend frame, also in NDC, but relative to the top-left corner of the frame.
@@ -154,13 +153,15 @@ struct Colorbar
 end
 ```
 
-A `Colorbar` object contains the data that defines the colorbar associated to a plot. The fields contained in a `Colorbar` object are:
+A `Colorbar` object contains the data that defines the colorbar associated to a plot. They are defined in [`colorbars.jl`](https://github.com/heliosdrm/GRUtils.jl/blob/master/src/colorbars.jl). The fields contained in a `Colorbar` object are:
 
 * **`range`**: a 2-tuple with the limits of the color scale represented in the bar.
 * **`tick`**: the distance between tick marks drawn as guide next to the bar.
-* **`scale`** an integer code used by `GR.setscale` to define the scale of the bar (basically, if it is presented as linear or log scale).
+* **`scale`**: an integer code used by `GR.setscale` to define the scale of the bar (basically, if it is presented as linear or log scale).
 * **`margin`**: size of the extra margin between the main plot frame and the bar.
 * **`colors`**: number of different grades into which the color scale is divided.
 
 (In `jlgr`, those values are not stored in any parameter of plot objects, and everything is calculated in the moment of drawing the plot, if suitable.)
+
+Continue reading to know more about how GRUtils works to [draws plots](./drawplots.md) with this structure.
 
