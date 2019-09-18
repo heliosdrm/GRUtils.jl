@@ -3,6 +3,9 @@ uuid = "0337cf30-a0fd-11e9-31db-a79914c9d7ac"
 authors = ["Helios De Rosario"]
 version = "0.1.0"
 
+[compat]
+julia = "1"
+
 [deps]
 GR = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
 
