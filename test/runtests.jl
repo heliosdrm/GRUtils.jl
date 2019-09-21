@@ -140,8 +140,7 @@ trisurf(x, y, z)
 # Create example grid data
 x = LinRange(-2, 2, 40)
 y = LinRange(0, pi, 20)
-# x, y = meshgrid(x, y)
-z = sin.(x) .+ cos.(y')
+z = sin.(x') .+ cos.(y) # instead of # x, y = meshgrid(x, y)
 # Draw the contour plot
 contour(x, y, z)
 contourf(x, y, z)
