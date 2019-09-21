@@ -495,7 +495,7 @@ end
 
 # z values are calculated from a function
 function _setargs_contour(f, x, y, fz::Function, args...; kwargs...)
-    z = fz.(x, y)
+    z = fz.(transpose(vec(x)), vec(y))
     _setargs_contour(f, x, y, z, args...; kwargs...)
 end
 
@@ -528,10 +528,9 @@ provided points, a value of 0 will be used.
     julia> # Draw the contour plot
     julia> contour(x, y, z)
     julia> # Create example grid data
-    julia> X = LinRange(-2, 2, 40)
-    julia> Y = LinRange(0, pi, 20)
-    julia> x, y = meshgrid(X, Y)
-    julia> z = sin.(x) .+ cos.(y)
+    julia> x = LinRange(-2, 2, 40)
+    julia> y = LinRange(0, pi, 20)
+    julia> z = sin.(x') .+ cos.(y)
     julia> # Draw the contour plot
     julia> contour(x, y, z)
     julia> # Draw the contour plot using a callable
@@ -567,10 +566,9 @@ provided points, a value of 0 will be used.
     julia> # Draw the contour plot
     julia> contourf(x, y, z)
     julia> # Create example grid data
-    julia> X = LinRange(-2, 2, 40)
-    julia> Y = LinRange(0, pi, 20)
-    julia> x, y = meshgrid(X, Y)
-    julia> z = sin.(x) .+ cos.(y)
+    julia> x = LinRange(-2, 2, 40)
+    julia> y = LinRange(0, pi, 20)
+    julia> z = sin.(x') .+ cos.(y)
     julia> # Draw the contour plot
     julia> contourf(x, y, z)
     julia> # Draw the contour plot using a callable
@@ -588,7 +586,7 @@ function _setargs_tricont(f, x, y, z; levels = 20, kwargs...)
 end
 
 function _setargs_tricont(f, x, y, fz::Function, args...; kwargs...)
-    z = fz.(x, y)
+    z = fz.(transpose(vec(x)), vec(y))
     _setargs_tricont(f, x, y, z, args...; kwargs...)
 end
 
@@ -628,6 +626,12 @@ function _setargs_surface(f, x, y, z; accelerate = true, kwargs...)
     ((vec(x), vec(y), vec(z), vec(z)), (; accelerate = accelerate, kwargs...))
 end
 
+# z values are calculated from a function
+function _setargs_surface(f, x, y, fz::Function, args...; kwargs...)
+    z = fz.(transpose(vec(x)), vec(y))
+    _setargs_surface(f, x, y, z, args...; kwargs...)
+end
+
 @plotfunction(surface, geom = :surface, axes = :axes3d, setargs = _setargs_surface,
 kwargs = (colorbar=true, accelerate=true), docstring="""
 Draw a three-dimensional surface plot.
@@ -657,10 +661,9 @@ provided points, a value of 0 will be used.
     julia> # Draw the surface plot
     julia> surface(x, y, z)
     julia> # Create example grid data
-    julia> X = LinRange(-2, 2, 40)
-    julia> Y = LinRange(0, pi, 20)
-    julia> x, y = meshgrid(X, Y)
-    julia> z = sin.(x) .+ cos.(y)
+    julia> x = LinRange(-2, 2, 40)
+    julia> y = LinRange(0, pi, 20)
+    julia> z = sin.(x') .+ cos.(y)
     julia> # Draw the surface plot
     julia> surface(x, y, z)
     julia> # Draw the surface plot using a callable
@@ -695,10 +698,9 @@ provided points, a value of 0 will be used.
     julia> # Draw the wireframe plot
     julia> wireframe(x, y, z)
     julia> # Create example grid data
-    julia> X = LinRange(-2, 2, 40)
-    julia> Y = LinRange(0, pi, 20)
-    julia> x, y = meshgrid(X, Y)
-    julia> z = sin.(x) .+ cos.(y)
+    julia> x = LinRange(-2, 2, 40)
+    julia> y = LinRange(0, pi, 20)
+    julia> z = sin.(x') .+ cos.(y)
     julia> # Draw the wireframe plot
     julia> wireframe(x, y, z)
     julia> # Draw the wireframe plot using a callable
@@ -764,10 +766,9 @@ be neccessary to adjust these limits or clip the range of array values.
 .. code-block:: julia
 
     julia> # Create example data
-    julia> X = LinRange(-2, 2, 40)
-    julia> Y = LinRange(0, pi, 20)
-    julia> x, y = meshgrid(X, Y)
-    julia> z = sin.(x) .+ cos.(y)
+    julia> x = LinRange(-2, 2, 40)
+    julia> y = LinRange(0, pi, 20)
+    julia> z = sin.(x') .+ cos.(y)
     julia> # Draw the heatmap
     julia> heatmap(z)
 """)
@@ -860,10 +861,9 @@ two-dimensional array and the current colormap.
 .. code-block:: julia
 
     julia> # Create example data
-    julia> X = LinRange(-2, 2, 40)
-    julia> Y = LinRange(0, pi, 20)
-    julia> x, y = meshgrid(X, Y)
-    julia> z = sin.(x) .+ cos.(y)
+    julia> x = LinRange(-2, 2, 40)
+    julia> y = LinRange(0, pi, 20)
+    julia> z = sin.(x') .+ cos.(y)
     julia> # Draw an image from a 2d array
     julia> imshow(z)
     julia> # Draw an image from a file
@@ -896,8 +896,7 @@ the isovalue will be seen as inside the isosurface.
 
     julia> # Create example data
     julia> s = LinRange(-1, 1, 40)
-    julia> x, y, z = meshgrid(s, s, s)
-    julia> v = 1 .- (x .^ 2 .+ y .^ 2 .+ z .^ 2) .^ 0.5
+    julia> v = 1 .- (s .^ 2 .+ s' .^ 2 .+ reshape(s,1,1,:) .^ 2) .^ 0.5
     julia> # Draw an image from a 2d array
     julia> isosurface(v, isovalue=0.2)
 """)
