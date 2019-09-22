@@ -69,11 +69,7 @@ that the next plot will be drawn on top of the previous one.
     julia> # Reset the hold flag
     julia> hold(false)
 """
-function hold(state)
-    f = gcf()    
-    hold!(currentplot(f), state)
-    draw(f)
-end
+hold(state) = hold!(currentplot(gcf()), state)
 
 # Title
 function title!(p::PlotObject, s)
