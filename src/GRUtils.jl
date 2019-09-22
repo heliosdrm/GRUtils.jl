@@ -10,7 +10,16 @@ export Figure, gcf, subplot, currentplot, draw,
     aspectratio, colorbar, grid, hold, legend, title,
     xflip, xlabel, xlim, xlog, xticks, xticklabels,
     yflip, ylabel, ylim, ylog, yticks, xticklabels,
-    zflip, zlabel, zlim, zlog, zticks
+    zflip, zlabel, zlim, zlog, zticks,
+
+    subplot!, plot!, plot3!, polar!, scatter!, scatter3!, stair!, stem!, oplot!,
+    barplot!, histogram!, polarhistogram!,
+    contour!, contourf!, tricont!, trisurf!, surface!, wireframe!,
+    heatmap!, polarheatmap!, hexbin!, imshow!, isosurface!,
+    aspectratio!, colorbar!, grid!, hold!, legend!, title!,
+    xflip!, xlabel!, xlim!, xlog!, xticks!, xticklabels!,
+    yflip!, ylabel!, ylim!, ylog!, yticks!, xticklabels!,
+    zflip!, zlabel!, zlim!, zlog!, zticks!
 
 
 function search(s::AbstractString, c::Char)

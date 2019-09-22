@@ -68,9 +68,9 @@ macro plotfunction(fname, options...)
     def_kwargs = get(dict_op, :kwargs, NamedTuple())
     fname! = Symbol(fname, :!)
     expr = quote
-        function $(fname!)(f::Figure, args...; kwargs...)
+        function $(fname!)(f::GRUtils.Figure, args...; kwargs...)
             kwargs = (; $(def_kwargs)..., kwargs...)
-            p = currentplot(f)
+            p = GRUtils.currentplot(f)
             if haskey(kwargs, :hold)
                 holdstate = kwargs[:hold]
             else
@@ -80,18 +80,18 @@ macro plotfunction(fname, options...)
                 # Keep all attributes
                 kwargs = (; p.attributes..., kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
-                geoms = [p.geoms; geometries(Symbol($geom_k), args...; geom_attributes(;kwargs...)...)]
+                geoms = [p.geoms; GRUtils.geometries(Symbol($geom_k), args...; GRUtils.geom_attributes(;kwargs...)...)]
             else
                 # Only keep previous subplot
                 kwargs = (subplot = p.attributes[:subplot], kwargs...)
                 args, kwargs = $setargs_fun(f, args...; kwargs...)
-                geoms = geometries(Symbol($geom_k), args...; geom_attributes(;kwargs...)...)
+                geoms = GRUtils.geometries(Symbol($geom_k), args...; GRUtils.geom_attributes(;kwargs...)...)
             end
-            axes = Axes(Symbol($axes_k), geoms; kwargs...)
-            f.plots[end] = PlotObject(axes, geoms; kind=$plotkind, plot_attributes(; kwargs...)...)
-            draw(f)
+            axes = GRUtils.Axes(Symbol($axes_k), geoms; kwargs...)
+            f.plots[end] = GRUtils.PlotObject(axes, geoms; kind=$plotkind, GRUtils.plot_attributes(; kwargs...)...)
+            GRUtils.draw(f)
         end
-        $fname(args...; kwargs...) = $fname!(gcf(), args...; kwargs...)
+        $fname(args...; kwargs...) = $fname!(GRUtils.gcf(), args...; kwargs...)
     end
     # Add docstrings if available
     if haskey(dict_op, :docstring)
