@@ -4,13 +4,14 @@ os:
   - osx
   - windows
 julia:
-  - 0.7
   - 1.0.4
   - 1.1
   - nightly
+branches:
+  - only:
+    - master
 matrix:
   allow_failures:
-    - julia: 0.7
     - julia: nightly
 notifications:
   email: false
