@@ -274,6 +274,7 @@ for ax = ("x", "y", "z")
     @eval function $fname!(p::PlotObject, minval::Union{Nothing, Number}, maxval::Union{Nothing, Number}, adjust::Bool=false)
         $fname!(p, (minval, maxval), adjust)
     end
+    @eval $fname!(p::PlotObject) = $fname!(p, (nothing, nothing))
     @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
     @eval @doc AXISLIM_DOC function $fname(args...)
         f = gcf()
