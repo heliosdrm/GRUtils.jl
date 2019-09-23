@@ -107,7 +107,7 @@ mutable struct PlotObject
 end
 
 function PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
-    attributes = Dict(:subplot => UNITSQUARE, kwargs...)
+    attributes = Dict{Symbol, Any}(:subplot => UNITSQUARE, kwargs...)
     PlotObject(viewport, axes, geoms, legend, colorbar, attributes)
 end
 
