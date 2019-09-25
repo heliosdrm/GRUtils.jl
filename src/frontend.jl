@@ -905,7 +905,6 @@ the isovalue will be seen as inside the isosurface.
 Draw a point or line based heatmap.
 
 This function uses the current colormap to display a series of points or polylines. For line data, NaN values can be used as separator.
-Parameters:
 
 :param args: the data to plot
 :param xform: the transformation type used for color mapping
@@ -938,6 +937,33 @@ The available transformation types are:
     julia> x = [randn(10000); NaN; randn(10000)]
     julia> x = [randn(10000); NaN; randn(10000)]
     julia> shade(x, y)
+""")
+
+function _setargs_volume(f, v::Array{T, 3}; kwargs...) where {T}
+    (nx, ny, nz) = size(v)
+    (([nx], [ny], [nz], vec(v)), kwargs)
+end
+
+@plotfunction(volume, geom = :volume, axes = :axes3d, setargs = _setargs_volume,
+kwargs = (colorbar=true,), docstring="""
+Draw a volume.
+
+This function can draw a three-dimensional numpy array using volume rendering. The volume data is reduced to a two-dimensional image using an emission or absorption model or by a maximum intensity projection. After the projection the current colormap is applied to the result.
+
+:param v: the volume data
+:param algorithm: the algorithm used to reduce the volume data. Available algorithms are “maximum”, “emission” and “absorption”.
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Create example data
+    julia> s = LinRange(-1, 1, 40)
+    julia> v = 1 .- (x.^2 .+ y'.^2 .+ reshape(z,1,1,:).^2).^0.5 - 0.25 .* rand(40, 40, 40)
+    julia> # Draw the 3d volume data
+    julia> volume(v)
+    julia> # Draw the 3d volume data using an emission model
+    julia> volume(v, algorithm=2)
 """)
 
 function oplot!(f::Figure, args...; kwargs...)

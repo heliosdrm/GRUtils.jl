@@ -399,3 +399,12 @@ function draw(g::Geometry, ::Val{:shade})::Nothing
         GR.shadepoints(g.x, g.y, xform=xform)
     end
 end
+
+function draw(g::Geometry, ::Val{:volume})::Vector{Float64}
+    algorithm = Int(get(g.attributes, :algorithm, 0))
+    GR.gr3.clear()
+    dims = (Int(g.x[1]), Int(g.y[1]), Int(g.z[1]))
+    v = reshape(g.c, dims)
+    dmin, dmax = GR.gr3.volume(v, algorithm)
+    [dmin, dmax]
+end

@@ -117,9 +117,6 @@ hold(false)
 x = 8 .* rand(100) .- 4
 y = 8 .* rand(100) .- 4
 f = (x,y) -> sin(x) + cos(y)
-z = f.(x, y)
-# Draw the contour plot using a callable
-contour(x, y, f)
 # Other
 contour(x, y, z)
 contour(x, y, z, levels=10)
@@ -141,8 +138,8 @@ trisurf(x, y, z)
 x = LinRange(-2, 2, 40)
 y = LinRange(0, pi, 20)
 z = sin.(x') .+ cos.(y) # instead of # x, y = meshgrid(x, y)
-# Draw the contour plot
-contour(x, y, z)
+# Draw the contour plot using a callable
+contour(x, y, f)
 contourf(x, y, z)
 # surface(x, y, z) # gr3
 # surface(x, y, z, accelerate=false) # compile gr3
@@ -172,3 +169,13 @@ shade(x, y)
 x = [randn(10000); NaN; randn(10000) .+ 5 ]
 y = [randn(10000); NaN; randn(10000) .+ 5]
 shade(x, y, xform=3)
+
+# Create example data
+x = LinRange(-1, 1, 40)
+y = LinRange(-1, 1, 40)
+z = LinRange(-1, 1, 40)
+v = 1 .- (x.^2 .+ y'.^2 .+ reshape(z,1,1,:).^2).^0.5 - 0.25 .* rand(40, 40, 40)
+# Draw the 3d volume data
+volume(v)
+# Draw the 3d volume data using an emission model
+volume(v, algorithm=2)
