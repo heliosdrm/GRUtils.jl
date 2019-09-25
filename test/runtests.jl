@@ -163,3 +163,12 @@ hexbin(x, y)
 file_path = ENV["GKS_FILEPATH"]
 @test isfile(file_path)
 rm(file_path)
+
+# Create point data
+x = randn(100_000)
+y = randn(100_000)
+shade(x, y)
+# Create line data with NaN as polyline separator
+x = [randn(10000); NaN; randn(10000) .+ 5 ]
+y = [randn(10000); NaN; randn(10000) .+ 5]
+shade(x, y, xform=3)

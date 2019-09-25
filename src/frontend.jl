@@ -1,5 +1,5 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :clabels, :label, :linewidth, :markersize, :spec, :stair_position]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :clabels, :label, :linewidth, :markersize, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
@@ -901,6 +901,44 @@ the isovalue will be seen as inside the isosurface.
     julia> isosurface(v, isovalue=0.2)
 """)
 
+@plotfunction(shade, geom = :shade, axes = :axes2d, kwargs = (tickdir=-1,), docstring="""
+Draw a point or line based heatmap.
+
+This function uses the current colormap to display a series of points or polylines. For line data, NaN values can be used as separator.
+Parameters:
+
+:param args: the data to plot
+:param xform: the transformation type used for color mapping
+
+The available transformation types are:
+
+    +----------------+-+-------------------+
+    |   XFORM_BOOLEAN|0|boolean            |
+    +----------------+-+-------------------+
+    |    XFORM_LINEAR|1|linear             |
+    +----------------+-+-------------------+
+    |       XFORM_LOG|2|logarithmic        |
+    +----------------+-+-------------------+
+    |    XFORM_LOGLOG|3|double logarithmic |
+    +----------------+-+-------------------+
+    |     XFORM_CUBIC|4|cubic              |
+    +----------------+-+-------------------+
+    | XFORM_EQUALIZED|5|histogram equalized|
+    +----------------+-+-------------------+
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    # Create point data
+    julia> x = randn(100_000)
+    julia> y = randn(100_000)
+    julia> shade(x, y)
+    julia> # Create line data with NaN as polyline separator
+    julia> x = [randn(10000); NaN; randn(10000)]
+    julia> x = [randn(10000); NaN; randn(10000)]
+    julia> shade(x, y)
+""")
 
 function oplot!(f::Figure, args...; kwargs...)
     p = currentplot(f)

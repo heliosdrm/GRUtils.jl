@@ -381,3 +381,21 @@ function draw(g::Geometry, ::Val{:isosurf})::Nothing
     GR.gr3.deletemesh(mesh)
     GR.selntran(1)
 end
+
+function hasnan(a)
+    for el in a
+        if el === NaN || el === missing
+            return true
+        end
+    end
+    false
+end
+
+function draw(g::Geometry, ::Val{:shade})::Nothing
+    xform = Int(get(g.attributes, :xform, 5))
+    if hasnan(g.x)
+        GR.shadelines(g.x, g.y, xform=xform)
+    else
+        GR.shadepoints(g.x, g.y, xform=xform)
+    end
+end
