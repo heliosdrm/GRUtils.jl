@@ -336,23 +336,17 @@ function draw(g::Geometry, ::Val{:hexbin})::Vector{Float64}
 end
 
 function draw(g::Geometry, ::Val{:heatmap})::Nothing
-    w = length(g.x) - 1
-    h = length(g.y) - 1
+    w = length(g.x)
+    h = length(g.y)
     # cmap = colormap()
     cmin, cmax = extrema(g.c)
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
     # rgba = [to_rgba(value, cmap) for value ∈ data]
     # GR.cellarray(0.0, w, h, 0.0, w, h, rgba)
     colors = Int[round(Int, 1000 + _i * 255) for _i ∈ data]
-    if w == 0 || h == 0
-        w = Int(g.x[1])
-        h = Int(g.y[1])
-        GR.cellarray(0.0, w, h, 0.0, w, h, colors)
-    else
-        GR.nonuniformcellarray(g.x, g.y, w, h, colors)
-    end
-    return nothing
+    GR.cellarray(0.0, w, h, 0.0, w, h, colors)
 end
+
 
 function draw(g::Geometry, ::Val{:polarheatmap})::Nothing
     w = length(g.x)

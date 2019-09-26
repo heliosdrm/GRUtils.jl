@@ -766,27 +766,16 @@ plot, as the interpolation may occur in very acute triangles.
     julia> trisurf(x, y, z)
 """)
 
-function _setargs_heatmap(f, args...; kwargs...)
-    if length(args) == 1
-        data = args[1]
-        h, w = float.(size(data))
-        x = [w]
-        y = [h]
-        xl = (0.0, w)
-        yl = (0.0, h)
-    else
-        x, y, data = args
-        xl = extrema(x)
-        yl = extrema(y)
-    end
+function _setargs_heatmap(f, data; kwargs...)
+    h, w = size(data)
     if get(kwargs, :xflip, false)
         data = reverse(data, dims=1)
     end
     if get(kwargs, :yflip, false)
         data = reverse(data, dims=2)
     end
-    kwargs = (; xlim = xl, ylim = yl, kwargs...)
-    ((x, y, emptyvector(Float64), vec(data')), kwargs)
+    kwargs = (; xlim = (0.0, float(w)), ylim = (0.0, float(h)), kwargs...)
+    ((1.0:w, 1.0:h, emptyvector(Float64), vec(data')), kwargs)
 end
 
 @plotfunction(heatmap, geom = :heatmap, axes = :axes2d, setargs = _setargs_heatmap,
@@ -815,11 +804,6 @@ be neccessary to adjust these limits or clip the range of array values.
     julia> z = sin.(x') .+ cos.(y)
     julia> # Draw the heatmap
     julia> heatmap(z)
-    julia> # Non uniform heatmap
-    julia> x = [0, 2, 3, 5]
-    julia> y = [3, 4, 5.5, 7, 8]
-    julia> z = rand(5, 4)
-    julia> heatmap(x, y, z)
 """)
 
 @plotfunction(polarheatmap, geom = :polarheatmap, axes = :polar, setargs = _setargs_heatmap, kwargs = (colorbar=true, overlay_axes=true, ratio=1.0))

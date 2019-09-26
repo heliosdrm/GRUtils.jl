@@ -2,7 +2,7 @@ module GRUtils
 
 import GR
 
-export Figure, gcf, subplot, currentplot, draw, savefig,
+export Figure, gcf, subplot, currentplot, draw,
     plot, plot3, polar, scatter, scatter3, stair, stem, oplot,
     barplot, histogram, polarhistogram,
     contour, contourf, shade, surface, tricont, trisurf, volume, wireframe,
