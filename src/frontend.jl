@@ -1,5 +1,5 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :clabels, :label, :linewidth, :markersize, :spec, :stair_position]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :clabels, :label, :linewidth, :markersize, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
@@ -207,6 +207,24 @@ This function can receive one or more of the following:
     julia> stem(y)
 """)
 
+# Recursive call in case of multiple x-y pairs
+for fun = [:plot!, :stair!, :stem!]
+    @eval function $fun(f::Figure, x, y, u, v, args...; kwargs...)
+        holdstate = get(currentplot(f).attributes, :hold, false)
+        if typeof(u) <: AbstractString
+            $fun(f, x, y, u; kwargs...)
+            hold!(currentplot(f), true)
+            $fun(f, v, args...; kwargs...)
+        else
+            $fun(f, x, y; kwargs...)
+            hold!(currentplot(f), true)
+            $fun(f, u, v, args...; kwargs...)
+        end
+        hold!(currentplot(f), holdstate)
+        draw(f)
+    end
+end
+
 @plotfunction(scatter, geom = :scatter, axes = :axes2d, kwargs=(colorbar=true,),
 docstring="""
 Draw one or more scatter plots.
@@ -383,6 +401,21 @@ Draw one or more three-dimensional line plots.
     julia> # Plot the points
     julia> plot3(x, y, z)
 """)
+
+function plot3!(f::Figure, x, y, z, u, v, args...; kwargs...)
+    holdstate = get(currentplot(f).attributes, :hold, false)
+    if typeof(u) <: AbstractString
+        plot3!(f, x, y, z, u; kwargs...)
+        hold!(currentplot(f), true)
+        plot3!(f, v, args...; kwargs...)
+    else
+        plot3!(f, x, y, z; kwargs...)
+        hold!(currentplot(f), true)
+        plot3!(f, u, v, args...; kwargs...)
+    end
+    hold!(currentplot(f), holdstate)
+    draw(f)
+end
 
 _setargs_scatter3(f, x, y, z; kwargs...) = ((x,y,z), kwargs)
 _setargs_scatter3(f, x, y, z, c; kwargs...) = ((x,y,z,c), (;colorbar=true, kwargs...))
@@ -901,6 +934,70 @@ the isovalue will be seen as inside the isosurface.
     julia> isosurface(v, isovalue=0.2)
 """)
 
+@plotfunction(shade, geom = :shade, axes = :axes2d, kwargs = (tickdir=-1,), docstring="""
+Draw a point or line based heatmap.
+
+This function uses the current colormap to display a series of points or polylines. For line data, NaN values can be used as separator.
+
+:param args: the data to plot
+:param xform: the transformation type used for color mapping
+
+The available transformation types are:
+
+    +----------------+-+-------------------+
+    |   XFORM_BOOLEAN|0|boolean            |
+    +----------------+-+-------------------+
+    |    XFORM_LINEAR|1|linear             |
+    +----------------+-+-------------------+
+    |       XFORM_LOG|2|logarithmic        |
+    +----------------+-+-------------------+
+    |    XFORM_LOGLOG|3|double logarithmic |
+    +----------------+-+-------------------+
+    |     XFORM_CUBIC|4|cubic              |
+    +----------------+-+-------------------+
+    | XFORM_EQUALIZED|5|histogram equalized|
+    +----------------+-+-------------------+
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    # Create point data
+    julia> x = randn(100_000)
+    julia> y = randn(100_000)
+    julia> shade(x, y)
+    julia> # Create line data with NaN as polyline separator
+    julia> x = [randn(10000); NaN; randn(10000)]
+    julia> x = [randn(10000); NaN; randn(10000)]
+    julia> shade(x, y)
+""")
+
+function _setargs_volume(f, v::Array{T, 3}; kwargs...) where {T}
+    (nx, ny, nz) = size(v)
+    (([nx], [ny], [nz], vec(v)), kwargs)
+end
+
+@plotfunction(volume, geom = :volume, axes = :axes3d, setargs = _setargs_volume,
+kwargs = (colorbar=true,), docstring="""
+Draw a volume.
+
+This function can draw a three-dimensional numpy array using volume rendering. The volume data is reduced to a two-dimensional image using an emission or absorption model or by a maximum intensity projection. After the projection the current colormap is applied to the result.
+
+:param v: the volume data
+:param algorithm: the algorithm used to reduce the volume data. Available algorithms are “maximum”, “emission” and “absorption”.
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Create example data
+    julia> s = LinRange(-1, 1, 40)
+    julia> v = 1 .- (x.^2 .+ y'.^2 .+ reshape(z,1,1,:).^2).^0.5 - 0.25 .* rand(40, 40, 40)
+    julia> # Draw the 3d volume data
+    julia> volume(v)
+    julia> # Draw the 3d volume data using an emission model
+    julia> volume(v, algorithm=2)
+""")
 
 function oplot!(f::Figure, args...; kwargs...)
     p = currentplot(f)

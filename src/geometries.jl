@@ -381,3 +381,30 @@ function draw(g::Geometry, ::Val{:isosurf})::Nothing
     GR.gr3.deletemesh(mesh)
     GR.selntran(1)
 end
+
+function hasnan(a)
+    for el in a
+        if el === NaN || el === missing
+            return true
+        end
+    end
+    false
+end
+
+function draw(g::Geometry, ::Val{:shade})::Nothing
+    xform = Int(get(g.attributes, :xform, 5))
+    if hasnan(g.x)
+        GR.shadelines(g.x, g.y, xform=xform)
+    else
+        GR.shadepoints(g.x, g.y, xform=xform)
+    end
+end
+
+function draw(g::Geometry, ::Val{:volume})::Vector{Float64}
+    algorithm = Int(get(g.attributes, :algorithm, 0))
+    GR.gr3.clear()
+    dims = (Int(g.x[1]), Int(g.y[1]), Int(g.z[1]))
+    v = reshape(g.c, dims)
+    dmin, dmax = GR.gr3.volume(v, algorithm)
+    [dmin, dmax]
+end
