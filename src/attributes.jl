@@ -416,8 +416,59 @@ Set the aspect ratio of the plot
     julia> aspectratio(16/9) # Panoramic ratio
 """
 function aspectratio(r)
-    f = gcf()    
+    f = gcf()
     aspectratio!(currentplot(f), r)
     draw(f)
 end
 
+# Pan and zoom
+
+function panzoom!(p::PlotObject, x, y, r = 0.0)
+    GR.savestate()
+    GR.setviewport(p.viewport.inner...)
+    GR.setwindow(p.axes.ranges[:x]..., p.axes.ranges[:y]...)
+    xmin, xmax, ymin, ymax = GR.panzoom(x, y, r)
+    GR.restorestate()
+    xlim!(p, (xmin, xmax))
+    ylim!(p, (ymin, ymax))
+    return nothing
+end
+
+panzoom!(f::Figure, args...) = panzoom!(currentplot(f), args...)
+
+"""
+Pan/zoom the axes
+
+:param x, y: distance between axes center and focus of the zoom in NDC
+:param r: relative size of the zoomed area (0 or omit to pan without zoom)
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Move the center 1 unit right and 0.2 up
+    julia> panzoom(1, 0.2)
+    julia> # Reduce the focus of the axes to half their size
+    julia> # focusing on the previous point
+    julia> panzoom(1, 0.2, 0.5)
+"""
+function panzoom(args...)
+    f = gcf()
+    panzoom!(currentplot(f), args...)
+    draw(f)
+end
+
+"""
+Zoom on the axes
+
+:param zoom: relative size of the zoomed area
+
+**Usage examples:**
+
+.. code-block:: julia
+
+    julia> # Reduce the focus of the axes to half their size
+    julia> zoom(0.5)
+"""
+zoom(r) = panzoom(0.0, 0.0, r)
+zoom!(pf, r) = panzoom!(pf, 0.0, 0.0, r)

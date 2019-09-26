@@ -26,8 +26,9 @@ xlim(-2π, 2π)
 ylim((-sqrt(2), sqrt(2)), true)
 xticks(π/8, 4)
 xticklabels(x -> Base.Printf.@sprintf("%0.1f\\pi", float(x/π)))
-draw(gcf())
-
+panzoom(0.4, 0)
+xlim(); ylim()
+zoom(1.5)
 
 plot(x, y, ratio = 16//9)
 oplot(x, x -> x^3 + x^2 + x)
