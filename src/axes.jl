@@ -65,10 +65,10 @@ Axes(kind::Symbol; ranges = Dict{Symbol, AxisRange}(),
     options = Dict{Symbol, Int}()) =
     Axes(kind, ranges, tickdata, ticklabels, perspective, camera, options)
 
-function Axes(kind, geoms::Array{<:Geometry}; panzoom=nothing, grid=1, kwargs...)
+function Axes(kind, geoms::Array{<:Geometry}; grid=1, kwargs...)
     # Set limits based on data
     ranges = minmax(geoms)
-    adjustranges!(ranges, panzoom; kwargs...)
+    adjustranges!(ranges; kwargs...)
     ticklabels = Dict{Symbol, Function}()
     perspective = [0, 0]
     camera = zeros(9)
@@ -183,16 +183,14 @@ end
 # Adjust ranges
 
 """
-    adjustranges!(ranges, panzoom; kwargs...)
+    adjustranges!(ranges; kwargs...)
 
 Adjust the pre-calculated ranges of `Axes` &mdash; see [`minmax`](@ref),
-to make them near to integers or "small decimals". This takes into account
-if there is a specific "pan" and/or "zoom" set on the axes
-(`panzoom`, cf. [`GR.panzoom`](@ref)). Explicit axes limits or log scales
-are also considered, through keyword arguments `xlim`, `ylim`, etc. (given as
+to make them near to integers or "small decimals". Explicit axes limits or log scales
+are considered, through keyword arguments `xlim`, `ylim`, etc. (given as
 2-tuples) or `xlog` `ylog`, etc. (given as `Bool`).
 """
-function adjustranges!(ranges::Dict{Symbol, AxisRange}, panzoom::Nothing; kwargs...)
+function adjustranges!(ranges::Dict{Symbol, AxisRange}; kwargs...)
     for axname in keys(ranges)
         keylim = Symbol(axname, :lim)
         if haskey(kwargs, keylim)
@@ -207,13 +205,6 @@ function adjustranges!(ranges::Dict{Symbol, AxisRange}, panzoom::Nothing; kwargs
             end
         end
     end
-end
-
-function adjustranges!(ranges::Dict{Symbol, AxisRange}, panzoom; kwargs...)
-    adjustranges!(ranges, nothing; kwargs...)
-    xmin, xmax, ymin, ymax = GR.panzoom(panzoom...)
-    ranges[:x] = (xmin, xmax)
-    ranges[:y] = (ymin, ymax)
 end
 
 # Set ticks for the different types of axes

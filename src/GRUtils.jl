@@ -2,12 +2,12 @@ module GRUtils
 
 import GR
 
-export Figure, gcf, subplot, currentplot, draw,
+export Figure, gcf, subplot, currentplot, draw, savefig,
     plot, plot3, polar, scatter, scatter3, stair, stem, oplot,
     barplot, histogram, polarhistogram,
     contour, contourf, shade, surface, tricont, trisurf, volume, wireframe,
     heatmap, polarheatmap, hexbin, imshow, isosurface,
-    aspectratio, colorbar, grid, hold, legend, title,
+    aspectratio, colorbar, grid, hold, legend, title, panzoom, zoom,
     xflip, xlabel, xlim, xlog, xticks, xticklabels,
     yflip, ylabel, ylim, ylog, yticks, xticklabels,
     zflip, zlabel, zlim, zlog, zticks,
@@ -16,7 +16,7 @@ export Figure, gcf, subplot, currentplot, draw,
     barplot!, histogram!, polarhistogram!,
     contour!, contourf!, shade!, surface!, tricont!, trisurf!, volume!, wireframe!,
     heatmap!, polarheatmap!, hexbin!, imshow!, isosurface!,
-    aspectratio!, colorbar!, grid!, hold!, legend!, title!,
+    aspectratio!, colorbar!, grid!, hold!, legend!, title!, panzoom!, zoom!,
     xflip!, xlabel!, xlim!, xlog!, xticks!, xticklabels!,
     yflip!, ylabel!, ylim!, ylog!, yticks!, xticklabels!,
     zflip!, zlabel!, zlim!, zlog!, zticks!
