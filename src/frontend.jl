@@ -207,6 +207,24 @@ This function can receive one or more of the following:
     julia> stem(y)
 """)
 
+# Recursive call in case of multiple x-y pairs
+for fun = [:plot!, :stair!, :stem!]
+    @eval function $fun(f::Figure, x, y, u, v, args...; kwargs...)
+        holdstate = get(currentplot(f).attributes, :hold, false)
+        if typeof(u) <: AbstractString
+            $fun(f, x, y, u; kwargs...)
+            hold!(currentplot(f), true)
+            $fun(f, v, args...; kwargs...)
+        else
+            $fun(f, x, y; kwargs...)
+            hold!(currentplot(f), true)
+            $fun(f, u, v, args...; kwargs...)
+        end
+        hold!(currentplot(f), holdstate)
+        draw(f)
+    end
+end
+
 @plotfunction(scatter, geom = :scatter, axes = :axes2d, kwargs=(colorbar=true,),
 docstring="""
 Draw one or more scatter plots.
@@ -383,6 +401,21 @@ Draw one or more three-dimensional line plots.
     julia> # Plot the points
     julia> plot3(x, y, z)
 """)
+
+function plot3!(f::Figure, x, y, z, u, v, args...; kwargs...)
+    holdstate = get(currentplot(f).attributes, :hold, false)
+    if typeof(u) <: AbstractString
+        plot3!(f, x, y, z, u; kwargs...)
+        hold!(currentplot(f), true)
+        plot3!(f, v, args...; kwargs...)
+    else
+        plot3!(f, x, y, z; kwargs...)
+        hold!(currentplot(f), true)
+        plot3!(f, u, v, args...; kwargs...)
+    end
+    hold!(currentplot(f), holdstate)
+    draw(f)
+end
 
 _setargs_scatter3(f, x, y, z; kwargs...) = ((x,y,z), kwargs)
 _setargs_scatter3(f, x, y, z, c; kwargs...) = ((x,y,z,c), (;colorbar=true, kwargs...))
