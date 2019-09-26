@@ -148,6 +148,11 @@ heatmap(z)
 polarheatmap(z)
 imshow(z/4 .+ 0.5)
 
+x = [0, 2, 3, 5]
+y = [3, 4, 5.5, 7, 8]
+z = rand(5, 4)
+heatmap(x, y, z)
+
 x = randn(100000)
 y = randn(100000)
 hexbin(x, y)
