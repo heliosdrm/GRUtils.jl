@@ -1,5 +1,5 @@
 # Legend
-function legend!(p::PlotObject, args...; location=1)
+function legend!(p::PlotObject, args...; location=1, kwargs...)
     # Reset main viewport if there was a legend
     if haskey(p.attributes, :location) && p.attributes[:location] ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] += p.legend.size[1]
@@ -7,7 +7,8 @@ function legend!(p::PlotObject, args...; location=1)
     for i = 1:min(length(args), length(p.geoms))
         p.geoms[i] = Geometry(p.geoms[i], label=args[i])
     end
-    p.legend = Legend(p.geoms)
+    maxrows = Int(get(kwargs, :maxrows, length(p.geoms)))
+    p.legend = Legend(p.geoms, maxrows)
     # Redefine viewport if legend is set outside
     if p.legend.size ≠ NULLPAIR && location ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] -= p.legend.size[1]
@@ -26,6 +27,13 @@ certain characters, e.g. parentheses. For more information see the
 documentation of GR.textext.
 
 :param args: The legend strings
+
+In addition to the legend strings you can give the keyword arguments
+``location`` to define the location of the legend with
+respect to the plot axes (as a number, following the convention of
+[Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html)),
+and ``maxrows`` to distribute the legend labels in a grid with a
+maximum number of rows.
 
 **Usage examples:**
 
