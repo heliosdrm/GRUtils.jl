@@ -1,31 +1,27 @@
 """
     Figure(workstation::Tuple{Float64, Float64}, plots::Vector{PlotObject})
-    Figure([figsize::Tuple{Float64, Float64}, units::String])
 
-A `Figure` is the defined by the size (width, height) of the `workstation`
+Return a new figure, defined by the size (width, height) of the `workstation`
 where plots are drawn, and a vector of [`PlotObjects`](@ref).
-
-The method `draw(::Figure)` sets the workstation and plots all plots contained
-in the figure sequentially.
-
-### Alternative constructor
-
-The usual way of creating a new `Figure` is with the constructor
-`Figure(figsize, units)`, where `figsize` is a 2-tuple with the target width and
-height of the figure, and `units` a string with the abbreviation of the units in
-which those dimensions are given ("px" for pixels, "in" for inches,
-"cm" for centimeters or "m" for meters are allowed). The default dimensions
-used by `Figure()` with no arguments is 600×450 pixels &mdash; or a
-proportional increased size if the detected display resolution is high.
-
-That constructor also sets the "current figure" to the one that has just been
-created. See [`gcf`](@ref) for details.
 """
 struct Figure
     workstation::Tuple{Float64, Float64}
     plots::Vector{PlotObject}
 end
 
+"""
+    Figure([figsize::Tuple{Float64, Float64}, units::String])
+
+Create a new figure of a given size.
+
+The figure size is defined by `figsize` (a 2-tuple with the target width and height),
+and `units` (a string with the abbreviation of the units: "px" for pixels,
+"in" for inches, "cm" for centimeters or "m" for meters).
+The default dimensions used by `Figure()` with no arguments is 600×450 pixels
+— or a proportional increased size, if the detected display resolution is high.
+This constructor also sets the "current figure" to the one that has just been
+created..
+"""
 function Figure(figsize=(600,450), units::String="px")
     # Calculate the display resolution (dpi)
     mwidth, mheight, width, height = GR.inqdspsize()
@@ -54,44 +50,18 @@ end
     currentplot([fig::Figure])
 
 Get the "current plot", i.e. the target of the next plotting operations in the
-(optionally) given figure `fig`. If no figure is given, the "current figure" is
-used (cf. [`gcf`](@ref)).
+(optionally) given figure `fig`.
+
+If no figure is given, the "current figure" is used (cf. [`gcf`](@ref)).
 """
 currentplot(f::Figure=gcf()) = f.plots[end]
 
 # Normalized width and height of a figure'w workstation
 wswindow(f::Figure) = f.workstation ./ maximum(f.workstation)
 
-const SUBPLOT_DOC = """
-Set current subplot index.
+## Subplots
 
-By default, the current plot will cover the whole window. To display more
-than one plot, the window can be split into a number of rows and columns,
-with the current plot covering one or more cells in the resulting grid.
-
-Subplot indices are one-based and start at the upper left corner, with a
-new row starting after every **num_columns** subplots.
-
-:param num_rows: the number of subplot rows
-:param num_columns: the number of subplot columns
-:param subplot_indices:
-	- the subplot index to be used by the current plot
-	- a pair of subplot indices, setting which subplots should be covered
-	  by the current plot
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Set the current plot to the second subplot in a 2x3 grid
-    julia> subplot(2, 3, 2)
-    julia> # Set the current plot to cover the first two rows of a 4x2 grid
-    julia> subplot(4, 2, (1, 4))
-    julia> # Use the full window for the current plot
-    julia> subplot(1, 1, 1)
-"""
-
-@doc SUBPLOT_DOC function subplot!(f::Figure, nr, nc, p, replace=true)
+function subplot!(f::Figure, nr, nc, p, replace=true)
     xmin, xmax, ymin, ymax = 1.0, 0.0, 1.0, 0.0
     for i in collect(p)
         r = nr - div(i-1, nc)
@@ -110,7 +80,45 @@ new row starting after every **num_columns** subplots.
     return po
 end
 
-@doc SUBPLOT_DOC subplot(args...) = subplot!(gcf(), args...)
+"""
+    subplot(num_rows, num_columns, indices[, replace])
+
+Set a subplot in the current figure.
+
+By default, the current plot covers the whole window. To display more
+than one plot, the window can be split into a number of rows and columns,
+with each plot covering one or more cells in the resulting grid.
+
+Subplot indices are one-based and start at the upper left corner, with a
+new row starting after every `num_cols` subplots.
+
+The arguments `num_rows` and `num_cols` indicate the number of rows and columns
+of the grid of plots into which the figure is meant to be divided, and `indices`
+is an integer or an array of integers that identify a group of cells in that
+grid. This function returns a plot with the minimum size that spans over all
+those cells, and appends it to the array of plots of the figure,
+such that it becomes its current plot.
+
+If the viewport of the new subplot coincides with the viewport of an existing
+plot, by default the older one is moved to the first plane, and taken as the
+"current plot"; but if there is only a partial overlap between the new subplot
+and other plots, the overlapping plots are removed.
+To override this behavior and keep all previous plots without changes,
+set the optional argument `replace` to false.
+
+# Examples
+
+```jldoctest
+# Set a plot covering two thirds of the figure width and height
+subplot(3, 3, (1, 5));
+# Adds a plot covering the top third part, over the previous one
+subplot(3, 1, 1, false);
+# Add a plot covering the right third part of the figure,
+# replacing the previous one, but not the first:
+subplot(1, 3, 3);
+```
+"""
+subplot(args...) = subplot!(gcf(), args...)
 
 function replaceplot!(plotcollection, p)
     # If subplot is not specified in p, empty the whole collection
