@@ -19,32 +19,24 @@ functions:
 
 The first of those functions (the one whose name ends with an exclamation)
 edits the figure given as first argument, replacing its last plot by a new
-one using the positional arguments `args` and the keyword arguments `kwargs`.
-The creation of such a plot is determined by the additional options given
-to the macro.
+one. The second function (the one without exclamation) creates the plot in the
+current figure. How those functions work depends on the options that are passed
+after the function name to the macro. Those options are expressed in the fashion
+of keyword argments, i.e. as `key = value`, and they can be the following:
 
-The second function (the one without exclamation) creates the plot in the
-current figure &mdash; see [`gcf`](@ref).
-
-### Options
-
-The options are expressed in the fashion of keyword argments, i.e. as
-`key = value`. The possible options are:
-
-* `geom`: a `Symbol` with the name of the kind of the `Geometry` that is created.
-* `axes`: a `Symbol` with the name of the kind of the `Axes` that are created.
-* `plotkind`: a `Symbol` with the name of the plot kind (only needed as meta-data).
+* **`geom`**: a `Symbol` with the name of the kind of the `Geometry` that is created.
+* **`axes`**: a `Symbol` with the name of the kind of the `Axes` that are created.
+* **`plotkind`**: a `Symbol` with the name of the plot kind (only needed as meta-data).
     If this option is not given, the name of the function is used by default.
-* `setargs`: a function that takes the positional and keyword arguments that are
+* **`setargs`**: a function that takes the positional and keyword arguments that are
     passed to the functions, and returns: (a) a tuple of positional arguments
-    to be passed to the geometry constructor (see [`geometries`](@ref)), and
+    to be passed to the function [`geometries`](@ref)), and
     (b) the set of keyword arguments that are passed to the constructor of
-    geometries, axes (see [`Axes`](@ref)), and the plot object
-    (see [`PlotObject`](@ref)). If `setargs` is not defined, the positional and
-    keyword arguments are returned untransformed.
-* `kwargs`: a named tuple with extra keyword arguments that are passed to
+    geometries, axes, and the plot object. If `setargs` is not defined, the
+    positional and keyword arguments are returned untransformed.
+* **`kwargs`**: a named tuple with extra keyword arguments that are passed to
     the constructors of geometries, axes and the plot object.
-* `docstring`: the documentation string of the functions.
+* **`docstring`**: the documentation string that will be assigned to the plotting function.
 """
 macro plotfunction(fname, options...)
     # Parse options - minimum geom and axes

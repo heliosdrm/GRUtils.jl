@@ -16,9 +16,13 @@ A `Legend` object contains the data that defines the frame where a legend is plo
 The fields contained in a `Legend` object are a 2-tuple that defines the size
 of the legend box in NDC (width and height, respectively), and a vector of
 2-tuples with the positions of the legend items.
+"""
+struct Legend
+    size::Tuple{Float64, Float64}
+    cursors::Vector{Tuple{Float64, Float64}}
+end
 
-### Alternative constructor
-
+"""
     Legend(geoms [, maxrows])
 
 A `Legend` can also be defined by the collection of geometries that
@@ -34,11 +38,6 @@ Legends are drawn by the method `draw(lg, geoms, location)`, where `lg` is the
 respect to the main plot area &mdash; as defined in
 [Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html).
 """
-struct Legend
-    size::Tuple{Float64, Float64}
-    cursors::Vector{Tuple{Float64, Float64}}
-end
-
 function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
     cursors = Tuple{Float64, Float64}[]
     row = 0
@@ -120,6 +119,10 @@ end
 ####################
 ## `draw` methods ##
 ####################
+
+# `location` is an integer code that defines the location of the legend with
+# respect to the main plot area &mdash; as defined in
+# [Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html).
 
 function draw(lg::Legend, geoms, location=1)
     # Do not draw if the legend is empty or is not meant to be plotted

@@ -1,16 +1,9 @@
 """
     Viewport(outer::Vector{Float64}, inner::Vector{Float64})
-    Viewport(subplot, frame::Bool [, ratio::Real, margins])
 
-The `Viewport` of a plot determines the NDC of the `outer` box that contains
-all the elements of the plot, and the `inner` box where the main items
-(axes and geometries) are plotted.
-
-A `Viewport` can also be defined by the relative coordinates of the `subplot`
-that it refers to, a flag (`frame::Bool`) telling whether there should be a frame
-between the outer and inner boxes, and (optionally), the width:height ratio
-of the inner box and the extra margins that there should be
-between the outer and inner boxes (in the order left-right-bottom-top).
+Return a `Viewport` object, defining the "normalized device coordinates" (NDC)
+of the `outer` box that contains all the elements of the plot, and the `inner`
+box where the main items (axes and geometries) are plotted.
 """
 struct Viewport
     outer::Vector{Float64}
@@ -20,6 +13,20 @@ end
 const EMPTYVIEWPORT = Viewport(zeros(4), zeros(4))
 Viewport() = EMPTYVIEWPORT
 
+"""
+    Viewport(subplot, frame::Bool [, ratio::Real, margins])
+
+Return a `Viewport` object, defined by the normalized coordinates of the box
+that contains it (the argument `subplot`, which are normalized with respect to
+the size of the figure, not the whole device), and a flag (`frame::Bool`)
+telling whether there should be a frame. The size of that frame is calculated
+automatically.
+
+This constructor also accepts to optional arguments: `ratio`, which is the
+width:height ratio of the inner box, and `margins`, a 4-vector with extra
+margins that there should be between the outer and inner boxes, in addition to
+the default size of the frame (in the order left-right-bottom-top).
+"""
 function Viewport(subplot, frame::Bool)
     ratio_w, ratio_h = wswindow(gcf())
     outer = [subplot[1]*ratio_w, subplot[2]*ratio_w, subplot[3]*ratio_h, subplot[4]*ratio_h]
@@ -58,44 +65,21 @@ end
     PlotObject(viewport, axes, geoms, legend, colorbar, attributes)
     PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
 
-A `PlotObject` contains the different elements of a plot:
+Return a `PlotObject` containing the following parameters:
 
-* `viewport`: a [`Viewport`](@ref) object that defines the area covered by the
-    plot container and the coordinate axes in the display.
-* `axes`: an [`Axes`](@ref) object that defines how to represent the
+* **`viewport`**: a [`Viewport`](@ref) object, which defines the area covered by the
+    plot and the coordinate axes in the display.
+* **`axes`**: an [`Axes`](@ref) object that defines how to represent the
     coordinate axes of the space where the plot is contained.
-* `geoms`: a `Vector` of [`Geometry`](@ref) objects that are plotted in the axes.
-* `legend`: a [`Legend`](@ref) object that defines how to present a legend of the
+* **`geoms`**: a `Vector` of [`Geometry`](@ref) objects that are plotted in the axes.
+* **`legend`**: a [`Legend`](@ref) object that defines how to present a legend of the
     different geometries (if required).
-* `colorbar`: a [`Colorbar`](@ref) object that defines how to present the guide
-    to the color scale (if required)
-* `attributes`: a dictionary (`Dict{Symbol, Any}`) with varied plot attributes.
-    Those specifications can be passed to the `PlotObject` constructor as
-    keyword arguments.
-
-### Alternative constructor
-
-    PlotObject(axes, geoms [, legend, colorbar; kwargs...])
-
-The viewport can be ommited in the constructor of a `PlotObject`. In that case,
-it will be automatically calculated by the different characteristics of `axes`,
-`geoms`, &mdash; and optionally `legend` and `colorbar`, plus the keyword arguments.
-If `legend` and `colorbar` are not defined, they are automatically calculated
-using the information of `axes`, `geoms` and the keyword arguments.
-
-### Draw method
-
-Plot objects are drawn by the method `draw(::PlotObject)`, which calls other
-`draw` methods for its different components. Normally the order that is followed
-to draw the plot components is:
-
-1. Paint the background and set the viewport defined by the `viewport` field.
-2. Set the window defined by the axes.
-3. Draw the axes.
-4. Draw the geometries.
-5. Draw the legend (if it is not null and `attributes[:location] ≠ 0`).
-6. Draw the colorbar (if it is not null and `attributes[:colorbar] == true`).
-7. Write different labels and decorations in axes, title, etc.
+* **`colorbar`**: a [`Colorbar`](@ref) object that defines how to present the guide
+    to the color scale (if required).
+* **`attributes`**: a dictionary (`Dict{Symbol, Any}`) with varied plot attributes,
+    including the title, axis labels, and other data that modify the default way
+    of representing the different components of the plot. Those attributes
+    can be passed to the `PlotObject` constructor as keyword arguments.
 """
 mutable struct PlotObject
     viewport::Viewport
@@ -106,6 +90,15 @@ mutable struct PlotObject
     attributes::Dict
 end
 
+"""
+    PlotObject(axes, geoms [, legend, colorbar; kwargs...])
+
+Return a `PlotObject` whose viewport is automatically calculated by the
+characteristics of its `axes`, `geoms`, and optionally `legend` and `colorbar`,
+
+If `legend` and `colorbar` are not defined, they are self-defined
+using the information of `axes`, `geoms` and the keyword arguments.
+"""
 function PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
     attributes = Dict{Symbol, Any}(:subplot => UNITSQUARE, kwargs...)
     PlotObject(viewport, axes, geoms, legend, colorbar, attributes)
