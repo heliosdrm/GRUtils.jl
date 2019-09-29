@@ -512,7 +512,7 @@ kwargs = (rotation=0, tilt=90), docstring="""
 
 Draw a contour plot.
 
-This function uses the current colormap to display a either a series of
+The current colormap is used to display a either a series of
 points or a two-dimensional array as a contour plot. It can receive one
 of the following:
 
@@ -552,7 +552,7 @@ kwargs = (rotation=0, tilt=90, tickdir=-1), docstring="""
 
 Draw a filled contour plot.
 
-This function uses the current colormap to display a either a series of
+The current colormap is used to display a either a series of
 points or a two-dimensional array as a filled contour plot. It can receive one
 of the following:
 
@@ -602,14 +602,17 @@ kwargs = (colorbar=true, rotation=0, tilt=90), docstring="""
 
 Draw a triangular contour plot.
 
-This function uses the current colormap to display a series of points
-as a triangular contour plot. It will use a Delaunay triangulation to
-interpolate the `z` values between `x` and `y` values. If the series of points
-is concave, this can lead to interpolation artifacts on the edges of the
-plot, as the interpolation may occur in very acute triangles.
+The current colormap is used to display a series of points
+as a triangular contour plot. `z` values are interpolated between `x` and `y`
+values through [Delaunay triangulation](http://mathworld.wolfram.com/DelaunayTriangulation.html).
 
 The number of contour lines can be set by the keyword argument `levels`
 (by default `levels = 20`).
+
+!!! note
+
+    If the series of points is concave, there may be interpolation artifacts on
+    the edges of the plot, as the interpolation may occur in very acute triangles.
 
 # Examples
 
@@ -640,8 +643,8 @@ kwargs = (colorbar=true, accelerate=true), docstring="""
 
 Draw a three-dimensional surface plot.
 
-This function takes either a series of points or a two-dimensional array as the
-to draw a surface plot, colored according the the Z coordinates and the
+Either a series of points or a two-dimensional array is drawn as
+a surface plot, colored according to the Z coordinates and the
 current colormap. It can receive one of the following:
 
 - `x` values, `y` values and `z` values.
@@ -666,8 +669,8 @@ $(_example("surface"))
 
 Draw a three-dimensional wireframe plot.
 
-This function takes either a series of points or a two-dimensional array as the
-to draw a wireframe plot. It can receive one of the following:
+Either a series of points or a two-dimensional array is drawn as
+a wireframe plot. It can receive one of the following:
 
 - `x` values, `y` values and `z` values.
 - *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
@@ -692,12 +695,14 @@ kwargs = (colorbar=true,), docstring="""
 
 Draw a triangular surface plot.
 
-This function takes either a series of points or a two-dimensional array as the
-to draw a surface plot, colored according the the Z coordinates and the
-current colormap. It will use a Delaunay triangulation to
-interpolate the `z` values between `x` and `y` values. If the series of points
-is concave, this can lead to interpolation artifacts on the edges of the
-plot, as the interpolation may occur in very acute triangles.
+Either a series of points or a two-dimensional array is drawn as a
+triangular surface plot. `z` values are interpolated between `x` and `y`
+values through [Delaunay triangulation](http://mathworld.wolfram.com/DelaunayTriangulation.html).
+
+!!! note
+
+    If the series of points is concave, there may be interpolation artifacts on
+    the edges of the plot, as the interpolation may occur in very acute triangles.
 
 # Examples
 
@@ -720,30 +725,28 @@ end
 
 @plotfunction(heatmap, geom = :heatmap, axes = :axes2d, setargs = _setargs_heatmap,
 kwargs = (colorbar=true, tickdir=-1), docstring="""
+    heatmap(data; kwargs...)
+
 Draw a heatmap.
 
-This function uses the current colormap to display a two-dimensional
-array as a heatmap. The array is drawn with its first value in the bottom
-left corner, so in some cases it may be neccessary to flip the columns
-(see the example below).
+The current colormap is used to display a two-dimensional array `data` as a heatmap.
 
-By default the function will use the column and row indices for the x- and
+If `data` is an *N*×*M* array, the cells of the heatmap will be plotted in
+an uniform grid of square cells,spanning the interval `[1, M+1]` in the X-axis,
+and `[1, N+1]` in the Y-axis.
+The array is drawn with its first value in the bottom left corner, so in some
+cases it may be neccessary to flip the columns.
+
+By default column and row indices are used for the x- and
 y-axes, respectively, so setting the axis limits is recommended. Also note that the
 values in the array must lie within the current z-axis limits so it may
 be neccessary to adjust these limits or clip the range of array values.
 
-:param data: the heatmap data
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Create example data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = LinRange(0, pi, 20)
-    julia> z = sin.(x') .+ cos.(y)
-    julia> # Draw the heatmap
-    julia> heatmap(z)
+```julia
+$(_example("heatmap"))
+```
 """)
 
 @plotfunction(polarheatmap, geom = :polarheatmap, axes = :polar, setargs = _setargs_heatmap, kwargs = (colorbar=true, overlay_axes=true, ratio=1.0))
@@ -751,27 +754,21 @@ be neccessary to adjust these limits or clip the range of array values.
 _setargs_hexbin(f, x, y; kwargs...) = ((x, y, emptyvector(Float64), [0.0, 1.0]), kwargs)
 
 @plotfunction(hexbin, geom = :hexbin, axes = :axes2d, setargs = _setargs_hexbin,
-kwargs = (colorbar=true,), docstring="""
+kwargs = (colorbar=true, nbins=40), docstring="""
+    hexbin(x, y; kwargs...)
+
 Draw a hexagon binning plot.
 
-This function uses hexagonal binning and the the current colormap to
-display a series of points. It  can receive one or more of the following:
+Hexagonal binning and the the current colormap are used to display a bi-dimensional
+series of points given by `x` and `y`.
+The number of bins is 40 by default; use the keyword argument `nbins` to set
+it as a different number.
 
-- x values and y values, or
-- x values and a callable to determine y values, or
-- y values only, with their indices as x values
+# Examples
 
-:param args: the data to plot
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Create example data
-    julia> x = randn(100000)
-    julia> y = randn(100000)
-    julia> # Draw the hexbin plot
-    julia> hexbin(x, y)
+```julia
+$(_example("hexbin"))
+```
 """)
 
 # Needs to be extended
@@ -822,25 +819,19 @@ end
 
 @plotfunction(imshow, geom = :image, axes = :axes2d, setargs = _setargs_imshow,
 kwargs = (xticks=NULLPAIR, yticks=NULLPAIR, noframe=true), docstring="""
+    imshow(img; kwargs...)
+
 Draw an image.
 
-This function can draw an image either from reading a file or using a
-two-dimensional array and the current colormap.
+The input `img` can be either a string with a valid file name of an image,
+or a matrix of values between 0 and 1, which will be drawn with a hue
+corresponding to the relative position of each value in the current colormap.
 
-:param image: an image file name or two-dimensional array
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Create example data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = LinRange(0, pi, 20)
-    julia> z = sin.(x') .+ cos.(y)
-    julia> # Draw an image from a 2d array
-    julia> imshow(z)
-    julia> # Draw an image from a file
-    julia> imshow("example.png")
+```julia
+$(_example("imshow"))
+```
 """)
 
 function _setargs_isosurf(f, v, isovalue; color = [0.0, 0.5, 0.8], kwargs...)
@@ -853,34 +844,36 @@ end
 
 @plotfunction(isosurface, geom = :isosurf, axes = :axes3d, setargs = _setargs_isosurf,
 kwargs = (xticks=NULLPAIR, yticks=NULLPAIR, zticks=NULLPAIR, ratio=1.0, gr3=true), docstring="""
-Draw an isosurface.
+    isosurface(data, isovalue; kwargs...)
 
-This function can draw an image either from reading a file or using a
-two-dimensional array and the current colormap. Values greater than the
-isovalue will be seen as outside the isosurface, while values less than
-the isovalue will be seen as inside the isosurface.
+Draw an isosurface determined by the region of the three-dimensional array `data`
+around a given `isovalue`.
 
-:param v: the volume data
-:param isovalue: the isovalue
+The isosurface is calculated so that values in `data` greater than `isovalue` are
+considered to be outside the surface, and the values lower than `isovalue` are
+inside the surface.
 
-**Usage examples:**
+The color of the isosurface can be chosen with the keyword argument
+`color = (r, g, b)`, with the red, green and blue values (between 0 and 1).
 
-.. code-block:: julia
+# Examples
 
-    julia> # Create example data
-    julia> s = LinRange(-1, 1, 40)
-    julia> v = 1 .- (s .^ 2 .+ s' .^ 2 .+ reshape(s,1,1,:) .^ 2) .^ 0.5
-    julia> # Draw an image from a 2d array
-    julia> isosurface(v, isovalue=0.2)
+```julia
+$(_example("isosurface"))
+```
 """)
 
 @plotfunction(shade, geom = :shade, axes = :axes2d, kwargs = (tickdir=-1,), docstring="""
-Draw a point or line based heatmap.
+    shade(x, y; kwargs...)
 
-This function uses the current colormap to display a series of points or polylines. For line data, NaN values can be used as separator.
+Draw a point- or line-based heatmap.
 
-:param args: the data to plot
-:param xform: the transformation type used for color mapping
+The current colormap is used to display a series of points or polylines.
+For line data, `NaN` values can be used as separator.
+
+Points and lines leave a footprint on the plane that is represented by colors.
+The value of that footprint is determined by a transformation that can be
+adjusted by the keyword argument `xform`.
 
 The available transformation types are:
 
@@ -898,18 +891,11 @@ The available transformation types are:
     | XFORM_EQUALIZED|5|histogram equalized|
     +----------------+-+-------------------+
 
-**Usage examples:**
+# Examples
 
-.. code-block:: julia
-
-    # Create point data
-    julia> x = randn(100_000)
-    julia> y = randn(100_000)
-    julia> shade(x, y)
-    julia> # Create line data with NaN as polyline separator
-    julia> x = [randn(10000); NaN; randn(10000)]
-    julia> x = [randn(10000); NaN; randn(10000)]
-    julia> shade(x, y)
+```julia
+$(_example("shade"))
+```
 """)
 
 function _setargs_volume(f, v::Array{T, 3}; kwargs...) where {T}
@@ -919,24 +905,30 @@ end
 
 @plotfunction(volume, geom = :volume, axes = :axes3d, setargs = _setargs_volume,
 kwargs = (colorbar=true,), docstring="""
-Draw a volume.
+    volume(v; kwargs...)
 
-This function can draw a three-dimensional numpy array using volume rendering. The volume data is reduced to a two-dimensional image using an emission or absorption model or by a maximum intensity projection. After the projection the current colormap is applied to the result.
+Draw a the three-dimensional array `v`, using volume rendering.
 
-:param v: the volume data
-:param algorithm: the algorithm used to reduce the volume data. Available algorithms are “maximum”, “emission” and “absorption”.
+The volume data is reduced to a two-dimensional image using
+an emission or absorption model, or by a maximum intensity projection.
+After the projection the current colormap is applied to the result.
 
-**Usage examples:**
+The method to reduce volume data can be defined by the keyword argument
+`algorithm`, which can be one of the following:
 
-.. code-block:: julia
+    +---------------------+---+-----------------------------+
+    |GR_VOLUME_EMISSION   |  0|emission model               |
+    +---------------------+---+-----------------------------+
+    |GR_VOLUME_ABSORPTION |  1|absorption model             |
+    +---------------------+---+-----------------------------+
+    |GR_VOLUME_MIP        |  2|maximum intensity projection |
+    +---------------------+---+-----------------------------+
 
-    julia> # Create example data
-    julia> s = LinRange(-1, 1, 40)
-    julia> v = 1 .- (x.^2 .+ y'.^2 .+ reshape(z,1,1,:).^2).^0.5 - 0.25 .* rand(40, 40, 40)
-    julia> # Draw the 3d volume data
-    julia> volume(v)
-    julia> # Draw the 3d volume data using an emission model
-    julia> volume(v, algorithm=2)
+# Examples
+
+```julia
+$(_example("volume"))
+```
 """)
 
 function oplot!(f::Figure, args...; kwargs...)
@@ -951,43 +943,44 @@ function oplot!(f::Figure, args...; kwargs...)
 end
 
 """
+    oplot(args...; kwargs...)
+
 Draw one or more line plots over another plot.
-This function can receive one or more of the following:
-- x values and y values, or
-- x values and a callable to determine y values, or
-- y values only, with their indices as x values
-:param args: the data to plot
-**Usage examples:**
-.. code-block:: julia
-    julia> # Create example data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = 2 .* x .+ 4
-    julia> # Draw the first plot
-    julia> plot(x, y)
-    julia> # Plot graph over it
-    julia> oplot(x, x -> x^3 + x^2 + x)
+
+Equivalent to calling [`plot`](@ref) after holding the current plot,
+except that the axes limits are not re-adjusted to the new data.
+
+# Examples
+
+```julia
+$(_example("oplot"))
+```
 """
 oplot(args...; kwargs...) = oplot!(gcf(), args...; kwargs...)
 
+
 """
-Save the current figure to a file.
+    savefig(filename[, fig])
 
-This function draw the current figure using one of GR's workstation types
-to create a file of the given name. Which file types are supported depends
-on the installed workstation types, but GR usually is built with support
-for .png, .jpg, .pdf, .ps, .gif and various other file formats.
+Save a figure to a file.
 
-:param filename: the filename the figure should be saved to
+Draw the current figure in a file of the given name.
+Which file types are supported depends on the installed workstation types,
+but GR usually is built with support for
+.png, .jpg, .pdf, .ps, .gif and various other file formats.
 
-**Usage examples:**
+If no figure is given (optional argument `fig`), the current figure
+is used.
 
-.. code-block:: julia
+# Examples
 
-    julia> # Create a simple plot
-    julia> x = 1:100
-    julia> plot(x, 1 ./ (x .+ 1))
-    julia> # Save the figure to a file
-    julia> savefig("example.png")
+```julia
+# Create a simple plot
+x = 1:100
+plot(x, 1 ./ (x .+ 1))
+# Save the figure to a file
+savefig("example.png")
+```
 """
 function savefig(filename, fig=gcf())
     GR.beginprint(filename)
