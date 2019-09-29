@@ -1,5 +1,5 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :clabels, :label, :linewidth, :markersize, :spec, :stair_position, :xform]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :label, :linewidth, :markersize, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 

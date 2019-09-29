@@ -159,10 +159,6 @@ hexbin(x, y)
 # isosurface(v, 0.5, tilt=120, color=(0.6, 1.0, 0.85),
 #     cameradistance=3.0, twist=12)
 
-file_path = ENV["GKS_FILEPATH"]
-@test isfile(file_path)
-rm(file_path)
-
 # Create point data
 x = randn(100_000)
 y = randn(100_000)
@@ -181,3 +177,7 @@ shade(x, y, xform=3)
 # volume(v)
 # # Draw the 3d volume data using an emission model
 # volume(v, algorithm=2)
+
+file_path = ENV["GKS_FILEPATH"]
+@test isfile(file_path)
+rm(file_path)
