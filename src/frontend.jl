@@ -359,22 +359,33 @@ $(_example("histogram"))
 """)
 
 @plotfunction(plot3, geom = :line3d, axes = :axes3d, kwargs = (ratio=1.0,), setargs=_setargs_line, docstring="""
+    plot3(x, y, z[, spec; kwargs...])
+    plot(x1, y1, z1, x2, y2, z2...; kwargs...)
+    plot(x1, y1, z1, spec1...; kwargs...)
+
 Draw one or more three-dimensional line plots.
 
-:param x: the x coordinates to plot
-:param y: the y coordinates to plot
-:param z: the z coordinates to plot
+Lines are defined by the `x`, `y` and `z` coordinates of the connected points,
+given as numeric vectors, and optionally the format string `spec` that defines
+the line and marker style and color as in
+[matplotlib](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.plot.html).
 
-**Usage examples:**
+The `z` vector can be replaced by a callable that defines the Z coordinates as a
+function of the X and Y coordinates.
 
-.. code-block:: julia
+Multiple lines can be defined by triplets of `x`, `y` and `z` coordinates (and
+optionally their format strings), passed sequentially as arguments of `plot`.
+Alternatively, if various lines have the same X and Y coordinates, their Y values can
+be grouped as columns in a matrix.
 
-    julia> # Create example data
-    julia> x = LinRange(0, 30, 1000)
-    julia> y = cos.(x) .* x
-    julia> z = sin.(x) .* x
-    julia> # Plot the points
-    julia> plot3(x, y, z)
+If no `specs` are given, the series will be plotted as solid lines with a
+predefined sequence of colors.
+
+# Examples
+
+```julia
+$(_example("plot3"))
+```
 """)
 
 function plot3!(f::Figure, x, y, z, u, v, args...; kwargs...)
