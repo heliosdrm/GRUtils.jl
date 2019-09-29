@@ -1,6 +1,6 @@
 # Create example data
 x = LinRange(-2, 2, 40)
-y = x^3 + x^2 + x
+y = x.^3 .+ x.^2 .+ x
 # Plot x and y
 stair(x, y)
 # Plot y with indices for x values

@@ -101,7 +101,7 @@ function _setargs_line(f, args...; kwargs...)
 end
 
 @plotfunction(plot, geom = :line, axes = :axes2d, setargs=_setargs_line, kind = :line, docstring="""
-    plot(x[, y, spec; kwargs...)
+    plot(x[, y, spec; kwargs...])
     plot(x1, y1, x2, y2...; kwargs...)
     plot(x1, y1, spec1...; kwargs...)
 
@@ -130,7 +130,7 @@ sequence of integers starting at 1.
 # Examples
 
 ```julia
-$(read("examples/plot.jl"), String)
+$(read("examples/plot.jl", String))
 ```
 """)
 
@@ -149,7 +149,7 @@ function _setargs_stair(f, args...; kwargs...)
 end
 
 @plotfunction(stair, geom = :stair, axes = :axes2d, setargs=_setargs_stair, docstring="""
-    stair(x[, y, spec; kwargs...)
+    stair(x[, y, spec; kwargs...])
     stair(x1, y1, x2, y2...; kwargs...)
     stair(x1, y1, spec1...; kwargs...)
 
@@ -172,34 +172,28 @@ Additionally, the keyword argument `where` can be used to define where the "stai
 # Examples
 
 ```julia
-$(read("examples/stair.jl"), String)
+$(read("examples/stair.jl", String))
 ```
 """)
 
 @plotfunction(stem, geom = :stem, axes = :axes2d, setargs=_setargs_line, docstring="""
-Draw a stem plot.
+    stem(x[, y, spec; kwargs...])
+    stem(x1, y1, x2, y2...; kwargs...)
+    stem(x1, y1, spec1...; kwargs...)
 
-This function can receive one or more of the following:
+Draw a stem plot
 
-- x values and y values, or
-- x values and a callable to determine y values, or
-- y values only, with their indices as x values
+The coordinates and format of the stems and markers are defined as for line plots
+(cf. [plot](@ref)).
 
-:param args: the data to plot
+Additionally, the keyword argument `baseline` can be used to define the
+Y coordinate where stems should start from.
 
-**Usage examples:**
+# Examples
 
-.. code-block:: julia
-
-    julia> # Create example data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = 0.2 .* x .+ 0.4
-    julia> # Plot x and y
-    julia> stem(x, y)
-    julia> # Plot x and a callable
-    julia> stem(x, x -> x^3 + x^2 + x + 6)
-    julia> # Plot y, using its indices for the x values
-    julia> stem(y)
+```julia
+$(read("examples/stem.jl", String))
+```
 """)
 
 # Recursive call in case of multiple x-y pairs
@@ -222,40 +216,27 @@ end
 
 @plotfunction(scatter, geom = :scatter, axes = :axes2d, kwargs=(colorbar=true,),
 docstring="""
-Draw one or more scatter plots.
+    scatter(x[, y, size, color; kwargs...])
 
-This function can receive one or more of the following:
+Draw a scatter plot.
 
-- x values and y values, or
-- x values and a callable to determine y values, or
-- y values only, with their indices as x values
+Points are defined by their `x` and `y` coordinates, given as numeric vectors.
+Additionally, values for markers' `size` an `color` can be provided
+Size values will determine the marker size in percent of the regular size,
+and color values will be used in combination with the current colormap.
 
-Additional to x and y values, you can provide values for the markers'
-size and color. Size values will determine the marker size in percent of
-the regular size, and color values will be used in combination with the
-current colormap.
+The last variable can be replaced by a callable that defines it as a
+function of the previous variables.
 
-:param args: the data to plot
+This function can receive a single numeric vector or matrix, which will be
+interpreted as the Y coordinates; in such case the X coordinates will be a
+sequence of integers starting at 1.
 
-**Usage examples:**
+# Examples
 
-.. code-block:: julia
-
-    julia> # Create example data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = 0.2 .* x .+ 0.4
-    julia> # Plot x and y
-    julia> scatter(x, y)
-    julia> # Plot x and a callable
-    julia> scatter(x, x -> 0.2 * x + 0.4)
-    julia> # Plot y, using its indices for the x values
-    julia> scatter(y)
-    julia> # Plot a diagonal with increasing size and color
-    julia> x = LinRange(0, 1, 11)
-    julia> y = LinRange(0, 1, 11)
-    julia> s = LinRange(50, 400, 11)
-    julia> c = LinRange(0, 255, 11)
-    julia> scatter(x, y, s, c)
+```julia
+$(read("examples/scatter.jl", String))
+```
 """)
 
 # horizontal and vertical coordinates of bar edges
