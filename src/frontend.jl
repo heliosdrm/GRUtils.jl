@@ -101,30 +101,37 @@ function _setargs_line(f, args...; kwargs...)
 end
 
 @plotfunction(plot, geom = :line, axes = :axes2d, setargs=_setargs_line, kind = :line, docstring="""
+    plot(x[, y, spec; kwargs...)
+    plot(x1, y1, x2, y2...; kwargs...)
+    plot(x1, y1, spec1...; kwargs...)
+
 Draw one or more line plots.
 
-This function can receive one or more of the following:
+Lines are defined by the `x` and `y` coordinates of the connected points, given as
+numeric vectors, and optionally the format string `spec` that defines the line
+and marker style and color as in
+[matplotlib](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.plot.html).
 
-- x values and y values, or
-- x values and a callable to determine y values, or
-- y values only, with their indices as x values
+The `y` vector can be replaced by a callable that defines the Y coordinates as a
+function of the X coordinates.
 
-:param args: the data to plot
+Multiple lines can be defined by pairs of `x` and `y` coordinates (and optionally
+their format strings), passed sequentially as arguments of `plot`.
+Alternatively, if various lines have the same X coordinates, their Y values can
+be grouped as columns in a matrix.
 
-**Usage examples:**
+If no `specs` are given, the series will be plotted as solid lines with a
+predefined sequence of colors.
 
-.. code-block:: julia-repl
+This function can receive a single numeric vector or matrix, which will be
+interpreted as the Y coordinates; in such case the X coordinates will be a
+sequence of integers starting at 1.
 
-    julia> # Create example data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = 2 .* x .+ 4
-    julia> # Plot x and y
-    julia> plot(x, y)
-    julia> # Plot x and a callable
-    julia> plot(x, t -> t^3 + t^2 + t)
-    julia> # Plot y, using its indices for the x values
-    julia> plot(y)
+# Examples
 
+```julia
+$(read("examples/plot.jl"), String)
+```
 """)
 
 function _setargs_stair(f, args...; kwargs...)
@@ -142,35 +149,31 @@ function _setargs_stair(f, args...; kwargs...)
 end
 
 @plotfunction(stair, geom = :stair, axes = :axes2d, setargs=_setargs_stair, docstring="""
+    stair(x[, y, spec; kwargs...)
+    stair(x1, y1, x2, y2...; kwargs...)
+    stair(x1, y1, spec1...; kwargs...)
+
 Draw one or more staircase or step plots.
 
-This function can receive one or more of the following:
+The coordinates and format of the stair outlines are defined as for line plots
+(cf. [plot](@ref)).
 
-- x values and y values, or
-- x values and a callable to determine y values, or
-- y values only, with their indices as x values
+Additionally, the keyword argument `where` can be used to define where the "stairs"
+(vertical discontinuities between Y values) shoud be placed:
 
-:param args: the data to plot
-:param where: pre, mid or post, to decide where the stair between two y values should be placed
+* `where = "pre"` to make the steps stop at each point (`x[i]`, `y[i]`),
+    starting at the previous `x` coordinate except for the first point.
+* `where = "post"` to make the steps start at each point (`x[i]`, `y[i]`),
+    stopping at the next `x` coordinate except for the last point.
+* `where = "mid"` (default) to make the steps go through each point (`x[i]`, `y[i]`)
+    starting and ending in the middle of the surrounding x-intervals,
+    except for the first and last points.
 
-**Usage examples:**
+# Examples
 
-.. code-block:: julia
-    julia> # Create example data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = 2 .* x .+ 4
-    julia> # Plot x and y
-    julia> stair(x, y)
-    julia> # Plot x and a callable
-    julia> stair(x, x -> x^3 + x^2 + x)
-    julia> # Plot y, using its indices for the x values
-    julia> stair(y)
-    julia> # Use next y step directly after x each position
-    julia> stair(y, where="pre")
-    julia> # Use next y step between two x positions
-    julia> stair(y, where="mid")
-    julia> # Use next y step immediately before next x position
-    julia> stair(y, where="post")
+```julia
+$(read("examples/stair.jl"), String)
+```
 """)
 
 @plotfunction(stem, geom = :stem, axes = :axes2d, setargs=_setargs_line, docstring="""
