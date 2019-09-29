@@ -224,7 +224,7 @@ docstring="""
 Draw a scatter plot.
 
 Points are defined by their `x` and `y` coordinates, given as numeric vectors.
-Additionally, values for markers' `size` an `color` can be provided
+Additionally, values for markers' `size` and `color` can be provided
 Size values will determine the marker size in percent of the regular size,
 and color values will be used in combination with the current colormap.
 
@@ -360,8 +360,8 @@ $(_example("histogram"))
 
 @plotfunction(plot3, geom = :line3d, axes = :axes3d, kwargs = (ratio=1.0,), setargs=_setargs_line, docstring="""
     plot3(x, y, z[, spec; kwargs...])
-    plot(x1, y1, z1, x2, y2, z2...; kwargs...)
-    plot(x1, y1, z1, spec1...; kwargs...)
+    plot3(x1, y1, z1, x2, y2, z2...; kwargs...)
+    plot3(x1, y1, z1, spec1...; kwargs...)
 
 Draw one or more three-dimensional line plots.
 
@@ -408,29 +408,22 @@ _setargs_scatter3(f, x, y, z, c; kwargs...) = ((x,y,z,c), (;colorbar=true, kwarg
 
 @plotfunction(scatter3, geom = :scatter3, axes = :axes3d, setargs = _setargs_scatter3,
 kwargs = (ratio=1.0,), docstring="""
-Draw one or more three-dimensional scatter plots.
+    scatter3(x, y, z[, color; kwargs...])
 
-Additional to x, y and z values, you can provide values for the markers'
-color. Color values will be used in combination with the current colormap.
+Draw a three-dimensional scatter plot.
 
-:param x: the x coordinates to plot
-:param y: the y coordinates to plot
-:param z: the z coordinates to plot
-:param c: the optional color values to plot
+Points are defined by their `x`, `y` and `z` coordinates, given as numeric vectors.
+Additionally, values for markers' `color` can be provided, which will be used in
+combination with the current colormap.
 
-**Usage examples:**
+The last variable can be replaced by a callable that defines it as a
+function of the previous variables.
 
-.. code-block:: julia
+# Examples
 
-    julia> # Create example data
-    julia> x = 2 .* rand(100) .- 1
-    julia> y = 2 .* rand(100) .- 1
-    julia> z = 2 .* rand(100) .- 1
-    julia> c = 999 .* rand(100) .+ 1
-    julia> # Plot the points
-    julia> scatter3(x, y, z)
-    julia> # Plot the points with colors
-    julia> scatter3(x, y, z, c)
+```julia
+$(_example("scatter3"))
+```
 """)
 
 @plotfunction(polar, geom = :polarline, axes = :polar, setargs=_setargs_line, kwargs = (ratio=1.0,), docstring="""
