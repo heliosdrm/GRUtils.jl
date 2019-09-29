@@ -435,6 +435,10 @@ The first coordinate the represents the angle in radians, and the second the
 radius of the line points. The rest is defined as for line plots
 (cf. [plot](@ref)).
 
+!!! note
+
+    Logarithmic and reversed scales ar disabled in polar plots
+
 # Examples
 
 ```julia
@@ -444,25 +448,23 @@ $(_example("polar"))
 
 @plotfunction(polarhistogram, geom = :polarbar, axes = :polar, kind = :polarhist,
 setargs = _setargs_hist, kwargs = (ratio=1.0,), docstring="""
-Draw a polar histogram.
+    polarhistogram(data; kwargs...)
 
-If **nbins** is **Nothing** or 0, this function computes the number of
-bins as 3.3 * log10(n) + 1,  with n as the number of elements in x,
-otherwise the given number of bins is used for the histogram.
+Draw a polar histogram of `data`.
 
-:param x: the values to draw as a polar histogram
-:param num_bins: the number of bins in the polar histogram
+A specific number of bins can be given as the keyword argument `nbins`.
+By default, or if a number smaller than 1 is given, the number of bins is
+computed as `3.3 * log10(n) + 1`,  with `n` being the number of elements in `data`.
 
-**Usage examples:**
+!!! note
 
-.. code-block:: julia
+    Logarithmic and reversed scales ar disabled in polar plots
 
-    julia> # Create example data
-    julia> x = 2 .* rand(100) .- 1
-    julia> # Draw the polar histogram
-    julia> polarhistogram(x, alpha=0.5)
-    julia> # Draw the polar histogram with 19 bins
-    julia> polarhistogram(x, nbins=19, alpha=0.5)
+# Examples
+
+```julia
+$(_example("polarhistogram"))
+```
 """)
 
 # Contour arguments for different inputs:
