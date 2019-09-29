@@ -161,8 +161,10 @@ function draw(g::Geometry, ::Val{:line})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:line3d})::Nothing
-    GR.uselinespec(g.spec)
-    GR.polyline3d(g.x, g.y, g.z)
+    mask = GR.uselinespec(g.spec)
+    hasline(mask) && GR.polyline3d(g.x, g.y, g.z)
+    hasmarker(mask) && GR.polymarker3d(g.x, g.y, g.z)
+    return nothing
 end
 
 function draw(g::Geometry, ::Val{:stair})::Nothing
