@@ -508,78 +508,77 @@ end
 
 @plotfunction(contour, geom = :contour, axes = :axes3d, setargs = _setargs_contour,
 kwargs = (rotation=0, tilt=90), docstring="""
+    contour(x, y, z; kwargs...)
+
 Draw a contour plot.
 
 This function uses the current colormap to display a either a series of
 points or a two-dimensional array as a contour plot. It can receive one
-or more of the following:
+of the following:
 
-- x values, y values and z values, or
-- M x values, N y values and z values on a NxM grid, or
-- M x values, N y values and a callable to determine z values
+- `x` values, `y` values and `z` values.
+- *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
+    and a set of `z` values on a *N*×*M* grid.
+- *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
+    and a callable to determine `z` values.
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
 provided points, a value of 0 will be used.
 
-:param args: the data to plot
+Contour lines are colored by default, using the current colormap as color scale.
+Colored lines can be disabled by removing the color bar (with keyword argument
+`colorbar == false`).
 
-**Usage examples:**
+The following keyword arguments can be provided to set the number and aspect of
+the contour lines:
 
-.. code-block:: julia
+* `levels::Int`, the number of contour lines that will be fitted to the data
+    (20 by default).
+* `majorlevels::Int`, the number of levels between labelled contour lines
+    (no labels by default for colored lines, all lines labelled by default
+    if color is removed).
 
-    julia> # Create example point data
-    julia> x = 8 .* rand(100) .- 4
-    julia> y = 8 .* rand(100) .- 4
-    julia> z = sin.(x) .+ cos.(y)
-    julia> # Draw the contour plot
-    julia> contour(x, y, z)
-    julia> # Create example grid data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = LinRange(0, pi, 20)
-    julia> z = sin.(x') .+ cos.(y)
-    julia> # Draw the contour plot
-    julia> contour(x, y, z)
-    julia> # Draw the contour plot using a callable
-    julia> contour(x, y, (x,y) -> sin(x) + cos(y))
+# Examples
+
+```julia
+$(_example("contour"))
+```
 """)
 
 @plotfunction(contourf, geom = :contourf, axes = :axes3d, setargs = _setargs_contour,
 kwargs = (rotation=0, tilt=90, tickdir=-1), docstring="""
+    contourf(x, y, z; kwargs...)
+
 Draw a filled contour plot.
 
 This function uses the current colormap to display a either a series of
-points or a two-dimensional array as a filled contour plot. It can
-receive one or more of the following:
+points or a two-dimensional array as a filled contour plot. It can receive one
+of the following:
 
-- x values, y values and z values, or
-- M x values, N y values and z values on a NxM grid, or
-- M x values, N y values and a callable to determine z values
+- `x` values, `y` values and `z` values.
+- *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
+    and a set of `z` values on a *N*×*M* grid.
+- *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
+    and a callable to determine `z` values.
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
 provided points, a value of 0 will be used.
 
-:param args: the data to plot
+The following keyword arguments can be provided to set the number and aspect of
+the contour lines:
 
-**Usage examples:**
+* `levels::Int`, the number of contour lines that will be fitted to the data
+    (20 by default).
+* `majorlevels::Int`, the number of levels between labelled contour lines
+    (no labels by default).
 
-.. code-block:: julia
+# Examples
 
-    julia> # Create example point data
-    julia> x = 8 .* rand(100) .- 4
-    julia> y = 8 .* rand(100) .- 4
-    julia> z = sin.(x) .+ cos.(y)
-    julia> # Draw the contour plot
-    julia> contourf(x, y, z)
-    julia> # Create example grid data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = LinRange(0, pi, 20)
-    julia> z = sin.(x') .+ cos.(y)
-    julia> # Draw the contour plot
-    julia> contourf(x, y, z)
-    julia> # Draw the contour plot using a callable
-    julia> contourf(x, y, (x,y) -> sin(x) + cos(y))
+```julia
+$(_example("contourf"))
+```
 """)
 
 _setargs_tricont(f, x, y, z, h; kwargs...) = ((x, y, z, h), kwargs...)
@@ -599,28 +598,24 @@ end
 
 @plotfunction(tricont, geom = :tricont, axes = :axes3d, setargs = _setargs_tricont,
 kwargs = (colorbar=true, rotation=0, tilt=90), docstring="""
+    tricont(x, y, z; kwargs...)
+
 Draw a triangular contour plot.
 
 This function uses the current colormap to display a series of points
 as a triangular contour plot. It will use a Delaunay triangulation to
-interpolate the z values between x and y values. If the series of points
+interpolate the `z` values between `x` and `y` values. If the series of points
 is concave, this can lead to interpolation artifacts on the edges of the
 plot, as the interpolation may occur in very acute triangles.
 
-:param x: the x coordinates to plot
-:param y: the y coordinates to plot
-:param z: the z coordinates to plot
+The number of contour lines can be set by the keyword argument `levels`
+(by default `levels = 20`).
 
-**Usage examples:**
+# Examples
 
-.. code-block:: julia
-
-    julia> # Create example point data
-    julia> x = 8 .* rand(100) .- 4
-    julia> y = 8 .* rand(100) .- 4
-    julia> z = sin.(x) + cos.(y)
-    julia> # Draw the triangular contour plot
-    julia> tricont(x, y, z)
+```julia
+$(_example("tricont"))
+```
 """)
 
 function _setargs_surface(f, x, y, z; accelerate = true, kwargs...)
@@ -641,103 +636,74 @@ end
 
 @plotfunction(surface, geom = :surface, axes = :axes3d, setargs = _setargs_surface,
 kwargs = (colorbar=true, accelerate=true), docstring="""
+    surface(x, y, z; kwargs...)
+
 Draw a three-dimensional surface plot.
 
-This function uses the current colormap to display a either a series of
-points or a two-dimensional array as a surface plot. It can receive one or
-more of the following:
+This function takes either a series of points or a two-dimensional array as the
+to draw a surface plot, colored according the the Z coordinates and the
+current colormap. It can receive one of the following:
 
-- x values, y values and z values, or
-- M x values, N y values and z values on a NxM grid, or
-- M x values, N y values and a callable to determine z values
+- `x` values, `y` values and `z` values.
+- *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
+    and a set of `z` values on a *N*×*M* grid.
+- *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
+    and a callable to determine `z` values.
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
 provided points, a value of 0 will be used.
 
-:param args: the data to plot
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Create example point data
-    julia> x = 8 .* rand(100) .- 4
-    julia> y = 8 .* rand(100) .- 4
-    julia> z = sin.(x) .+ cos.(y)
-    julia> # Draw the surface plot
-    julia> surface(x, y, z)
-    julia> # Create example grid data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = LinRange(0, pi, 20)
-    julia> z = sin.(x') .+ cos.(y)
-    julia> # Draw the surface plot
-    julia> surface(x, y, z)
-    julia> # Draw the surface plot using a callable
-    julia> surface(x, y, (x,y) -> sin(x) + cos(y))
+```julia
+$(_example("surface"))
+```
 """)
 
 @plotfunction(wireframe, geom = :wireframe, axes = :axes3d, setargs = _setargs_surface, docstring="""
+    wireframe(x, y, z; kwargs...)
+
 Draw a three-dimensional wireframe plot.
 
-This function uses the current colormap to display a either a series of
-points or a two-dimensional array as a wireframe plot. It can receive one
-or more of the following:
+This function takes either a series of points or a two-dimensional array as the
+to draw a wireframe plot. It can receive one of the following:
 
-- x values, y values and z values, or
-- M x values, N y values and z values on a NxM grid, or
-- M x values, N y values and a callable to determine z values
+- `x` values, `y` values and `z` values.
+- *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
+    and a set of `z` values on a *N*×*M* grid.
+- *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
+    and a callable to determine `z` values.
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
 provided points, a value of 0 will be used.
 
-:param args: the data to plot
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Create example point data
-    julia> x = 8 .* rand(100) .- 4
-    julia> y = 8 .* rand(100) .- 4
-    julia> z = sin.(x) .+ cos.(y)
-    julia> # Draw the wireframe plot
-    julia> wireframe(x, y, z)
-    julia> # Create example grid data
-    julia> x = LinRange(-2, 2, 40)
-    julia> y = LinRange(0, pi, 20)
-    julia> z = sin.(x') .+ cos.(y)
-    julia> # Draw the wireframe plot
-    julia> wireframe(x, y, z)
-    julia> # Draw the wireframe plot using a callable
-    julia> wireframe(x, y, (x,y) -> sin(x) + cos(y))
+```julia
+$(_example("wireframe"))
+```
 """)
 
 @plotfunction(trisurf, geom = :trisurf, axes = :axes3d, setargs = _setargs_tricont,
 kwargs = (colorbar=true,), docstring="""
+    tricont(x, y, z; kwargs...)
+
 Draw a triangular surface plot.
 
-This function uses the current colormap to display a series of points
-as a triangular surface plot. It will use a Delaunay triangulation to
-interpolate the z values between x and y values. If the series of points
+This function takes either a series of points or a two-dimensional array as the
+to draw a surface plot, colored according the the Z coordinates and the
+current colormap. It will use a Delaunay triangulation to
+interpolate the `z` values between `x` and `y` values. If the series of points
 is concave, this can lead to interpolation artifacts on the edges of the
 plot, as the interpolation may occur in very acute triangles.
 
-:param x: the x coordinates to plot
-:param y: the y coordinates to plot
-:param z: the z coordinates to plot
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Create example point data
-    julia> x = 8 .* rand(100) .- 4
-    julia> y = 8 .* rand(100) .- 4
-    julia> z = sin.(x) .+ cos.(y)
-    julia> # Draw the triangular surface plot
-    julia> trisurf(x, y, z)
+```julia
+$(_example("tricont"))
+```
 """)
 
 function _setargs_heatmap(f, data; kwargs...)
