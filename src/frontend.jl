@@ -92,6 +92,9 @@ macro plotfunction(fname, options...)
     esc(expr)
 end
 
+# Fetch example from filename and return it as String
+_example(name) = read(joinpath(dirname(@__FILE__), "../examples", "$name.jl"), String)
+
 function _setargs_line(f, args...; kwargs...)
     if typeof(args[end]) <: AbstractString
         kwargs = (spec=args[end], kwargs...)
@@ -130,7 +133,7 @@ sequence of integers starting at 1.
 # Examples
 
 ```julia
-$(read("examples/plot.jl", String))
+$(_example("plot"))
 ```
 """)
 
@@ -172,7 +175,7 @@ Additionally, the keyword argument `where` can be used to define where the "stai
 # Examples
 
 ```julia
-$(read("examples/stair.jl", String))
+$(_example("stair"))
 ```
 """)
 
@@ -192,7 +195,7 @@ Y coordinate where stems should start from.
 # Examples
 
 ```julia
-$(read("examples/stem.jl", String))
+$(_example("stem"))
 ```
 """)
 
@@ -235,7 +238,7 @@ sequence of integers starting at 1.
 # Examples
 
 ```julia
-$(read("examples/scatter.jl", String))
+$(_example("scatter"))
 ```
 """)
 
@@ -272,32 +275,26 @@ function _setargs_bar(f, heights; kwargs...)
 end
 
 @plotfunction(barplot, geom = :bar, axes = :axes2d, setargs=_setargs_bar, docstring="""
+    bar(labels, heights; kwargs...)
+    bar(heights; kwargs...)
+
 Draw a bar plot.
 
-If no specific labels are given, the axis is labelled with integer
+If no specific labels are given, the bars are labelled with integer
 numbers starting from 1.
 
-Use the keyword arguments **barwidth**, **baseline** or **horizontal**
-to modify the default width of the bars (by default 0.8 times the separation
-between bars), the baseline value (by default zero), or the direction of
-the bars (by default vertical).
+Use the keyword arguments `barwidth`, `baseline` or `horizontal`
+to modify the aspect of the bars, which by default is:
 
-:param labels: the labels of the bars
-:param heights: the heights of the bars
+* `barwidth = 0.8` (80% of the separation between bars).
+* `baseline = 0.0` (bars starting at zero).
+* `horizontal = false` (vertical bars)
 
-**Usage examples:**
+# Examples
 
-.. code-block:: julia
-
-    julia> # World population by continents (millions)
-    julia> population = Dict("Africa" => 1216,
-                             "America" => 1002,
-                             "Asia" => 4436,
-                             "Europe" => 739,
-                             "Oceania" => 38)
-    julia> barplot(keys(population), values(population))
-    julia> # Horizontal bar plot
-    julia> barplot(keys(population), values(population), horizontal=true)
+```julia
+$(_example("bar"))
+```
 """)
 
 # Coordinates of the bars of a histogram of the values in `x`
@@ -338,25 +335,27 @@ end
 
 @plotfunction(histogram, geom = :bar, axes = :axes2d, kind = :hist, setargs = _setargs_hist,
 docstring="""
-Draw a histogram.
+    histogram(data; kwargs...)
 
-If **nbins** is **Nothing** or 0, this function computes the number of
-bins as 3.3 * log10(n) + 1,  with n as the number of elements in x,
-otherwise the given number of bins is used for the histogram.
+Draw a histogram of `data`.
 
-:param x: the values to draw as histogram
-:param num_bins: the number of bins in the histogram
+The following keyword arguments can be supplied:
 
-**Usage examples:**
+* `nbins`: Number of bins; by default, or if a number smaller than 1 is given,
+    the number of bins is computed as `3.3 * log10(n) + 1`,  with `n` being the
+    number of elements in `data`.
+* `horizontal`: whether the histogram should be horizontal (`false` by default).
 
-.. code-block:: julia
+!!! note
 
-    julia> # Create example data
-    julia> x = 2 .* rand(100) .- 1
-    julia> # Draw the histogram
-    julia> histogram(x)
-    julia> # Draw the histogram with 19 bins
-    julia> histogram(x, nbins=19)
+    If the vertical axis (or the horizontal axis if `horizontal == true`) is set
+    in logarithmic scale, the bars of the histogram will start at 1.0.
+
+# Examples
+
+```julia
+$(_example("histogram"))
+```
 """)
 
 @plotfunction(plot3, geom = :line3d, axes = :axes3d, kwargs = (ratio=1.0,), setargs=_setargs_line, docstring="""
