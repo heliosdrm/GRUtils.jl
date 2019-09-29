@@ -285,13 +285,15 @@ function draw(g::Geometry, ::Val{:bar})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:polarline})::Nothing
-    GR.uselinespec(g.spec)
+    mask = GR.uselinespec(g.spec)
     ymin, ymax = extrema(g.y)
     ρ = (g.y .- ymin) ./ (ymax .- ymin)
     n = length(ρ)
     x = ρ .* cos.(g.x)
     y = ρ .* sin.(g.x)
-    GR.polyline(x, y)
+    hasline(mask) && GR.polyline(x, y)
+    hasmarker(mask) && GR.polymarker(x, y)
+    return nothing
 end
 
 function draw(g::Geometry, ::Val{:polarbar})::Nothing
