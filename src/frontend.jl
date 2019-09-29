@@ -427,26 +427,19 @@ $(_example("scatter3"))
 """)
 
 @plotfunction(polar, geom = :polarline, axes = :polar, setargs=_setargs_line, kwargs = (ratio=1.0,), docstring="""
+    polar(angle, radius[, spec; kwargs...])
+
 Draw one or more polar plots.
 
-This function can receive one or more of the following:
+The first coordinate the represents the angle in radians, and the second the
+radius of the line points. The rest is defined as for line plots
+(cf. [plot](@ref)).
 
-- angle values and radius values, or
-- angle values and a callable to determine radius values
+# Examples
 
-:param args: the data to plot
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Create example data
-    julia> angles = LinRange(0, 2pi, 40)
-    julia> radii = LinRange(0, 2, 40)
-    julia> # Plot angles and radii
-    julia> polar(angles, radii)
-    julia> # Plot angles and a callable
-    julia> polar(angles, r -> cos(r) ^ 2)
+```julia
+$(_example("polar"))
+```
 """)
 
 @plotfunction(polarhistogram, geom = :polarbar, axes = :polar, kind = :polarhist,
