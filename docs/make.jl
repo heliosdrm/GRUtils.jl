@@ -1,9 +1,11 @@
 using Documenter, GRUtils
 
-makedocs(sitename="GRUtils",
+include("api_page.jl")
+
+makedocs(sitename="GRUtils.jl",
     pages = [
-        "index.md",
-        "Basics" => "basics.md"
+        "Introduction" => "index.md",
+        "api.md"
     ],
     format = Documenter.HTML(prettyurls = false)
 )

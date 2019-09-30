@@ -112,14 +112,8 @@ set the optional argument `replace` to false.
 
 # Examples
 
-```jldoctest
-julia> # Set a plot covering two thirds of the figure width and height
-julia> subplot(3, 3, (1, 5));
-julia> # Adds a plot covering the top third part, over the previous one
-julia> subplot(3, 1, 1, false);
-julia> # Add a plot covering the right third part of the figure,
-julia> # replacing the previous one, but not the first:
-julia> subplot(1, 3, 3);
+```julia
+$(_example("subplot"))
 ```
 """
 subplot(args...) = subplot!(gcf(), args...)

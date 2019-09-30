@@ -92,9 +92,6 @@ macro plotfunction(fname, options...)
     esc(expr)
 end
 
-# Fetch example from filename and return it as String
-_example(name) = read(joinpath(dirname(@__FILE__), "../examples", "$name.jl"), String)
-
 function _setargs_line(f, args...; kwargs...)
     if typeof(args[end]) <: AbstractString
         kwargs = (spec=args[end], kwargs...)
@@ -159,7 +156,7 @@ end
 Draw one or more staircase or step plots.
 
 The coordinates and format of the stair outlines are defined as for line plots
-(cf. [plot](@ref)).
+(cf. [`plot`](@ref)).
 
 Additionally, the keyword argument `where` can be used to define where the "stairs"
 (vertical discontinuities between Y values) shoud be placed:
@@ -187,7 +184,7 @@ $(_example("stair"))
 Draw a stem plot
 
 The coordinates and format of the stems and markers are defined as for line plots
-(cf. [plot](@ref)).
+(cf. [`plot`](@ref)).
 
 Additionally, the keyword argument `baseline` can be used to define the
 Y coordinate where stems should start from.
@@ -293,7 +290,7 @@ to modify the aspect of the bars, which by default is:
 # Examples
 
 ```julia
-$(_example("bar"))
+$(_example("barplot"))
 ```
 """)
 
@@ -374,7 +371,7 @@ The `z` vector can be replaced by a callable that defines the Z coordinates as a
 function of the X and Y coordinates.
 
 Multiple lines can be defined by triplets of `x`, `y` and `z` coordinates (and
-optionally their format strings), passed sequentially as arguments of `plot`.
+optionally their format strings), passed sequentially as arguments of `plot3`.
 Alternatively, if various lines have the same X and Y coordinates, their Y values can
 be grouped as columns in a matrix.
 
@@ -433,7 +430,7 @@ Draw one or more polar plots.
 
 The first coordinate the represents the angle in radians, and the second the
 radius of the line points. The rest is defined as for line plots
-(cf. [plot](@ref)).
+(cf. [`plot`](@ref)).
 
 !!! note
 
@@ -877,19 +874,14 @@ adjusted by the keyword argument `xform`.
 
 The available transformation types are:
 
-    +----------------+-+-------------------+
-    |   XFORM_BOOLEAN|0|boolean            |
-    +----------------+-+-------------------+
-    |    XFORM_LINEAR|1|linear             |
-    +----------------+-+-------------------+
-    |       XFORM_LOG|2|logarithmic        |
-    +----------------+-+-------------------+
-    |    XFORM_LOGLOG|3|double logarithmic |
-    +----------------+-+-------------------+
-    |     XFORM_CUBIC|4|cubic              |
-    +----------------+-+-------------------+
-    | XFORM_EQUALIZED|5|histogram equalized|
-    +----------------+-+-------------------+
+|              []()|   |                   |
+|------------------|:-:|-------------------|
+|   `XFORM_BOOLEAN`| 0 |boolean            |
+|    `XFORM_LINEAR`| 1 |linear             |
+|       `XFORM_LOG`| 2 |logarithmic        |
+|    `XFORM_LOGLOG`| 3 |double logarithmic |
+|     `XFORM_CUBIC`| 4 |cubic              |
+| `XFORM_EQUALIZED`| 5 |histogram equalized|
 
 # Examples
 
@@ -916,13 +908,11 @@ After the projection the current colormap is applied to the result.
 The method to reduce volume data can be defined by the keyword argument
 `algorithm`, which can be one of the following:
 
-    +---------------------+---+-----------------------------+
-    |GR_VOLUME_EMISSION   |  0|emission model               |
-    +---------------------+---+-----------------------------+
-    |GR_VOLUME_ABSORPTION |  1|absorption model             |
-    +---------------------+---+-----------------------------+
-    |GR_VOLUME_MIP        |  2|maximum intensity projection |
-    +---------------------+---+-----------------------------+
+|                  []()|   |                             |
+|----------------------|:-:|-----------------------------|
+|`GR_VOLUME_EMISSION`  |  0|emission model               |
+|`GR_VOLUME_ABSORPTION`|  1|absorption model             |
+|`GR_VOLUME_MIP`       |  2|maximum intensity projection |
 
 # Examples
 

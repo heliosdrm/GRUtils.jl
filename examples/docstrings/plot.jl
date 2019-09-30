@@ -1,6 +1,6 @@
 # Create example data
 x = LinRange(-2, 2, 40)
-f = t -> t^3 + t^2 + t
+f(t) = t^3 + t^2 + t
 y = f.(x)
 # Plot x and y
 plot(x, y)
