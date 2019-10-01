@@ -1,30 +1,20 @@
 """
-    Colorbar(range::Tuple{Float64, Float64}, tick::Float64, scale::Int, margin::Float64, colors::Int)
+    Colorbar(range, tick, scale, margin, colors)
 
-A `Colorbar` object contains the data that defines the colorbar associated to a plot.
+Return a `Colorbar` object containing the data that defines the colorbar
+associated to a plot.
 
 The fields contained in a `Legend` object are:
 
-* `range::Tuple{Float64, Float64}`: the range of the color scale represented in the bar.
-* `tick::Float64`: the distance between tick marks drawn as guide next to the bar.
-* `scale::Int`: an integer code used by [`GR.setscale`](@ref) to define the
+* **`range`**: a Tuple{Float64, Float64} with the range of the color scale
+    represented in the bar.
+* **`tick`**: a `Float64` that gives the distance between tick marks drawn as
+    guide next to the bar.
+* **`scale`**: an `Int` code used by `GR.setscale` to define the
     scale of the bar (basically, if it is presented as linear or log scale).
-* `margin::Float64`: size of the extra margin between the main plot frame and the bar.
-* `colors::Int`: number of different grades in the color scale.
-
-### Alternative constructor
-
-    Colorbar(axes::Axes [, colors=256])
-
-A `Colorbar` can also be defined by an `Axes` object that is used to calculate
-its different properties, depending on the kind of axis and the range of the `c` axis.
-If the `c` axis is not defined, this will return an empty `Colorbar`.
-
-### Draw method
-
-Color bars are drawn by the method `draw(cb::Colorbar [, range])`,
-where the optional `range` is by default `cb.range`, but can be overriden by
-other values.
+* **`margin`**: a `Float64` with the size of the extra margin between the main
+    plot frame and the bar.
+* **`colors**`: an `Int` indicating the number of different grades in the color scale.
 """
 struct Colorbar
     range::Tuple{Float64, Float64}
@@ -37,6 +27,13 @@ end
 const EMPTYCOLORBAR = Colorbar(NULLPAIR, 0.0, 0, 0.0, 0)
 Colorbar() = EMPTYCOLORBAR
 
+"""
+    Colorbar(axes::Axes [, colors=256])
+
+Return a `Colorbar` defined by an `Axes` object that is used to calculate
+its different properties, depending on the kind of axis and the range of the
+`c` axis. If the `c` axis is not defined, this will return an empty `Colorbar`.
+"""
 function Colorbar(axes, colors=256)
     range = axes.ranges[:c]
     if !all(isfinite.(range))

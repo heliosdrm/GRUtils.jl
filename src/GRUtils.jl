@@ -36,13 +36,11 @@ const DISTINCT_CMAP = [ 0, 1, 984, 987, 989, 983, 994, 988 ]
 const UNITSQUARE = [0.0, 1.0, 0.0, 1.0]
 const NULLPAIR = (0.0, 0.0)
 
-function _min(a)
-  minimum(filter(!isnan, a))
-end
+_min(a) = minimum(filter(!isnan, a))
+_max(a) = maximum(filter(!isnan, a))
 
-function _max(a)
-  maximum(filter(!isnan, a))
-end
+# Fetch example from filename and return it as String
+_example(name) = read(joinpath(dirname(@__FILE__), "../examples/docstrings", "$name.jl"), String)
 
 include("geometries.jl")
 include("axes.jl")
@@ -58,7 +56,7 @@ const EMPTYFIGURE = Figure((0.0, 0.0), [PlotObject()])
 const CURRENTFIGURE = Ref(EMPTYFIGURE)
 
 """
-  gcf()
+    gcf()
 
 Get the global current figure.
 """

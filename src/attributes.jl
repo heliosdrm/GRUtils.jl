@@ -19,31 +19,30 @@ end
 legend!(f::Figure, args...; kwargs...) = legend!(currentplot(f), args...; kwargs...)
 
 """
-Set the legend of the plot.
+    legend(labels...; kwargs...)
 
-The plot legend is drawn using the extended text function GR.textext.
-You can use a subset of LaTeX math syntax, but will need to escape
-certain characters, e.g. parentheses. For more information see the
-documentation of GR.textext.
+Set the legend of the plot, using a series of `labels` (strings).
 
-:param args: The legend strings
-
-In addition to the legend strings you can give the keyword arguments
-``location`` to define the location of the legend with
+In addition to the legend strings, the keyword argument
+`location` can be used to define the location of the legend with
 respect to the plot axes (as a number, following the convention of
 [Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html)),
-and ``maxrows`` to distribute the legend labels in a grid with a
+and the keyword argument `maxrows` to distribute the legend labels in a grid with a
 maximum number of rows.
 
-**Usage examples:**
+The labels are assigned to the geometries contained in the plot,
+in the same order as they were created. Only geometries with non-empty labels
+and an available guide for legends.
 
-.. code-block:: julia
+# Examples
 
-    julia> # Set the legends to "a" and "b"
-    julia> legend("a", "b")
+```julia
+# Set the legends to "a" and "b"
+legend("a", "b")
+```
 """
 function legend(args::AbstractString...; kwargs...)
-    f = gcf()    
+    f = gcf()
     legend!(currentplot(f), args...; kwargs...)
     draw(f)
 end
@@ -54,28 +53,12 @@ hold!(p::PlotObject, state::Bool) = (p.attributes[:hold] = state)
 hold!(f::Figure, state) = hold!(currentplot(f), state)
 
 """
+    hold(flag::Bool)
+
 Set the hold flag for combining multiple plots.
 
-The hold flag prevents drawing of axes and clearing of previous plots, so
-that the next plot will be drawn on top of the previous one.
-
-:param flag: the value of the hold flag
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Create example data
-    julia> x = LinRange(0, 1, 100)
-    julia> # Draw the first plot
-    julia> plot(x, x.^2)
-    julia> # Set the hold flag
-    julia> hold(true)
-    julia> # Draw additional plots
-    julia> plot(x, x.^4)
-    julia> plot(x, x.^8)
-    julia> # Reset the hold flag
-    julia> hold(false)
+`hold(true)` prevents clearing previous plots, so that next plots
+will be drawn on top of the previous one until `hold(false)` is called.
 """
 hold(state) = hold!(currentplot(gcf()), state)
 
@@ -92,130 +75,126 @@ end
 title!(f::Figure, s) = title!(currentplot(f), s)
 
 """
-Set the plot title.
+    title(s)
 
-The plot title is drawn using the extended text function GR.textext.
-You can use a subset of LaTeX math syntax, but will need to escape
-certain characters, e.g. parentheses. For more information see the
-documentation of GR.textext.
+Set the plot title as the string `s`.
 
-:param title: the plot title
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Set the plot title to "Example Plot"
-    julia> title("Example Plot")
-    julia> # Clear the plot title
-    julia> title("")
+```julia
+# Set the plot title to "Example Plot"
+title("Example Plot")
+# Clear the plot title
+title("")
+```
 """
 function title(s::AbstractString)
-    f = gcf()    
+    f = gcf()
     title!(currentplot(f), s)
     draw(f)
 end
 
 const AXISLABEL_DOC = """
-Set the X, Y or Z axis labels.
+    xlabel(s)
+    ylabel(s)
+    zlabel(s)
 
-The axis labels are drawn using the extended text function GR.textext.
-You can use a subset of LaTeX math syntax, but will need to escape
-certain characters, e.g. parentheses. For more information see the
-documentation of GR.textext.
+Set the X, Y or Z axis labels as the string `s`.
 
-:param label: the axis label
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Set the x-axis label to "x"
-    julia> xlabel("x")
-    julia> # Clear the y-axis label
-    julia> ylabel("")
+```julia
+# Set the x-axis label to "x"
+xlabel("x")
+# Clear the y-axis label
+ylabel("")
+```
 """
 
 const TICKS_DOC = """
-Set the intervals of the ticks for the X, Y or Z axis.
+    xticks(minor[, major = 1])
+    yticks(minor[, major = 1])
+    zticks(minor[, major = 1])
 
-Use the function `xticks`, `yticks` or `zticks` for the corresponding axis.
+Set the `minor`intervals of the ticks for the X, Y or Z axis,
+and (optionally) the number of minor ticks between `major` ticks.
 
-:param minor: the interval between minor ticks.
-:param major: (optional) the number of minor ticks between major ticks.
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Minor ticks every 0.2 units in the X axis
-    julia> xticks(0.2)
-    julia> # Major ticks every 1 unit (5 minor ticks) in the Y axis
-    julia> yticks(0.2, 5)
+```julia
+# Minor ticks every 0.2 units in the X axis
+xticks(0.2)
+# Major ticks every 1 unit (5 minor ticks) in the Y axis
+yticks(0.2, 5)
+```
 """
 
 # Attributes for axes
 
 const AXISLIM_DOC = """
-Set the limits for the plot axis.
+    xlim(inf, sup [, adjust::Bool = false])
+    xlim((inf, sup), ...)
+    ylim(inf, sup, ...)
+    ylim((inf, sup), ...)
+    zlim(inf, sup, ...)
+    zlim((inf, sup), ...)
+
+Set the limits for the plot axes.
 
 The axis limits can either be passed as individual arguments or as a
-tuple of (**min**, **max**). Setting either limit to **nothing** will
+tuple of `(inf, sup)` values. Setting either limit to `nothing` will
 cause it to be automatically determined based on the data, which is the
 default behavior.
 
-:param min:
-	- the axis lower limit, or
-	- **nothing** to use an automatic lower limit, or
-	- a tuple of both axis limits
-:param x_max:
-	- the axis upper limit, or
-	- **nothing** to use an automatic upper limit, or
-	- **nothing** if both axis limits were passed as first argument
-:param adjust: whether or not the limits may be adjusted
+Additionally to the limits, the flag `adjust` can be used to
+tell whether or not the limits have to be adjusted.
 
-**Usage examples:**
+#Examples
 
-.. code-block:: julia
-
-    julia> # Set the x-axis limits to -1 and 1
-    julia> xlim((-1, 1))
-    julia> # Reset the x-axis limits to be determined automatically
-    julia> xlim()
-    julia> # Set the y-axis upper limit and set the lower limit to 0
-    julia> ylim((0, nothing))
-    julia> # Reset the y-axis lower limit and set the upper limit to 1
-    julia> ylim((nothing, 1))
+```julia
+# Set the x-axis limits to -1 and 1
+xlim((-1, 1))
+# Reset the x-axis limits to be determined automatically
+xlim()
+# Set the y-axis upper limit and set the lower limit to 0
+ylim((0, nothing))
+# Reset the y-axis lower limit and set the upper limit to 1
+ylim((nothing, 1))
+```
 """
 
 const AXISLOG_DOC = """
+    xlog(flag::Bool)
+    ylog(flag::Bool)
+    zlog(flag::Bool)
+
 Set the X-, Y- or Z-axis to be drawn in logarithmic scale.
 
-:param flag: the value of the log flag (**false** by default).
+#Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Set the x-axis limits to log scale
-    julia> xlog(true)
-    julia> # Ensure that the y-axis is in linear scale
-    julia> ylog(false)
+```julia
+# Set the x-axis limits to log scale
+xlog(true)
+# Ensure that the y-axis is in linear scale
+ylog(false)
+```
 """
 
 const AXISFLIP_DOC = """
+    xflip(flag::Bool)
+    yflip(flag::Bool)
+    zflip(flag::Bool)
+
 Reverse the direction of the X-, Y- or Z-axis.
 
-:param flag: the value of the flip flag (**false** by default).
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Reverse the x-axis
-    julia> xflip(true)
-    julia> # Ensure that the y-axis is not reversed
-    julia> yflip(false)
+```julia
+# Reverse the x-axis
+xflip(true)
+# Ensure that the y-axis is not reversed
+yflip(false)
+```
 """
 
 for ax = ("x", "y", "z")
@@ -231,7 +210,7 @@ for ax = ("x", "y", "z")
         return nothing
     end
     @eval $fname!(f::Figure, s) = $fname!(currentplot(f), s)
-    @eval @doc AXISLABEL_DOC function $fname(s::AbstractString) 
+    @eval @doc AXISLABEL_DOC function $fname(s::AbstractString)
         f = gcf()
         $fname!(currentplot(f), s)
         draw(f)
@@ -311,23 +290,24 @@ for ax = ("x", "y", "z")
 end
 
 const TICKLABELS_DOC = """
+    xticklabels(f)
+    yticklabels(f)
+
 Customize the string of the X and Y axes tick labels.
 
-The labels of the tick axis can be defined through a function
-with one argument (the numeric value of the tick position) and
-returns a string, or through an array of strings that are located
+The labels of the tick axis can be defined by a function
+with one argument (the numeric value of the tick position) that
+returns a string, or by an array of strings that are located
 sequentially at X = 1, 2, etc.
 
-:param s: function or array of strings that define the tick labels.
+# Examples
 
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Label the range (0-1) of the Y-axis as percent values
-    julia> yticklabels(p -> Base.Printf.@sprintf("%0.0f%%", 100p))
-    julia> # Label the X-axis with a sequence of strings
-    julia> xticklabels(["first", "second", "third"])
+```julia
+# Label the range (0-1) of the Y-axis as percent values
+yticklabels(p -> Base.Printf.@sprintf("%0.0f%%", 100p))
+# Label the X-axis with a sequence of strings
+xticklabels(["first", "second", "third"])
+```
 """
 
 for ax = ("x", "y")
@@ -354,21 +334,12 @@ end
 grid!(f::Figure, flag) = grid!(currentplot(f), flag)
 
 """
-Set the flag to draw a grid in the plot axes.
+    grid(flag::Bool)
 
-:param flag: the value of the grid flag (`true` by default)
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> # Hid the grid on the next plot
-    julia> grid(false)
-    julia> # Restore the grid
-    julia> grid(true)
+Draw or disable the grid of the current plot axes.
 """
 function grid(flag)
-    f = gcf()    
+    f = gcf()
     grid!(currentplot(f), flag)
     draw(f)
 end
@@ -379,18 +350,12 @@ colorbar!(p::PlotObject, flag) = (p.attributes[:colorbar] = flag)
 colorbar!(f::Figure, flag) = colorbar!(currentplot(f), flag)
 
 """
-Set the flag to print a color bar if available
+    colorbar(flag::Bool)
 
-:param flag: the value of the flag
-
-**Usage examples:**
-
-.. code-block:: julia
-
-    julia> colorbar(true)
+Draw or disable the color bar in the current plot if available
 """
 function colorbar(flag)
-    f = gcf()    
+    f = gcf()
     colorbar!(currentplot(f), flag)
     draw(f)
 end
@@ -405,15 +370,15 @@ end
 aspectratio!(f::Figure, r) = aspectratio!(currentplot(f), r)
 
 """
-Set the aspect ratio of the plot
+    aspectratio(r)
 
-:param r: width:height ratio
+Set the aspect of the current plot to a given width:height ratio.
 
-**Usage examples:**
+# Examples
 
-.. code-block:: julia
-
-    julia> aspectratio(16/9) # Panoramic ratio
+```julia
+$(_example("plot"))
+```
 """
 function aspectratio(r)
     f = gcf()
@@ -437,20 +402,27 @@ end
 panzoom!(f::Figure, args...) = panzoom!(currentplot(f), args...)
 
 """
-Pan/zoom the axes
+    panzoom(x, y[, s = 0])
 
-:param x, y: distance between axes center and focus of the zoom in NDC
-:param r: relative size of the zoomed area (0 or omit to pan without zoom)
+Pan/zoom the axes of the current plot.
 
-**Usage examples:**
+The focus of the zoom is set at a point with an offset of `(x, y)` units
+in normalized device coordinates (NDC) from the center of the current axes.
+The corners of the axes are linearly displaced towards that point,
+such that the size of the new axes is `s` times their original size.
 
-.. code-block:: julia
+If `s` is set to 0 (the default value), the center of the axes
+is displaced at the focus, without resizing-
 
-    julia> # Move the center 1 unit right and 0.2 up
-    julia> panzoom(1, 0.2)
-    julia> # Reduce the focus of the axes to half their size
-    julia> # focusing on the previous point
-    julia> panzoom(1, 0.2, 0.5)
+# Example
+
+```julia
+# Move the center 1 unit right and 0.2 up (NDC)
+panzoom(1, 0.2)
+# Reduce the focus of the axes to half their size
+# focusing on the previous point
+panzoom(1, 0.2, 0.5)
+```
 """
 function panzoom(args...)
     f = gcf()
@@ -459,16 +431,19 @@ function panzoom(args...)
 end
 
 """
-Zoom on the axes
+    zoom(s)
 
-:param zoom: relative size of the zoomed area
+Zoom the current axes to the ratio indicated by `s`.
 
-**Usage examples:**
+The "zoomed" axes are centered around the same point,
+but proportionally resized to `s` times the original size.
 
-.. code-block:: julia
+# Examples
 
-    julia> # Reduce the focus of the axes to half their size
-    julia> zoom(0.5)
+```julia
+# Reduce the axes to half their size
+zoom(0.5)
+```
 """
 zoom(r) = panzoom(0.0, 0.0, r)
 zoom!(pf, r) = panzoom!(pf, 0.0, 0.0, r)
