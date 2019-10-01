@@ -56,7 +56,7 @@ const EMPTYFIGURE = Figure((0.0, 0.0), [PlotObject()])
 const CURRENTFIGURE = Ref(EMPTYFIGURE)
 
 """
-  gcf()
+    gcf()
 
 Get the global current figure.
 """

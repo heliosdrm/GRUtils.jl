@@ -2,11 +2,9 @@
 using GRUtils, Random
 Random.seed!(111)
 ```
-# API reference
+# Plotting functions
 
-## Plotting functions
-
-### Line plots
+## Line plots
 ```@docs
 plot
 ```
@@ -42,7 +40,7 @@ polar
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/polar.jl") # hide
 ```
-### Scatter plots
+## Scatter plots
 ```@docs
 scatter
 ```
@@ -57,7 +55,7 @@ scatter3
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/scatter3.jl") # hide
 ```
-### Stem plots
+## Stem plots
 ```@docs
 stem
 ```
@@ -65,7 +63,7 @@ stem
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/stem.jl") # hide
 ```
-### Bar plots
+## Bar plots
 ```@docs
 barplot
 ```
@@ -73,7 +71,7 @@ barplot
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/barplot.jl") # hide
 ```
-### Histograms
+## Histograms
 ```@docs
 histogram
 ```
@@ -95,7 +93,7 @@ hexbin
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/hexbin.jl") # hide
 ```
-### Contour plots
+## Contour plots
 ```@docs
 contour
 ```
@@ -117,7 +115,7 @@ tricont
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/tricont.jl") # hide
 ```
-### Surface plots
+## Surface plots
 ```@docs
 surface
 ```
@@ -139,7 +137,7 @@ wireframe
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/wireframe.jl") # hide
 ```
-### Volume rendering
+## Volume rendering
 ```@docs
 volume
 ```
@@ -147,7 +145,7 @@ volume
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/volume.jl") # hide
 ```
-### Heatmaps
+## Heatmaps
 ```@docs
 heatmap
 ```
@@ -162,7 +160,7 @@ shade
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/shade.jl") # hide
 ```
-### Images
+## Images
 ```@docs
 imshow
 ```
@@ -170,7 +168,7 @@ imshow
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/imshow.jl") # hide
 ```
-### Isosurfaces
+## Isosurfaces
 ```@docs
 isosurface
 ```
@@ -178,36 +176,3 @@ isosurface
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/isosurface.jl") # hide
 ```
-## Plot attributes
-
-### Title
-```@docs
-title
-```
-### Axis guides
-```@docs
-xlabel
-xticks
-xticklabels
-grid
-```
-### Axis size
-```@docs
-xlim
-aspectratio
-zoom
-panzoom
-```
-### Axis scales
-```@docs
-xlog
-xflip
-```
-### Geometry guides
-```@docs
-legend
-colorbar
-```
-## Control operations
-```@docs
-Figure(::Any, ::String)

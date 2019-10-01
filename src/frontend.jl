@@ -874,7 +874,7 @@ adjusted by the keyword argument `xform`.
 
 The available transformation types are:
 
-|              []()|   |                   |
+|⁣                  |   |                   |
 |------------------|:-:|-------------------|
 |   `XFORM_BOOLEAN`| 0 |boolean            |
 |    `XFORM_LINEAR`| 1 |linear             |
@@ -908,7 +908,7 @@ After the projection the current colormap is applied to the result.
 The method to reduce volume data can be defined by the keyword argument
 `algorithm`, which can be one of the following:
 
-|                  []()|   |                             |
+|⁣                      |   |                             |
 |----------------------|:-:|-----------------------------|
 |`GR_VOLUME_EMISSION`  |  0|emission model               |
 |`GR_VOLUME_ABSORPTION`|  1|absorption model             |

@@ -39,6 +39,7 @@ Let's see an example of a plot to start with:
 ```@example plot
 # Of course first you have to load the package
 using GRUtils
+Figure(); # hide
 # Example data
 x = LinRange(0, 10, 500)
 y = sin.(x.^2) .* exp.(-x)
@@ -57,7 +58,7 @@ ylabel("Y")
 title("Example plot")
 ```
 
-Depending on what environment you use (e.g. the Julia REPL, a Jupyter notebook, Atom or another IDE), this plot will be displayed in a different device (a plotting window, panel, a cell of the notebook...). If you want to keep it in a file for using it later, use the function `savefig`, like this:
+Depending on what environment you use (e.g. the Julia REPL, a Jupyter notebook, Atom or another IDE), this plot will be displayed in a different device (a plotting window, panel, a cell of the notebook...). If you want to keep it in a file for using it later, use the function [`savefig`](@ref), like this:
 
 ```julia
 savefig("example.svg")
@@ -75,4 +76,4 @@ Many more functions to make and manipulate plots are also available in GRUtils. 
 * Staircase plots (not present in the documentation) are made with the function `stair` instead of `step`, in order to avoid name conflicts with [Base.step](https://docs.julialang.org/en/latest/base/collections/#Base.step).
 * The [functions that modify plot attributes](https://gr-framework.org/julia-jlgr.html#attribute-functions) update the visualization of the plot automatically.
 
-Some plots in GRUtils also allow extra features. Please check the [API reference](@ref) to see the details.
+Some plots in GRUtils also allow extra features. Check the list of [Plotting functions](@ref) for more details.

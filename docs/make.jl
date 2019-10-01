@@ -5,8 +5,18 @@ include("api_page.jl")
 makedocs(sitename="GRUtils.jl",
     pages = [
         "Introduction" => "index.md",
-        "Multiple plots" => "multiple.md"
-        "api.md"
+        "Multiple plots" => "multiple.md",
+        "API reference" => [
+            "api/plotting.md",
+            "api/attributes.md",
+            "api/control.md"
+        ],
+        "Internals" => [
+            "internals/structure.md",
+            "internals/drawing.md",
+            "internals/createplots.md",
+            "internals/extending.md"
+        ]
     ],
-    format = Documenter.HTML(prettyurls = false)
+    expandfirst = ["index.md"]
 )

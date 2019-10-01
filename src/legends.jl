@@ -11,9 +11,10 @@ const LEGEND_LOCATIONS = Dict(
 """
     Legend(size::Tuple{Float64, Float64}, cursors::Vector{Tuple{Float64, Float64}})
 
-A `Legend` object contains the data that defines the frame where a legend is plotted.
+Return a `Legend` object.
 
-The fields contained in a `Legend` object are a 2-tuple that defines the size
+This type defines the frame where a legend is plotted.
+The fields contained in a `Legend` object are a 2-tuple with the size
 of the legend box in NDC (width and height, respectively), and a vector of
 2-tuples with the positions of the legend items.
 """
@@ -25,18 +26,12 @@ end
 """
     Legend(geoms [, maxrows])
 
-A `Legend` can also be defined by the collection of geometries that
-are meant to be referred to, and (optionally) the maximum number of items that
+Return a `Legend` object defined by the collection of geometries that
+are meant to be referred to in the legend.
+
+Optionally, this constructor can take the maximum number of items that
 are represented in each column of the legend. Only the items in that collection
 of geometries where `label` is not empty will be included.
-
-### Draw method
-
-Legends are drawn by the method `draw(lg, geoms, location)`, where `lg` is the
-`Legend` object, `geoms` is a vector with the geometries of the plot, and
-`location` is an integer code that defines the location of the legend with
-respect to the main plot area &mdash; as defined in
-[Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html).
 """
 function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
     cursors = Tuple{Float64, Float64}[]

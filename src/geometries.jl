@@ -86,11 +86,9 @@ geometry whose X coordinates are the vector `x`, and whose Y coordinates are the
 In addition, the last coordinate can be given as a "broadcastable" function that
 takes the previous coordinates as inputs.
 """
-# Complex arguments processed as pair of real, imaginary values
 geometries(kind, x::AbstractVecOrMat{<:Complex}, args...; kwargs...) =
     geometries(kind, real.(x), imag.(x), args...; kwargs...)
 
-# Parse function arguments
 geometries(kind, x::AbstractVecOrMat{<:Real}, f::Function, args...; kwargs...) =
     geometries(kind, x, f.(x), args...; kwargs...)
 

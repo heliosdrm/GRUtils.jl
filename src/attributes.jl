@@ -24,7 +24,7 @@ legend!(f::Figure, args...; kwargs...) = legend!(currentplot(f), args...; kwargs
 Set the legend of the plot, using a series of `labels` (strings).
 
 In addition to the legend strings, the keyword argument
-`location can be used to define the location of the legend with
+`location` can be used to define the location of the legend with
 respect to the plot axes (as a number, following the convention of
 [Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html)),
 and the keyword argument `maxrows` to distribute the legend labels in a grid with a
