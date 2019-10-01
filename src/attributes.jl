@@ -291,6 +291,7 @@ end
 
 const TICKLABELS_DOC = """
     xticklabels(f)
+    yticklabels(f)
 
 Customize the string of the X and Y axes tick labels.
 

@@ -1,11 +1,11 @@
-# API reference
-
-## Plotting functions
-
 ```@setup plot
 using GRUtils, Random
 Random.seed!(111)
 ```
+# API reference
+
+## Plotting functions
+
 ### Line plots
 ```@docs
 plot
@@ -178,3 +178,36 @@ isosurface
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/isosurface.jl") # hide
 ```
+## Plot attributes
+
+### Title
+```@docs
+title
+```
+### Axis guides
+```@docs
+xlabel
+xticks
+xticklabels
+grid
+```
+### Axis size
+```@docs
+xlim
+aspectratio
+zoom
+panzoom
+```
+### Axis scales
+```@docs
+xlog
+xflip
+```
+### Geometry guides
+```@docs
+legend
+colorbar
+```
+## Control operations
+```@docs
+Figure(::Any, ::String)
