@@ -22,6 +22,7 @@ panzoom
 ```@docs
 xflip
 xlog
+radians
 ```
 ## Geometry guides
 ```@docs

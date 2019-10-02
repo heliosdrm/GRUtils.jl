@@ -1,6 +1,6 @@
 ## Select keyword arguments from lists
 const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :label, :linewidth, :markersize, :spec, :stair_position, :xform]
-const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :ratio, :scheme, :subplot, :title,
+const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
 geom_attributes(; kwargs...) = filter(p -> p.first ∈ KEYS_GEOM_ATTRIBUTES, kwargs)
@@ -196,8 +196,41 @@ $(_example("stem"))
 ```
 """)
 
+function _setargs_polar(f, x, y, args...; kwargs...)
+    if !get(kwargs, :radians, true)
+        x = collect(x) .* (π/180)
+    end
+    _setargs_line(f, x, y, args...; kwargs...)
+end
+
+@plotfunction(polar, geom = :polarline, axes = :polar, setargs=_setargs_polar,
+kwargs = (ratio=1.0,), docstring="""
+    polar(angle, radius[, spec; kwargs...])
+
+Draw one or more polar plots.
+
+The first coordinate the represents the angle, and the second the
+radius of the line points. The rest is defined as for line plots,
+except that the first variable (`angle`) is always required.
+(cf. [`plot`](@ref)).
+
+The first variable is by default considered to be radians, and the angular
+labels of the grid are shown as factors of π. Use the keyword argument
+`radians = false` to pass and show angles in degrees.
+
+!!! note
+
+    Logarithmic and reversed scales ar disabled in polar plots
+
+# Examples
+
+```julia
+$(_example("polar"))
+```
+""")
+
 # Recursive call in case of multiple x-y pairs
-for fun = [:plot!, :stair!, :stem!]
+for fun = [:plot!, :stair!, :stem!, :polar!]
     @eval function $fun(f::Figure, x, y, u, v, args...; kwargs...)
         holdstate = get(currentplot(f).attributes, :hold, false)
         if typeof(u) <: AbstractString
@@ -355,6 +388,44 @@ $(_example("histogram"))
 ```
 """)
 
+function _setargs_polarhist(f, x; kwargs...)
+    if get(kwargs, :fullcircle, false)
+        minval, maxval = extrema(x)
+        x = (collect(x) .- minval) .* (2π / (maxval - minval))
+    elseif !get(kwargs, :radians, true)
+        x = collect(x) .* π / 180
+    end
+    _setargs_hist(f, x; kwargs..., horizontal=false)
+end
+
+@plotfunction(polarhistogram, geom = :polarbar, axes = :polar, kind = :polarhist,
+setargs = _setargs_polarhist, kwargs = (ratio=1.0, overlay_axes=true), docstring="""
+    polarhistogram(data; kwargs...)
+
+Draw a polar histogram of angle values contained in `data`.
+
+The following keyword arguments can be supplied:
+
+* `nbins`: Number of bins; by default, or if a number smaller than 1 is given,
+    the number of bins is computed as `3.3 * log10(n) + 1`,  with `n` being the
+    number of elements in `data`.
+* `radians`: Set this argument to `false` to pass and show the angles as degrees.
+    By default, `data` is assumed to be radians and the angular labels of the
+    grid are presented as factors of π.
+* `fullcircle`: Set this argument to `true` to scale the angular coordinates of
+    the histogram and make the bars span over the whole circle.
+
+!!! note
+
+    Logarithmic and reversed scales ar disabled in polar plots
+
+# Examples
+
+```julia
+$(_example("polarhistogram"))
+```
+""")
+
 @plotfunction(plot3, geom = :line3d, axes = :axes3d, kwargs = (ratio=1.0,), setargs=_setargs_line, docstring="""
     plot3(x, y, z[, spec; kwargs...])
     plot3(x1, y1, z1, x2, y2, z2...; kwargs...)
@@ -420,47 +491,6 @@ function of the previous variables.
 
 ```julia
 $(_example("scatter3"))
-```
-""")
-
-@plotfunction(polar, geom = :polarline, axes = :polar, setargs=_setargs_line, kwargs = (ratio=1.0,), docstring="""
-    polar(angle, radius[, spec; kwargs...])
-
-Draw one or more polar plots.
-
-The first coordinate the represents the angle in radians, and the second the
-radius of the line points. The rest is defined as for line plots
-(cf. [`plot`](@ref)).
-
-!!! note
-
-    Logarithmic and reversed scales ar disabled in polar plots
-
-# Examples
-
-```julia
-$(_example("polar"))
-```
-""")
-
-@plotfunction(polarhistogram, geom = :polarbar, axes = :polar, kind = :polarhist,
-setargs = _setargs_hist, kwargs = (ratio=1.0,), docstring="""
-    polarhistogram(data; kwargs...)
-
-Draw a polar histogram of `data`.
-
-A specific number of bins can be given as the keyword argument `nbins`.
-By default, or if a number smaller than 1 is given, the number of bins is
-computed as `3.3 * log10(n) + 1`,  with `n` being the number of elements in `data`.
-
-!!! note
-
-    Logarithmic and reversed scales ar disabled in polar plots
-
-# Examples
-
-```julia
-$(_example("polarhistogram"))
 ```
 """)
 
