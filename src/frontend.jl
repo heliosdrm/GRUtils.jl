@@ -80,7 +80,7 @@ macro plotfunction(fname, options...)
                 geoms = GRUtils.geometries(Symbol($geom_k), args...; GRUtils.geom_attributes(;kwargs...)...)
             end
             axes = GRUtils.Axes(Symbol($axes_k), geoms; kwargs...)
-            f.plots[end] = GRUtils.PlotObject(axes, geoms; kind=$plotkind, GRUtils.plot_attributes(; kwargs...)...)
+            GRUtils.makeplot!(f.plots[end], axes, geoms; kind=$plotkind, GRUtils.plot_attributes(; kwargs...)...)
             GRUtils.draw(f)
         end
         $fname(args...; kwargs...) = $fname!(GRUtils.gcf(), args...; kwargs...)

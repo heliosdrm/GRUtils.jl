@@ -42,13 +42,13 @@ The functions that set the [Plot attributes](@ref) also have in-place versions (
 x = 1:20
 y = randn(20)
 z = exp.(y) .+ randn(20)
-subplot(1,2,1)
+leftplot = subplot(1,2,1)
 plot(x, y)     # Line plot on the left hand side
-subplot(1,2,2)
+rightplot = subplot(1,2,2)
 scatter(y, z)  # Scatter plot to the right hand side
 
 fig = gcf()
 title!(fig, "Nice plot")         # Same as `title("Nice plot")`
-title!(subplot(1,2,1), "First plot")  # Set the title of the first plot
+title!(leftplot, "First plot")  # Set the title of the first plot
 draw(fig)   # The function `title!` does not update the visualization
 ```
