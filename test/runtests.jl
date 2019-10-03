@@ -1,5 +1,5 @@
 using Test
-using Random, Pkg
+using Random
 using GRUtils
 
 Random.seed!(111)
@@ -23,7 +23,7 @@ functionlist = (
     ("Control", ("subplot",))
 )
 
-# GR.gr3 has an issue in Windows
+# GR.gr3 has an issue in some systems
 win = Sys.iswindows()
 in_gr3 = ("tricont", "trisurf", "volume", "shade", "isosurface")
 
@@ -31,7 +31,7 @@ in_gr3 = ("tricont", "trisurf", "volume", "shade", "isosurface")
 @testset "$(functionlist[g][1])" for g in 1:length(functionlist)
     funs = functionlist[g][2]
     for f in funs
-        if !win || f ∉ in_gr3
+        if f ∉ in_gr3
             include(joinpath(examplesdir, "$f.jl"))
             @test true
         end
