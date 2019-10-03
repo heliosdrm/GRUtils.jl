@@ -284,8 +284,8 @@ end
 
 function draw(g::Geometry, ::Val{:polarline})::Nothing
     mask = GR.uselinespec(g.spec)
-    ymin, ymax = extrema(g.y)
-    ρ = (g.y .- ymin) ./ (ymax .- ymin)
+    ymax = maximum(abs.(g.y))
+    ρ = g.y ./ ymax
     n = length(ρ)
     x = ρ .* cos.(g.x)
     y = ρ .* sin.(g.x)
@@ -295,10 +295,9 @@ function draw(g::Geometry, ::Val{:polarline})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:polarbar})::Nothing
-    xmin, xmax = extrema(g.x)
     ymin, ymax = extrema(g.y)
     ρ = g.y ./ ymax
-    θ = 2pi .* (g.x .- xmin) ./ (xmax - xmin)
+    θ = g.x
     for i = 1:2:length(ρ)
         GR.setfillcolorind(989)
         GR.setfillintstyle(GR.INTSTYLE_SOLID)

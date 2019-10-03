@@ -149,7 +149,7 @@ default behavior.
 Additionally to the limits, the flag `adjust` can be used to
 tell whether or not the limits have to be adjusted.
 
-#Examples
+# Examples
 
 ```julia
 # Set the x-axis limits to -1 and 1
@@ -170,7 +170,7 @@ const AXISLOG_DOC = """
 
 Set the X-, Y- or Z-axis to be drawn in logarithmic scale.
 
-#Examples
+# Examples
 
 ```julia
 # Set the x-axis limits to log scale
@@ -372,17 +372,58 @@ aspectratio!(f::Figure, r) = aspectratio!(currentplot(f), r)
 """
     aspectratio(r)
 
-Set the aspect of the current plot to a given width:height ratio.
+Set the aspect of the current plot to a given width : height ratio.
 
 # Examples
 
 ```julia
-$(_example("plot"))
+$(_example("aspectratio"))
 ```
 """
 function aspectratio(r)
     f = gcf()
     aspectratio!(currentplot(f), r)
+    draw(f)
+end
+
+# Radians in polar axes
+
+function radians!(p::PlotObject, flag)
+    if p.axes.kind ≠ :polar
+        return nothing
+    end
+    p.axes.options[:radians] = Int(flag)
+    p.attributes[:radians] = flag
+end
+
+radians!(f::Figure, flag) = radians!(currentplot(f), flag)
+
+"""
+    radians(flag::Bool)
+
+Set the scale of angles in polar plots.
+
+Use `radians(true)` to represent angles in radians (default setting),
+and `radians(false)` to represent them in degrees.
+
+This operation only modifies the guides of the polar plot grid lines.
+The existing geometries are left without changes
+
+# Example
+
+```julia
+# Example data
+θ = LinRange(0, 2π, 40)
+r = sin.(θ)
+# Draw the polar plot (by default in radians)
+polar(θ, r)
+# Change the angula scale
+radians(false)
+```
+"""
+function radians(flag)
+    f = gcf()
+    radians!(currentplot(f), flag)
     draw(f)
 end
 

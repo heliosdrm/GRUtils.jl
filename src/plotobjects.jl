@@ -106,7 +106,7 @@ end
 
 PlotObject(; kwargs...) = PlotObject(Viewport(), Axes(:none), Geometry[], Legend(), Colorbar() ; kwargs...)
 
-function PlotObject(axes::Axes, geoms::Vector{<:Geometry},
+function makeplot!(p::PlotObject, axes::Axes, geoms::Vector{<:Geometry},
     legend::Legend=Legend(geoms), colorbar::Colorbar=Colorbar(axes); kwargs...)
 
     # Adapt margins to legend and colorbar
@@ -119,7 +119,19 @@ function PlotObject(axes::Axes, geoms::Vector{<:Geometry},
         viewport = Viewport(subplot, frame)
         viewport.inner .-= margins
     end
-    PlotObject(viewport, axes, geoms, legend, colorbar; kwargs...)
+    p.viewport = viewport
+    p.axes = axes
+    p.geoms = geoms
+    p.legend = legend
+    p.colorbar = colorbar
+    p.attributes = Dict{Symbol, Any}(:subplot => UNITSQUARE, kwargs...)
+    p
+end
+
+function PlotObject!(axes::Axes, geoms::Vector{<:Geometry},
+    legend::Legend=Legend(geoms), colorbar::Colorbar=Colorbar(axes); kwargs...)
+    p = PlotObject()
+    makeplot!(p, viewport, axes, geoms, legend, colorbar; kwargs...)
 end
 
 """

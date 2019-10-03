@@ -37,7 +37,8 @@ Axes are determined by their `kind`, which may be `:axes2d` for 2-D plots,
     + `options[:tickdir]` to determine how the ticks are drawn
         (positive value to draw them inside the plot area, negative value to
         draw them outside, or `0` to hide them).
-    + `options[:gr3] = 0` to identify if the axes are a 3-D scene defined for the `gr3` interface.
+    + `options[:gr3] ≠ 0` to identify if the axes are a 3-D scene defined for the `gr3` interface.
+    + `options[:radians] = 0` to transform angular values to degrees in polar axes.
 """
 struct Axes
     kind::Symbol
@@ -101,6 +102,9 @@ function Axes(kind, geoms::Array{<:Geometry}; grid=1, kwargs...)
     elseif kind == :polar
         tickdata = set_ticks(ranges, 2, (:x, :y); kwargs..., xlog=false, ylog=false, xflip=false, yflip=false)
         options[:grid] = Int(grid)
+        if !get(kwargs, :radians, true)
+            options[:radians] = 0
+        end
     elseif kind == :camera # Not defined
         tickdata = Dict{Symbol, AxisTickData}()
     end
@@ -383,10 +387,10 @@ function draw_polaraxes(ax)
     _, charheight = _tickcharheight()
     GR.setcharheight(charheight)
     GR.setlinetype(GR.LINETYPE_SOLID)
-    rmin, rmax = ax.ranges[:y]
-    tick = 0.5 * GR.tick(rmin, rmax)
+    rmax = maximum(abs.(ax.ranges[:y]))
+    tick = 0.5 * GR.tick(0.0, rmax)
     # Draw the arcs and radii
-    n = round(Int, (rmax - rmin) / tick + 0.5)
+    n = round(Int, rmax / tick + 0.5)
     for i in 0:n
         r = float(i) / n
         if i % 2 == 0
@@ -396,21 +400,26 @@ function draw_polaraxes(ax)
             end
             GR.settextalign(GR.TEXT_HALIGN_LEFT, GR.TEXT_VALIGN_HALF)
             x, y = GR.wctondc(0.05, r)
-            rounded = round(rmin + i * tick, sigdigits = 12, base = 10)
+            rounded = round(i * tick, sigdigits = 12, base = 10)
             GR.text(x, y, string(rounded))
         else
             GR.setlinecolorind(90)
             GR.drawarc(-r, r, -r, r, 0, 359)
         end
     end
-    for alpha in 0:45:315
-        a = alpha + 90
-        sinf = sin(a * π / 180)
-        cosf = cos(a * π / 180)
-        GR.polyline([sinf, 0], [cosf, 0])
+    if get(ax.options, :radians, 1) == 0
+        labels = (("$θ^o" for θ in 0:45:315)...,)
+    else
+        labels = ("0", "\\pi/4", "\\pi/2", "(3/4)\\pi",
+            "\\pi", "(5/4)\\pi", "(3/2)\\pi", "(7/4)\\pi")
+    end
+    for i = 0:7
+        sinf = sin(i * 0.25π)
+        cosf = cos(i * 0.25π)
+        GR.polyline([cosf, 0], [sinf, 0])
         GR.settextalign(GR.TEXT_HALIGN_CENTER, GR.TEXT_VALIGN_HALF)
-        x, y = GR.wctondc(1.1 * sinf, 1.1 * cosf)
-        GR.textext(x, y, string(alpha, "^o"))
+        x, y = GR.wctondc(1.1 * cosf, 1.1 * sinf)
+        GR.textext(x, y, labels[i + 1])
     end
     GR.restorestate()
     return nothing
