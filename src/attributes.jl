@@ -1,5 +1,14 @@
+const LEGEND_LOCATIONS_STR = ["upper right", "upper left", "lower left", "lower right",
+    "right", "center left", "center right", "lower center", "upper center", "center",
+    "outer upper right", "outer center right", "outer lower right"]
+
 # Legend
 function legend!(p::PlotObject, args...; location=1, kwargs...)
+    if isa(location, AbstractString)
+        coincidences = indexin([location], LEGEND_LOCATIONS_STR)
+        isa(coincidences[1], Nothing) && return 0
+        location = coincidences[1]
+    end
     # Reset main viewport if there was a legend
     if haskey(p.attributes, :location) && p.attributes[:location] ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] += p.legend.size[1]
