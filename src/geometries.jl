@@ -153,21 +153,34 @@ draw(g::Geometry, ::Any) = nothing # for unknown kinds
 
 function draw(g::Geometry, ::Val{:line})::Nothing
     mask = GR.uselinespec(g.spec)
-    hasline(mask) && GR.polyline(g.x, g.y)
-    hasmarker(mask) && GR.polymarker(g.x, g.y)
+    if hasline(mask)
+        GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+        GR.polyline(g.x, g.y)
+    end
+    if hasmarker(mask)
+        GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
+        GR.polymarker(g.x, g.y)
+    end
     return nothing
 end
 
 function draw(g::Geometry, ::Val{:line3d})::Nothing
     mask = GR.uselinespec(g.spec)
-    hasline(mask) && GR.polyline3d(g.x, g.y, g.z)
-    hasmarker(mask) && GR.polymarker3d(g.x, g.y, g.z)
+    if hasline(mask)
+        GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+        GR.polyline3d(g.x, g.y, g.z)
+    end
+    if hasmarker(mask)
+        GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
+        GR.polymarker3d(g.x, g.y, g.z)
+    end
     return nothing
 end
 
 function draw(g::Geometry, ::Val{:stair})::Nothing
     mask = GR.uselinespec(g.spec)
     if hasline(mask)
+        GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         n = length(g.x)
         if g.attributes[:stair_position] < 0 # pre
             xs = zeros(2n - 1)
@@ -207,15 +220,19 @@ function draw(g::Geometry, ::Val{:stair})::Nothing
         end
         GR.polyline(xs, ys)
     end
-    hasmarker(mask) && GR.polymarker(g.x, g.y)
+    if hasmarker(mask)
+        GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
+        GR.polymarker(g.x, g.y)
+    end
     return nothing
 end
 
 function draw(g::Geometry, ::Val{:stem})::Nothing
     baseline = Float64(get(g.attributes, :baseline, 0.0))
-    GR.setlinecolorind(1)
+    GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
     GR.polyline([minimum(g.x), maximum(g.x)], [baseline, baseline])
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
+    GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
     GR.uselinespec(g.spec)
     for i = 1:length(g.y)
         GR.polyline([g.x[i], g.x[i]], [baseline, g.y[i]])
@@ -237,6 +254,7 @@ end
 
 function draw(g::Geometry, ::Val{:scatter})::Nothing
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
+    GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
     if !isempty(g.z) || !isempty(g.c)
         if !isempty(g.c)
             # cmin, cmax = plt.kvs[:crange]
@@ -257,6 +275,7 @@ end
 
 function draw(g::Geometry, ::Val{:scatter3})::Nothing
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
+    GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
     if !isempty(g.c)
         cmin, cmax = extrema(g.c)
         cnorm = map(x -> normalize_color(x, cmin, cmax), g.c)
@@ -289,8 +308,14 @@ function draw(g::Geometry, ::Val{:polarline})::Nothing
     n = length(ρ)
     x = ρ .* cos.(g.x)
     y = ρ .* sin.(g.x)
-    hasline(mask) && GR.polyline(x, y)
-    hasmarker(mask) && GR.polymarker(x, y)
+    if hasline(mask)
+        GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+        GR.polyline(x, y)
+    end
+    if hasmarker(mask)
+        GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
+        GR.polymarker(x, y)
+    end
     return nothing
 end
 
