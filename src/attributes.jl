@@ -1,14 +1,10 @@
-const LEGEND_LOCATIONS_STR = ["upper right", "upper left", "lower left", "lower right",
+const LOCATIONS = ["upper right", "upper left", "lower left", "lower right",
     "right", "center left", "center right", "lower center", "upper center", "center",
     "outer upper right", "outer center right", "outer lower right"]
 
 # Legend
 function legend!(p::PlotObject, args...; location=1, kwargs...)
-    if isa(location, AbstractString)
-        coincidences = indexin([location], LEGEND_LOCATIONS_STR)
-        isa(coincidences[1], Nothing) && return 0
-        location = coincidences[1]
-    end
+    location = _index(location, LOCATIONS, 1, 0)
     # Reset main viewport if there was a legend
     if haskey(p.attributes, :location) && p.attributes[:location] ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] += p.legend.size[1]
@@ -34,10 +30,29 @@ Set the legend of the plot, using a series of `labels` (strings).
 
 In addition to the legend strings, the keyword argument
 `location` can be used to define the location of the legend with
-respect to the plot axes (as a number, following the convention of
-[Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html)),
-and the keyword argument `maxrows` to distribute the legend labels in a grid with a
-maximum number of rows.
+respect to the plot axes and the keyword argument `maxrows`
+to distribute the legend labels in a grid with a maximum number of rows.
+
+Locations are defined as a number or a string, as indicated
+in the following table --- based on the convention of
+[Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html):
+
+|⁣#  | String                |
+|--:|:----------------------|
+|  0| `"none"`              |
+|  1| `"upper right"`       |
+|  2| `"upper left"`        |
+|  3| `"lower left"`        |
+|  4| `"lower right"`       |
+|  5| `"right"`             |
+|  6| `"center left"`       |
+|  7| `"center right"`      |
+|  8| `"lower center"`      |
+|  9| `"upper center"`      |
+| 10| `"center"`            |
+| 11| `"outer upper right"` |
+| 12| `"outer center right"`|
+| 13| `"outer lower right"` |
 
 The labels are assigned to the geometries contained in the plot,
 in the same order as they were created. Only geometries with non-empty labels

@@ -1,5 +1,5 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :label, :linewidth, :markersize, :spec, :stair_position, :xform]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :label, :linewidth, :markersize, :shadelines, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
@@ -890,28 +890,52 @@ $(_example("isosurface"))
 ```
 """)
 
-@plotfunction(shade, geom = :shade, axes = :axes2d, kwargs = (tickdir=-1,), docstring="""
+const XFORMS = ["boolean", "linear", "log", "loglog", "cubic", "equalized"]
+
+function _setargs_shade(f, x, y; kwargs...)
+    # Determine type of footprint
+    default_footprint = hasnan(x) || hasnan(y) ? "lines" : "points"
+    footprint = get(kwargs, :footprint, default_footprint)
+    if footprint == "lines"
+        kwargs = (; shadelines = 1.0, kwargs...)
+    elseif footprint == "points"
+        kwargs = (; shadelines = 0.0, kwargs...)
+    else
+        throw(ArgumentError("""`footprint` must be either `"lines"` or `"points"`"""))
+    end
+    # Transformation
+    if haskey(kwargs, :xform)
+        xf = _index(kwargs[:xform], XFORMS, 0)
+        kwargs = (; kwargs..., xform=float(xf))
+    end
+    return ((x, y), kwargs)
+end
+
+@plotfunction(shade, geom = :shade, axes = :axes2d, kwargs = (tickdir=-1,),
+setargs = _setargs_shade, docstring="""
     shade(x, y; kwargs...)
 
 Draw a point- or line-based heatmap.
 
-The current colormap is used to display a series of points or polylines.
-For line data, `NaN` values can be used as separator.
+The current colormap is used to display the footprint left by the pairs of
+`x`, `y` values. If the data contain `NaN` or `missing`, the footprints
+will be based on lines separated by those values. Otherwise the footprints
+will be based on points. The type of footprint can be enforced regardless
+of the input by the keyword argument `footprint = "lines"` or
+`footprint = "points"`.
 
-Points and lines leave a footprint on the plane that is represented by colors.
 The value of that footprint is determined by a transformation that can be
-adjusted by the keyword argument `xform`.
+adjusted by the keyword argument `xform` --- a number or a string from the
+following table:
 
-The available transformation types are:
-
-|⁣                  |   |                   |
-|------------------|:-:|-------------------|
-|   `XFORM_BOOLEAN`| 0 |boolean            |
-|    `XFORM_LINEAR`| 1 |linear             |
-|       `XFORM_LOG`| 2 |logarithmic        |
-|    `XFORM_LOGLOG`| 3 |double logarithmic |
-|     `XFORM_CUBIC`| 4 |cubic              |
-| `XFORM_EQUALIZED`| 5 |histogram equalized|
+| # |String       |description                  |
+|:-:|-------------|-----------------------------|
+| 0 |`"boolean"`  |boolean                      |
+| 1 |`"linear"`   |linear                       |
+| 2 |`"log"`      |logarithmic                  |
+| 3 |`"loglog"`   |double logarithmic           |
+| 4 |`"cubic"`    |cubic                        |
+| 5 |`"equalized"`|histogram equalized (default)|
 
 # Examples
 
@@ -920,8 +944,15 @@ $(_example("shade"))
 ```
 """)
 
+const ALGORITHMS = ["emission", "absorption", "mip"]
+
 function _setargs_volume(f, v::Array{T, 3}; kwargs...) where {T}
     (nx, ny, nz) = size(v)
+    # Algorithm
+    if haskey(kwargs, :algorithm)
+        alg = _index(kwargs[:algorithm], ALGORITHMS, 0)
+        kwargs = (; kwargs..., algorithm=float(alg))
+    end
     (([nx], [ny], [nz], vec(v)), kwargs)
 end
 
@@ -936,13 +967,14 @@ an emission or absorption model, or by a maximum intensity projection.
 After the projection the current colormap is applied to the result.
 
 The method to reduce volume data can be defined by the keyword argument
-`algorithm`, which can be one of the following:
+`algorithm` --- a number or a string from the
+following table:
 
-|⁣                      |   |                             |
-|----------------------|:-:|-----------------------------|
-|`GR_VOLUME_EMISSION`  |  0|emission model               |
-|`GR_VOLUME_ABSORPTION`|  1|absorption model             |
-|`GR_VOLUME_MIP`       |  2|maximum intensity projection |
+| # |String        |description                 |
+|:-:|--------------|----------------------------|
+| 0 |`"emission"`  |emission model (default)    |
+| 1 |`"absorption"`|absorption model            |
+| 2 |`"mip"`       |maximum intensity projection|
 
 # Examples
 
