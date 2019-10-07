@@ -2,4 +2,4 @@
 x = [randn(10000); NaN; randn(10000) .+ 5 ]
 y = [randn(10000); NaN; randn(10000) .+ 5]
 # Draw shade
-shade(x, y, xform=3)
+shade(x, y, xform="loglog")

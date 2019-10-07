@@ -1,5 +1,10 @@
+const LOCATIONS = ["upper right", "upper left", "lower left", "lower right",
+    "right", "center left", "center right", "lower center", "upper center", "center",
+    "outer upper right", "outer center right", "outer lower right"]
+
 # Legend
 function legend!(p::PlotObject, args...; location=1, kwargs...)
+    location = _index(location, LOCATIONS, 1, 0)
     # Reset main viewport if there was a legend
     if haskey(p.attributes, :location) && p.attributes[:location] ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] += p.legend.size[1]
@@ -25,14 +30,33 @@ Set the legend of the plot, using a series of `labels` (strings).
 
 In addition to the legend strings, the keyword argument
 `location` can be used to define the location of the legend with
-respect to the plot axes (as a number, following the convention of
-[Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html)),
-and the keyword argument `maxrows` to distribute the legend labels in a grid with a
-maximum number of rows.
+respect to the plot axes and the keyword argument `maxrows`
+to distribute the legend labels in a grid with a maximum number of rows.
+
+Locations are defined as a number or a string, as indicated
+in the following table --- based on the convention of
+[Matplotlib legends](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.legend.html):
+
+|⁣#  | String                |
+|--:|:----------------------|
+|  0| `"none"`              |
+|  1| `"upper right"`       |
+|  2| `"upper left"`        |
+|  3| `"lower left"`        |
+|  4| `"lower right"`       |
+|  5| `"right"`             |
+|  6| `"center left"`       |
+|  7| `"center right"`      |
+|  8| `"lower center"`      |
+|  9| `"upper center"`      |
+| 10| `"center"`            |
+| 11| `"outer upper right"` |
+| 12| `"outer center right"`|
+| 13| `"outer lower right"` |
 
 The labels are assigned to the geometries contained in the plot,
 in the same order as they were created. Only geometries with non-empty labels
-and an available guide for legends.
+and an available guide for legends will be presented in the legend.
 
 # Examples
 
@@ -59,6 +83,9 @@ Set the hold flag for combining multiple plots.
 
 `hold(true)` prevents clearing previous plots, so that next plots
 will be drawn on top of the previous one until `hold(false)` is called.
+
+Use the keyword argument `hold=<true/false>` in plotting functions, to
+set the hold flag during the creation of plots.
 """
 hold(state) = hold!(currentplot(gcf()), state)
 
@@ -78,6 +105,9 @@ title!(f::Figure, s) = title!(currentplot(f), s)
     title(s)
 
 Set the plot title as the string `s`.
+
+Use the keyword argument `title=s` in plotting functions, to
+set the title during the creation of plots.
 
 # Examples
 
@@ -101,6 +131,9 @@ const AXISLABEL_DOC = """
 
 Set the X, Y or Z axis labels as the string `s`.
 
+Use the keyword argument `xlab=s`, etc. in plotting functions, to
+set the axis labels during the creation of plots.
+
 # Examples
 
 ```julia
@@ -118,6 +151,10 @@ const TICKS_DOC = """
 
 Set the `minor`intervals of the ticks for the X, Y or Z axis,
 and (optionally) the number of minor ticks between `major` ticks.
+
+Use the keyword argument `xticks=(minor, major)`, etc. in plotting functions, to
+set the tick intervals during the creation of plots (both the minor and major
+values are required in this case).
 
 # Examples
 
@@ -149,6 +186,10 @@ default behavior.
 Additionally to the limits, the flag `adjust` can be used to
 tell whether or not the limits have to be adjusted.
 
+Use the keyword argument `xlim=(inf, sup)`, etc. in plotting functions, to
+set the axis limits during the creation of plots (`nothing` values are not
+allowed in this case).
+
 # Examples
 
 ```julia
@@ -170,6 +211,9 @@ const AXISLOG_DOC = """
 
 Set the X-, Y- or Z-axis to be drawn in logarithmic scale.
 
+Use the keyword argument `xlog=<true/false>`, etc. in plotting functions, to
+set the logarithmic axes during the creation of plots.
+
 # Examples
 
 ```julia
@@ -186,6 +230,9 @@ const AXISFLIP_DOC = """
     zflip(flag::Bool)
 
 Reverse the direction of the X-, Y- or Z-axis.
+
+Use the keyword argument `xflip=<true/false>`, etc. in plotting functions, to
+set reversed axes during the creation of plots.
 
 # Examples
 
@@ -300,6 +347,9 @@ with one argument (the numeric value of the tick position) that
 returns a string, or by an array of strings that are located
 sequentially at X = 1, 2, etc.
 
+Use the keyword argument `xticklabels=s`, etc. in plotting functions, to
+set the axis tick labels during the creation of plots.
+
 # Examples
 
 ```julia
@@ -337,6 +387,9 @@ grid!(f::Figure, flag) = grid!(currentplot(f), flag)
     grid(flag::Bool)
 
 Draw or disable the grid of the current plot axes.
+
+Use the keyword argument `grid=<true/false>`, etc. in plotting functions, to
+set the grid during the creation of plots.
 """
 function grid(flag)
     f = gcf()
@@ -352,7 +405,13 @@ colorbar!(f::Figure, flag) = colorbar!(currentplot(f), flag)
 """
     colorbar(flag::Bool)
 
-Draw or disable the color bar in the current plot if available
+Draw or disable the color bar in the current plot if available.
+
+Color bars are only presented when there is actual color data in the plot,
+regardless of the usage of this function.
+
+Use the keyword argument `colorbar=<true/false>`, etc. in plotting functions, to
+enable or disable the color bar during the creation of plots.
 """
 function colorbar(flag)
     f = gcf()
@@ -373,6 +432,9 @@ aspectratio!(f::Figure, r) = aspectratio!(currentplot(f), r)
     aspectratio(r)
 
 Set the aspect of the current plot to a given width : height ratio.
+
+Use the keyword argument `aspectratio=r`, etc. in plotting functions, to
+set the aspect ratio during the creation of plots.
 
 # Examples
 
@@ -408,6 +470,9 @@ and `radians(false)` to represent them in degrees.
 
 This operation only modifies the guides of the polar plot grid lines.
 The existing geometries are left without changes
+
+Use the keyword argument `radians=<true/false>`, etc. in plotting functions, to
+set the scale of angles during the creation of polar plots.
 
 # Example
 
