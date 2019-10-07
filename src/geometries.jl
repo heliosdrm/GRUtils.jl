@@ -91,12 +91,6 @@ geometry whose X coordinates are the vector `x`, and whose Y coordinates are the
 
 In addition, the last coordinate can be given as a "broadcastable" function that
 takes the previous coordinates as inputs.
-
----
-
-    geometries(p::PlotObject)
-
-Return the vector of geometries contained in `p`.
 """
 geometries(kind, x::AbstractVecOrMat{<:Complex}, args...; kwargs...) =
     geometries(kind, real.(x), imag.(x), args...; kwargs...)
@@ -141,8 +135,6 @@ end
 function geometries(kind, y::AbstractVecOrMat; kwargs...)
     [Geometry(kind; x=1:size(y,1), y=column(y,i), kwargs...) for i = 1:size(y,2)]
 end
-
-geometries(p::PlotObject) = p.geoms
 
 ####################
 ## `draw` methods ##
