@@ -934,7 +934,7 @@ adjusted by the keyword argument `xform` --- a number or a string from the
 following table:
 
 | # |String       |description                  |
-|:-:|-------------|-----------------------------|
+|:-:|:------------|:----------------------------|
 | 0 |`"boolean"`  |boolean                      |
 | 1 |`"linear"`   |linear                       |
 | 2 |`"log"`      |logarithmic                  |
@@ -976,7 +976,7 @@ The method to reduce volume data can be defined by the keyword argument
 following table:
 
 | # |String        |description                 |
-|:-:|--------------|----------------------------|
+|:-:|:-------------|:---------------------------|
 | 0 |`"emission"`  |emission model (default)    |
 | 1 |`"absorption"`|absorption model            |
 | 2 |`"mip"`       |maximum intensity projection|
