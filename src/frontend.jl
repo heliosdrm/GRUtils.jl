@@ -120,8 +120,13 @@ their format strings), passed sequentially as arguments of `plot`.
 Alternatively, if various lines have the same X coordinates, their Y values can
 be grouped as columns in a matrix.
 
-If no `specs` are given, the series will be plotted as solid lines with a
+If no `spec` is given, the series will be plotted as solid lines with a
 predefined sequence of colors.
+
+Additionall specifications of lines and markers can be defined by keyword arguments:
+
+* `linewidth`: line width scale factor.
+* `markersize`: marker size scale factor.
 
 This function can receive a single numeric vector or matrix, which will be
 interpreted as the Y coordinates; in such case the X coordinates will be a
