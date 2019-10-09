@@ -25,9 +25,10 @@ Viewport(::Any, ::Bool)
 
 ```@docs
 Geometry(::Symbol)
+Geometry(::Geometry)
 ```
 
-There is also a function `geometries` to create vectors of `Geometry` objects from the input data easily, taking advantage of multiple dispatch:
+There is also a function `geometries` to create vectors of `Geometry` objects from the input data easily, or to fetch them from an already existing plot, taking advantage of multiple dispatch:
 
 ```@docs
 geometries

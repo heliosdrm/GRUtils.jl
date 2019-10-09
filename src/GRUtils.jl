@@ -74,9 +74,11 @@ const CURRENTFIGURE = Ref(EMPTYFIGURE)
 
 """
     gcf()
+    gcf(fig::Figure)
 
-Get the global current figure.
+Get the global current figure, or set it to be `fig`.
 """
 gcf() = (CURRENTFIGURE[] == EMPTYFIGURE) ? Figure() : CURRENTFIGURE[]
+gcf(fig::Figure) = (CURRENTFIGURE[] = fig)
 
 end # module

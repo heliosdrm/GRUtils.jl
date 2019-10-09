@@ -154,6 +154,13 @@ function plotmargins(legend, colorbar; kwargs...)
     [0.0, rightmargin, 0.0, 0.0]
 end
 
+# Method to fetch geometries from PlotOjbects
+"""
+    geometries(p::PlotObject)
+
+Return the vector of geometries contained in `p`.
+"""
+geometries(p::PlotObject) = p.geoms
 
 ####################
 ## `draw` methods ##

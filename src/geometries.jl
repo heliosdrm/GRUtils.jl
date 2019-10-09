@@ -54,6 +54,12 @@ Geometry(kind::Symbol;
     kwargs...) where K =
     Geometry(kind, x, y, z, c, spec, label, Dict{Symbol,Float64}(kwargs...))
 
+"""
+    Geometry(g::Geometry; kwargs...)
+
+Return a copy of `g` replacing the data and attributes given as
+keyword arguments.
+"""
 function Geometry(g::Geometry; kwargs...)
     kwargs = (; g.attributes..., kwargs...)
     Geometry(g.kind; x=g.x, y=g.y, z=g.z, c=g.c, spec=g.spec, label=g.label, kwargs...)
