@@ -181,7 +181,17 @@ $(_example("stair"))
 ```
 """)
 
-@plotfunction(stem, geom = :stem, axes = :axes2d, setargs=_setargs_line, docstring="""
+function _setargs_stem(f, args...; baseline=0.0, kwargs...)
+    args, kwargs = _setargs_line(f, args...; kwargs...)
+    x = collect(args[1])
+    y = collect(args[2])
+    args = args[3:end]
+    prepend!(x, [minimum(x), maximum(x)])
+    prepend!(y, float.([baseline, baseline]))
+    return ((x, y, args...), kwargs)
+end
+
+@plotfunction(stem, geom = :stem, axes = :axes2d, setargs=_setargs_stem, docstring="""
     stem(x[, y, spec; kwargs...])
     stem(x1, y1, x2, y2...; kwargs...)
     stem(x1, y1, spec1...; kwargs...)
