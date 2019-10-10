@@ -9,7 +9,7 @@ open("./src/api/plotting.md", "w") do file begin
         for data in (
             ("Line plots", ("plot", "oplot", "stair", "plot3", "polar")),
             ("Scatter plots", ("scatter", "scatter3")),
-            ("Stem plots", ("stem",)),
+            ("Stem plots", ("stem", "errorbar")),
             ("Bar plots", ("barplot",)),
             ("Histograms", ("histogram", "polarhistogram", "hexbin")),
             ("Contour plots", ("contour", "contourf", "tricont")),

@@ -246,6 +246,32 @@ function draw(g::Geometry, ::Val{:stem})::Nothing
     end
 end
 
+function draw(g::Geometry, ::Val{:errorbar})::Nothing
+    horizontal = get(g.attributes, :horizontal, 0.0) == 1.0
+    mask = GR.uselinespec(g.spec)
+    if hasline(mask)
+        GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+        if horizontal
+            for i = 2:3:length(g.x)
+                GR.polyline([g.x[i-1], g.x[i+1]], [g.y[i], g.y[i]]) # main bar
+                GR.polyline([g.x[i-1], g.x[i-1]], [g.y[i-1], g.y[i+1]]) # low bar
+                GR.polyline([g.x[i+1], g.x[i+1]], [g.y[i-1], g.y[i+1]]) # high bar
+            end
+        else
+            for i = 2:3:length(g.x)
+                GR.polyline([g.x[i], g.x[i]], [g.y[i-1], g.y[i+1]]) # main bar
+                GR.polyline([g.x[i-1], g.x[i+1]], [g.y[i-1], g.y[i-1]]) # low bar
+                GR.polyline([g.x[i-1], g.x[i+1]], [g.y[i+1], g.y[i+1]]) # high bar
+            end
+        end
+    end
+    if hasmarker(mask)
+        GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
+        GR.polymarker(g.x[2:3:end], g.y[2:3:end])
+    end
+    return nothing
+end
+
 """
     normalize_color(c, cmin, cmax)
 

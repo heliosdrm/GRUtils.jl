@@ -4,7 +4,7 @@ import GR
 
 export Figure, gcf, subplot, currentplot, draw, savefig,
     plot, plot3, polar, scatter, scatter3, stair, stem, oplot,
-    barplot, histogram, polarhistogram,
+    errorbar, barplot, histogram, polarhistogram,
     contour, contourf, shade, surface, tricont, trisurf, volume, wireframe,
     heatmap, polarheatmap, hexbin, imshow, isosurface,
     aspectratio, colorbar, grid, hold, legend, radians,
@@ -14,7 +14,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig,
     zflip, zlabel, zlim, zlog, zticks,
 
     subplot!, plot!, plot3!, polar!, scatter!, scatter3!, stair!, stem!, oplot!,
-    barplot!, histogram!, polarhistogram!,
+    errorbar!, barplot!, histogram!, polarhistogram!,
     contour!, contourf!, shade!, surface!, tricont!, trisurf!, volume!, wireframe!,
     heatmap!, polarheatmap!, hexbin!, imshow!, isosurface!,
     aspectratio!, colorbar!, grid!, hold!, legend!, title!,
