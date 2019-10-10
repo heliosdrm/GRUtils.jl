@@ -234,14 +234,14 @@ function draw(g::Geometry, ::Val{:stair})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:stem})::Nothing
-    baseline = Float64(get(g.attributes, :baseline, 0.0))
     GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
-    GR.polyline([minimum(g.x), maximum(g.x)], [baseline, baseline])
+    # Baseline
+    GR.polyline(g.x[1:2], g.y[1:2])
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
     GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
     GR.uselinespec(g.spec)
-    for i = 1:length(g.y)
-        GR.polyline([g.x[i], g.x[i]], [baseline, g.y[i]])
+    for i = 3:length(g.y)
+        GR.polyline([g.x[i], g.x[i]], [g.y[1], g.y[i]])
         GR.polymarker([g.x[i]], [g.y[i]])
     end
 end
