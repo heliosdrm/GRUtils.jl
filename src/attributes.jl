@@ -398,14 +398,24 @@ function grid(flag)
 end
 
 # Colorbar
-colorbar!(p::PlotObject, flag) = (p.attributes[:colorbar] = flag)
+colorbar!(p::PlotObject, flag::Bool) = (p.attributes[:colorbar] = flag)
+
+function colorbar!(p::PlotObject, levels::Integer)
+    p.colorbar = Colorbar(p.axes, levels)
+    colorbar!(p, true)
+end
 
 colorbar!(f::Figure, flag) = colorbar!(currentplot(f), flag)
 
 """
     colorbar(flag::Bool)
+    colorbar(levels::Integer)
 
-Draw or disable the color bar in the current plot if available.
+Set the color bar of the current plot.
+
+The input argument can be a `Bool` (`true` or `false`) to show or hide
+the colorbar -- if it is available, or an `Integer` to set the number
+of levels shown in the color bar (256 levels by default).
 
 Color bars are only presented when there is actual color data in the plot,
 regardless of the usage of this function.

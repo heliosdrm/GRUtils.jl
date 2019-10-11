@@ -73,7 +73,9 @@ function draw(cb::Colorbar, crange=cb.range)
     GR.setwindow(0, 1, zmin, zmax)
     # Draw grade of colors
     l = round.(Int32, range(1000, stop=1255, length=cb.colors))
+    h = 0.5 * (zmax - zmin) / (cb.colors - 1)
     GR.cellarray(0, 1, zmax, zmin, 1, cb.colors, l)
+    GR.cellarray(0, 1, zmax + h, zmin - h, 1, cb.colors, l)
     # Draw ruled box
     GR.setlinecolorind(1)
     GR.setcharheight(charheight)

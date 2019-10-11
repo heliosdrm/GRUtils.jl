@@ -63,6 +63,13 @@ stem
 GRUtils.Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/stem.jl") # hide
 ```
+```@docs
+errorbar
+```
+```@example plot
+GRUtils.Figure(); # hide
+Base.include(GRUtils, "../examples/docstrings/errorbar.jl") # hide
+```
 ## Bar plots
 ```@docs
 barplot
