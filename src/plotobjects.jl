@@ -167,54 +167,6 @@ geometries(p::PlotObject) = p.geoms
 ####################
 
 """
-    RGB(color)
-
-Return the normalized RGB values (float between 0 and 1) for an integer code
-"""
-function RGB(color::Integer)
-    rgb = zeros(3)
-    rgb[1] = float((color >> 16) & 0xff) / 255.0
-    rgb[2] = float((color >> 8)  & 0xff) / 255.0
-    rgb[3] = float( color        & 0xff) / 255.0
-    rgb
-end
-
-"""
-    setcolors(scheme)
-
-Set the values of discrete color series to a given scheme.
-The argument `scheme` must be an integer number between 0 and 4.
-"""
-function setcolors(scheme)
-    scheme == 0 && (return nothing)
-    # Take the column for the given scheme
-    # and replace the default color indices
-    for colorind in 1:8
-        color = COLORS[colorind, scheme]
-        # if colorind == 1
-        #     background = color
-        # end
-        r, g, b = RGB(color)
-        # replace the indices corresponding to "basic colors"
-        GR.setcolorrep(colorind - 1, r, g, b)
-        # replace also the ones for "distinct colors" (unless for the first index)
-        if scheme ≠ 1
-            GR.setcolorrep(DISTINCT_CMAP[colorind], r, g, b)
-        end
-    end
-    # Background RGB values
-    r, g, b = RGB(COLORS[1, scheme])
-    # Difference between foreground and background
-    rdiff, gdiff, bdiff = RGB(COLORS[2, scheme]) - [r, g, b]
-    # replace the 12 "grey" shades
-    for colorind in 1:12
-        f = (colorind - 1) / 11.0
-        GR.setcolorrep(92 - colorind, r + f*rdiff, g + f*gdiff, b + f*bdiff)
-    end
-    return nothing
-end
-
-"""
 Fill the rectangle in given NDC by the given color index
 """
 function fillbackground(rectndc, color)
@@ -234,7 +186,7 @@ function draw(p::PlotObject)
     setcolors(get(p.attributes, :scheme, 0))
     inner = p.viewport.inner
     outer = p.viewport.outer
-    haskey(p.attributes, :backgroundcolor) && fillbackground(outer, cv.options[:backgroundcolor])
+    haskey(p.attributes, :backgroundcolor) && fillbackground(outer, p.attributes[:backgroundcolor])
     # Define the viewport
     GR.setviewport(inner...)
     # Draw components of the plot
