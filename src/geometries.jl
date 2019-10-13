@@ -157,8 +157,26 @@ hasmarker(mask) = ( mask & 0x02 != 0)
 
 draw(g::Geometry, ::Any) = nothing # for unknown kinds
 
+# Extend GR.uselinespec to take into account explicit line or marker colors
+function _uselinespec(spec, attributes)
+    if haskey(attributes, :linecolor) || haskey(attributes, :markercolor)
+        # hack spec to force a color that will be replaced
+        spec = isempty(spec) ? "k-" : "k" * spec
+        mask = GR.uselinespec(spec)
+        if haskey(attributes, :linecolor)
+            GR.setlinecolorind(Int(attributes[:linecolor]))
+        end
+        if haskey(attributes, :markercolor)
+            GR.setmarkercolorind(Int(attributes[:markercolor]))
+        end
+    else
+        mask = GR.uselinespec(spec)
+    end
+    return mask
+end
+
 function draw(g::Geometry, ::Val{:line})::Nothing
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     if hasline(mask)
         GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         GR.polyline(g.x, g.y)
@@ -171,7 +189,7 @@ function draw(g::Geometry, ::Val{:line})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:line3d})::Nothing
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     if hasline(mask)
         GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         GR.polyline3d(g.x, g.y, g.z)
@@ -184,7 +202,7 @@ function draw(g::Geometry, ::Val{:line3d})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:stair})::Nothing
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     if hasline(mask)
         GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         n = length(g.x)
@@ -239,7 +257,7 @@ function draw(g::Geometry, ::Val{:stem})::Nothing
     GR.polyline(g.x[1:2], g.y[1:2])
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
     GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
-    GR.uselinespec(g.spec)
+    _uselinespec(g.spec, g.attributes)
     for i = 3:length(g.y)
         GR.polyline([g.x[i], g.x[i]], [g.y[1], g.y[i]])
         GR.polymarker([g.x[i]], [g.y[i]])
@@ -248,7 +266,7 @@ end
 
 function draw(g::Geometry, ::Val{:errorbar})::Nothing
     horizontal = get(g.attributes, :horizontal, 0.0) == 1.0
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     if hasline(mask)
         GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         if horizontal
@@ -334,7 +352,7 @@ function draw(g::Geometry, ::Val{:bar})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:polarline})::Nothing
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     ymax = maximum(abs.(g.y))
     ρ = g.y ./ ymax
     n = length(ρ)
@@ -409,11 +427,8 @@ end
 function draw(g::Geometry, ::Val{:heatmap})::Nothing
     w = length(g.x)
     h = length(g.y)
-    # cmap = colormap()
     cmin, cmax = extrema(g.c)
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
-    # rgba = [to_rgba(value, cmap) for value ∈ data]
-    # GR.cellarray(0.0, w, h, 0.0, w, h, rgba)
     colors = Int[round(Int, 1000 + _i * 255) for _i ∈ data]
     GR.cellarray(0.0, w, h, 0.0, w, h, colors)
 end
@@ -422,7 +437,6 @@ end
 function draw(g::Geometry, ::Val{:polarheatmap})::Nothing
     w = length(g.x)
     h = length(g.y)
-    # cmap = colormap()
     cmin, cmax = extrema(g.c)
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
     colors = Int[round(Int, 1000 + _i * 255) for _i ∈ data]
