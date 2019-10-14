@@ -170,6 +170,7 @@ geometries(p::PlotObject) = p.geoms
 Fill the rectangle in given NDC by the given color index
 """
 function fillbackground(rectndc, color)
+    color < 0 && return nothing
     GR.savestate()
     GR.selntran(0)
     GR.setfillintstyle(GR.INTSTYLE_SOLID)
@@ -177,16 +178,19 @@ function fillbackground(rectndc, color)
     GR.fillrect(rectndc...)
     GR.selntran(1)
     GR.restorestate()
+    return nothing
 end
 
 function draw(p::PlotObject)
     (p.viewport == EMPTYVIEWPORT) && return nothing
-    # Set color scals and paint background
-    GR.setcolormap(get(p.attributes, :colormap, GR.COLORMAP_VIRIDIS))
-    setcolors(get(p.attributes, :scheme, 0))
     inner = p.viewport.inner
     outer = p.viewport.outer
-    haskey(p.attributes, :backgroundcolor) && fillbackground(outer, p.attributes[:backgroundcolor])
+    # Set color scales and paint background
+    GR.setcolormap(get(p.attributes, :colormap, COLOR_INDICES[:colormap]))
+    scheme = get(p.attributes, :scheme, COLOR_INDICES[:scheme])
+    applycolorscheme(scheme)
+    bgcolor = Int(get(p.attributes, :backgroundcolor, (scheme == 0) ? -1 : 0))
+    fillbackground(outer, bgcolor)
     # Define the viewport
     GR.setviewport(inner...)
     # Draw components of the plot

@@ -7,6 +7,14 @@ const COLORS = hcat(
 
 const DISTINCT_CMAP = [ 0, 1, 984, 987, 989, 983, 994, 988 ]
 
+const COLOR_INDICES = Dict{Symbol, Int}(
+    :scheme => 0,
+    :background => -1,
+    :colormap => GR.COLORMAP_VIRIDIS
+)
+
+# Color codes
+
 """
     rgb(color)
 
@@ -49,11 +57,24 @@ function hexcolor(r, g, b, a=1.0)
 end
 
 """
+    color(r, g, b)
+
+Return the color index of RGB normalized values between 0 and 1
+"""
+color(r, g, b) = GR.inqcolorfromrgb(r, g, b)
+
+
+# Colormaps
+
+"""
     setcolormap(cmap)
 
 Set the current colormap to one of the built-in colormaps
 """
-setcolormap(cmap) = GR.setcolormap(cmap)
+function setcolormap(cmap)
+    GR.setcolormap(cmap)
+    COLOR_INDICES[:colormap] = cmap
+end
 
 """
     colormap(T::DataType=UInt32)
@@ -94,25 +115,25 @@ function to_rgba(value)
     colormap()[round(Int, value * 255 + 1)] + 0xff000000
 end
 
-"""
-    setcolors(scheme)
 
-Set the values of discrete color series to a given scheme.
-The argument `scheme` must be an integer number between 0 and 4.
+# Color schemes
+
 """
-function setcolors(scheme)
-    scheme == 0 && (return nothing)
-    # Take the column for the given scheme
-    # and replace the default color indices
+    applycolorscheme(scheme)
+
+Apply the given color scheme, coded as an integer number between 0 and 4.
+See [`colorscheme`](@ref) for the values of the color schemes.
+"""
+function applycolorscheme(scheme)
+    # Default to transparent background if no scheme is given
+    scheme == 0 && return nothing
+    # Replace the default color indices
     for colorind in 1:8
         color = COLORS[colorind, scheme]
-        # if colorind == 1
-        #     background = color
-        # end
         r, g, b = rgb(color)
-        # replace the indices corresponding to "basic colors"
+        # "basic colors"
         GR.setcolorrep(colorind - 1, r, g, b)
-        # replace also the ones for "distinct colors" (unless for the first index)
+        # "distinct colors" (except for the first scheme)
         if scheme ≠ 1
             GR.setcolorrep(DISTINCT_CMAP[colorind], r, g, b)
         end
@@ -122,9 +143,39 @@ function setcolors(scheme)
     # Difference between foreground and background
     rdiff, gdiff, bdiff = rgb(COLORS[2, scheme]) .- (r, g, b)
     # replace the 12 "grey" shades
-    for colorind in 1:12
-        f = (colorind - 1) / 11.0
-        GR.setcolorrep(92 - colorind, r + f*rdiff, g + f*gdiff, b + f*bdiff)
+    for (colorind, f) in enumerate(LinRange(1, 0, 12))
+        rv = r + f*rdiff
+        gv = g + f*gdiff
+        bv = b + f*bdiff
+        GR.inqcolorfromrgb(rv, gv, bv)
+        GR.setcolorrep(79 + colorind, rv, gv, bv)
     end
     return nothing
+end
+
+"""
+    colorscheme(scheme)
+
+Set the color scheme for subsequent plots.
+
+The value of the scheme can be one of the following numbers or strings:
+
+* 0: `"none"`
+* 1: `"light"`
+* 2: `"dark"`
+* 3: `"solarized light"`
+* 4: `"solarized dark"`
+"""
+function colorscheme(scheme::Int)
+    COLOR_INDICES[:scheme] = scheme
+    COLOR_INDICES[:background] = (scheme == 0) ? -1 : 0
+    applycolorscheme(scheme) # needed if colors() has to be used
+end
+
+function colorscheme(scheme::AbstractString)
+    scheme = replace(scheme, " " => "")
+    scheme = lowercase(scheme)
+    scheme_dict = Dict("none" => 0, "light" => 1, "dark" => 2,
+        "solarizedlight" => 3, "solarizeddark" => 4)
+    colorscheme(scheme_dict[scheme])
 end
