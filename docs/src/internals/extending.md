@@ -51,7 +51,7 @@ draw(g::Geometry, ::Val{:mygeom})
 
 This method should contain the low-level plotting instructions based on the functions of GR to draw the geometries (lines, markers, areas and other elements), using the data contained in `g`. The returned value should be `nothing`, unless the ends of the color scale are not given in the geometry `g`, but calculated by the functions of GR. In such case, this method can return a vector with the minimum and maximum values of the color scale (as `Float64`).
 
-If the new geometry is also meant to have a legend key, the following method of the `guide` function should also be defined:
+If the new geometry is also meant to have a legend key, its kind must be added to the constant `LEGEND_KINDS`, and the following method of the `guide` function should also be defined:
 
 ```julia
 guide(Val{:mygeom}, g, x, y)
