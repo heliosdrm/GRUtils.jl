@@ -202,6 +202,7 @@ function draw(p::PlotObject)
         cl = draw(g)
         append!(colorlimits, cl)
     end
+    resetcolors()
     # Overlay axes if requested
     get(p.attributes, :overlay_axes, false) && draw(p.axes)
     # Legend

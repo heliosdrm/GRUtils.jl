@@ -309,7 +309,6 @@ function draw(g::Geometry, ::Val{:scatter})::Nothing
     GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
     if !isempty(g.z) || !isempty(g.c)
         if !isempty(g.c)
-            # cmin, cmax = plt.kvs[:crange]
             cmin, cmax = extrema(g.c)
             cnorm = map(x -> normalize_color(x, cmin, cmax), g.c)
             cind = Int[round(Int, 1000 + _i * 255) for _i in cnorm]
@@ -343,8 +342,10 @@ function draw(g::Geometry, ::Val{:scatter3})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:bar})::Nothing
+    colorind = get(COLOR_INDICES, :barfill, 0)
+    colorind = COLOR_INDICES[:barfill] = colorind + 1
     for i = 1:2:length(g.x)
-        GR.setfillcolorind(989)
+        GR.setfillcolorind(SERIES_COLORS[colorind])
         GR.setfillintstyle(GR.INTSTYLE_SOLID)
         GR.fillrect(g.x[i], g.x[i+1], g.y[i], g.y[i+1])
         GR.setfillcolorind(1)
@@ -375,8 +376,10 @@ function draw(g::Geometry, ::Val{:polarbar})::Nothing
     ymin, ymax = extrema(g.y)
     ρ = g.y ./ ymax
     θ = g.x
+    colorind = get(COLOR_INDICES, :barfill, 0)
+    colorind = COLOR_INDICES[:barfill] = colorind + 1
     for i = 1:2:length(ρ)
-        GR.setfillcolorind(989)
+        GR.setfillcolorind(SERIES_COLORS[colorind])
         GR.setfillintstyle(GR.INTSTYLE_SOLID)
         GR.fillarea([ρ[i] * cos(θ[i]), ρ[i] * cos(θ[i+1]), ρ[i+1] * cos(θ[i+1]), ρ[i+1] * cos(θ[i])],
                     [ρ[i] * sin(θ[i]), ρ[i] * sin(θ[i+1]), ρ[i+1] * sin(θ[i+1]), ρ[i+1] * sin(θ[i])])

@@ -15,6 +15,15 @@ const COLOR_INDICES = Dict{Symbol, Int}(
     :colormap => GR.COLORMAP_VIRIDIS
 )
 
+function resetcolors()
+    for k in keys(COLOR_INDICES)
+        if k ∉ (:scheme, :background, :colormap)
+            COLOR_INDICES[k] = 0
+        end
+    end
+    return nothing
+end
+
 # Color codes
 
 """
