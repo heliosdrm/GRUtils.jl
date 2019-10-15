@@ -148,11 +148,7 @@ function applycolorscheme(scheme)
     rdiff, gdiff, bdiff = rgb(COLORS[2, scheme]) .- (r, g, b)
     # replace the 12 "grey" shades
     for (colorind, f) in enumerate(LinRange(1, 0, 12))
-        rv = r + f*rdiff
-        gv = g + f*gdiff
-        bv = b + f*bdiff
-        GR.inqcolorfromrgb(rv, gv, bv)
-        GR.setcolorrep(79 + colorind, rv, gv, bv)
+        GR.setcolorrep(79 + colorind, r + f*rdiff, g + f*gdiff, b + f*bdiff)
     end
     return nothing
 end
@@ -173,7 +169,7 @@ The value of the scheme can be one of the following numbers or strings:
 function colorscheme(scheme::Int)
     COLOR_INDICES[:scheme] = scheme
     COLOR_INDICES[:background] = (scheme == 0) ? -1 : 0
-    applycolorscheme(scheme) # needed if colors() has to be used
+    return nothing
 end
 
 function colorscheme(scheme::AbstractString)
