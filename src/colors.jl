@@ -1,11 +1,13 @@
-const COLORS = hcat(
+const COLOR_SCHEMES = hcat(
     [0xffffff, 0x000000, 0xff0000, 0x00ff00, 0x0000ff, 0x00ffff, 0xffff00, 0xff00ff],
     [0x282c34, 0xd7dae0, 0xcb4e42, 0x99c27c, 0x85a9fc, 0x5ab6c1, 0xd09a6a, 0xc57bdb],
     [0xfdf6e3, 0x657b83, 0xdc322f, 0x859900, 0x268bd2, 0x2aa198, 0xb58900, 0xd33682],
     [0x002b36, 0x839496, 0xdc322f, 0x859900, 0x268bd2, 0x2aa198, 0xb58900, 0xd33682]
 )
 
-const DISTINCT_CMAP = [ 0, 1, 984, 987, 989, 983, 994, 988 ]
+const BASIC_COLORS = [ 0, 1, 984, 987, 989, 983, 994, 988 ]
+
+const SERIES_COLORS = [989, 982, 980, 981, 996, 983, 995, 988, 986, 990, 991, 984, 992, 993, 994, 987, 985, 997, 998, 999]
 
 const COLOR_INDICES = Dict{Symbol, Int}(
     :scheme => 0,
@@ -131,21 +133,21 @@ See [`colorscheme`](@ref) for the values of the color schemes.
 function applycolorscheme(scheme)
     # Default to transparent background if no scheme is given
     scheme == 0 && return nothing
-    # Replace the default color indices
+    # Replace the basic color indices
     for colorind in 1:8
-        color = COLORS[colorind, scheme]
+        color = COLOR_SCHEMES[colorind, scheme]
         r, g, b = rgb(color)
-        # "basic colors"
+        # Set 1-8
         GR.setcolorrep(colorind - 1, r, g, b)
-        # "distinct colors" (except for the first scheme)
+        # In set 980-999 (except for the first scheme)
         if scheme ≠ 1
-            GR.setcolorrep(DISTINCT_CMAP[colorind], r, g, b)
+            GR.setcolorrep(BASIC_COLORS[colorind], r, g, b)
         end
     end
     # Background RGB values
-    r, g, b = rgb(COLORS[1, scheme])
+    r, g, b = rgb(COLOR_SCHEMES[1, scheme])
     # Difference between foreground and background
-    rdiff, gdiff, bdiff = rgb(COLORS[2, scheme]) .- (r, g, b)
+    rdiff, gdiff, bdiff = rgb(COLOR_SCHEMES[2, scheme]) .- (r, g, b)
     # replace the 12 "grey" shades
     for (colorind, f) in enumerate(LinRange(1, 0, 12))
         GR.setcolorrep(79 + colorind, r + f*rdiff, g + f*gdiff, b + f*bdiff)
