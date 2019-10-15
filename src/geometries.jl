@@ -164,10 +164,12 @@ function _uselinespec(spec, attributes)
         spec = isempty(spec) ? "k-" : "k" * spec
         mask = GR.uselinespec(spec)
         if haskey(attributes, :linecolor)
-            GR.setlinecolorind(Int(attributes[:linecolor]))
+            colorind = colorindex(Int(attributes[:linecolor]))
+            GR.setlinecolorind(colorind)
         end
         if haskey(attributes, :markercolor)
-            GR.setmarkercolorind(Int(attributes[:markercolor]))
+            colorind = colorindex(Int(attributes[:markercolor]))
+            GR.setmarkercolorind(colorind)
         end
     else
         mask = GR.uselinespec(spec)

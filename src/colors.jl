@@ -1,8 +1,8 @@
 const COLORS = hcat(
-    [0xffffff, 0x000000, 0x0000ff, 0x00ff00, 0xff0000, 0xffff00, 0x00ffff, 0xff00ff],
-    [0x342c28, 0xe0dad7, 0x424ecb, 0x7cc299, 0xfca985, 0xc1b65a, 0x6a9ad0, 0xdb7bc5],
-    [0xe3f6fd, 0x837b65, 0x2f32dc, 0x009985, 0xd28b26, 0x98a12a, 0x0089b5, 0x8236d3],
-    [0x362b00, 0x969483, 0x2f32dc, 0x009985, 0xd28b26, 0x98a12a, 0x0089b5, 0x8236d3]
+    [0xffffff, 0x000000, 0xff0000, 0x00ff00, 0x0000ff, 0x00ffff, 0xffff00, 0xff00ff],
+    [0x282c34, 0xd7dae0, 0xcb4e42, 0x99c27c, 0x85a9fc, 0x5ab6c1, 0xd09a6a, 0xc57bdb],
+    [0xfdf6e3, 0x657b83, 0xdc322f, 0x859900, 0x268bd2, 0x2aa198, 0xb58900, 0xd33682],
+    [0x002b36, 0x839496, 0xdc322f, 0x859900, 0x268bd2, 0x2aa198, 0xb58900, 0xd33682]
 )
 
 const DISTINCT_CMAP = [ 0, 1, 984, 987, 989, 983, 994, 988 ]
@@ -19,50 +19,49 @@ const COLOR_INDICES = Dict{Symbol, Int}(
     rgb(color)
 
 Return the normalized RGB values (between 0 and 1)
-corresponding to a given hexadecimal color value (byte-ordered).
+corresponding to a given hexadecimal color value.
 """
 function rgb(color::Integer)
-    r = float( color        & 0xff) / 255.0
+    r = float((color >> 16) & 0xff) / 255.0
     g = float((color >> 8)  & 0xff) / 255.0
-    b = float((color >> 16) & 0xff) / 255.0
+    b = float( color        & 0xff) / 255.0
     return (r, g, b)
-end
-
-"""
-    rgba(color)
-
-Return the normalized RGBA values (between 0 and 1)
-corresponding to a given hexadecimal color value (byte-ordered).
-"""
-function rgba(color::Integer)
-    r, g, b = rgb(color)
-    a = float((color >> 24) & 0xff) / 255.0
-    return (r, g, b, a)
-end
-
-"""
-    hexcolor(r, g, b, a=1.0)
-
-Return the hexadecimal integer (byte-ordered)
-corresponding to the given RGBA values.
-
-The alpha channel is optional, and defined as 1.0 (opaque) by default.
-"""
-function hexcolor(r, g, b, a=1.0)
-    rint = round(UInt32, r * 255)
-    gint = round(UInt32, g * 255)
-    bint = round(UInt32, b * 255)
-    aint = round(UInt32, a * 255)
-    return aint << 24 + bint << 16 + gint << 8 + rint
 end
 
 """
     color(r, g, b)
 
-Return the color index of RGB normalized values between 0 and 1
+Return the hexadecimal integer corresponding to the given RGB values.
 """
-color(r, g, b) = GR.inqcolorfromrgb(r, g, b)
+function color(r, g, b)
+    rint = round(UInt32, r * 255)
+    gint = round(UInt32, g * 255)
+    bint = round(UInt32, b * 255)
+    return rint << 16 + gint << 8 + bint
+end
 
+"""
+    switchbytes(hexcolor::UInt32)
+
+Switch the R and B channels of hexadecimal colors codes.
+"""
+switchbytes(c::UInt32) = (c & 0xff00ff00) + (c & 0x00ff0000) >> 16 + (c & 0x000000ff) << 16
+
+"""
+    colorindex(hexcolor[, byteorder=false])
+
+Define a color given by an hexadecimal code and return its index in GR's color map.
+
+This is a wrapper to `GR.inqcolorfromrgb` for hexadecimal color codes.
+By default it considers that RGB values are ordered from the most to the least
+significant bytes. If it is a byte-ordered code, set the second argument to `true`.
+"""
+function colorindex(hexcolor, byteorder=false)::Int
+    if byteorder
+        hexcolor = switchbytes(hexcolor)
+    end
+    GR.inqcolorfromrgb(rgb(hexcolor)...)
+end
 
 # Colormaps
 
@@ -79,9 +78,8 @@ end
 """
     colormap(T::DataType=UInt32)
 
-Return a vector with the hexadecimal color values of the current colormap.
-
-By default the vector is
+Return a vector with the byte-ordered hexadecimal color values of the
+current colormap, with integer types defined by `T`.
 """
 colormap(t::Type{T}=UInt32) where {T <: Integer} = [t(GR.inqcolor(i)) for i ∈ 1000:1255]
 
@@ -90,25 +88,31 @@ colormap(t::Type{T}=UInt32) where {T <: Integer} = [t(GR.inqcolor(i)) for i ∈ 
 
 Return a vector with the RGB values of the current colormap.
 """
-rgbcolormap() = rgb.(colormap())
+rgbcolormap() = colormap() .|> switchbytes .|> rgb
 
 
 """
     to_rgba(value[, alpha, cmap])
 
 Calculate the hexadecimal color code of a normalized value between 0 and 1
-in the current colormap.
+in the current colormap (byte-ordered).
 
 Optionally, the level of the `alpha` channel can be passed as a value
 between 0 (transparent) and 1 (opaque), and a custom colormap can be
-defined by `cmap` as a matrix with 256 rows and 3 columns, with the
-corresponding RGB values (as `UInt8` or normalized float values).
+defined by `cmap` with the corresponding RGB values
+(as byte-ordered hexadecimal colors or triplets of normalized float values).
 """
-function to_rgba(value, alpha, cmap=colormap())
+function to_rgba(value, alpha, cmap=colormap()::Vector{<:Integer})
     isnan(value) && return zero(UInt32)
-    color = cmap[round(Int, value * 255 + 1)]
+    color = UInt32(cmap[round(Int, value * 255 + 1)])
     return color + round(UInt32, alpha * 255) << 24
 end
+
+function to_rgba(value, alpha, cmap::Vector{<:Tuple})
+    cmap_int = cmap .|> color .|> switchbytes
+    t_rgba(value, alpha, cmap_int)
+end
+
 
 function to_rgba(value)
     isnan(value) && return zero(UInt32)
