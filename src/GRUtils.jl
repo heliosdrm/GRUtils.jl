@@ -23,7 +23,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig,
     yflip!, ylabel!, ylim!, ylog!, yticks!, xticklabels!,
     zflip!, zlabel!, zlim!, zlog!, zticks!
 
-include("aux.jl")
+include("general.jl")
 include("colors.jl")
 include("geometries.jl")
 include("axes.jl")
