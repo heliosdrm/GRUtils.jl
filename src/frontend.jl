@@ -894,6 +894,7 @@ function _setargs_imshow(f, data; kwargs...)
         w, h, rgbdata = GR.readimage(data)
     else
         h, w = size(data)
+        GR.setcolormap(get(kwargs, :colormap, COLOR_INDICES[:colormap]))
         rgbdata = [to_rgba(value) for value ∈ transpose(data)]
     end
     if get(kwargs, :xflip, false)
