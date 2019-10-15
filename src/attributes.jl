@@ -1,10 +1,12 @@
-const LOCATIONS = ["upper right", "upper left", "lower left", "lower right",
+const LOCATIONS = Dict( k => i-1 for (i, k) in enumerate((
+    "none", "upper right", "upper left", "lower left", "lower right",
     "right", "center left", "center right", "lower center", "upper center", "center",
-    "outer upper right", "outer center right", "outer lower right"]
+    "outer upper right", "outer center right", "outer lower right"
+)))
 
 # Legend
 function legend!(p::PlotObject, args...; location=1, kwargs...)
-    location = _index(location, LOCATIONS, 1, 0)
+    location = lookup(location, LOCATIONS)
     # Reset main viewport if there was a legend
     if haskey(p.attributes, :location) && p.attributes[:location] ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] += p.legend.size[1]

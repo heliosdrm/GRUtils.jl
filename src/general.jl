@@ -11,13 +11,8 @@ function hasnan(a)
     return false
 end
 
-_index(item::Real, args...) = Int(item)
-
-function _index(item, collection, base=1, default=nothing)::Union{Int, Nothing}
-    ix = indexin([item], collection)[1]
-    ix isa Nothing && return default
-    return ix - 1 + base
-end
+lookup(item::Real, dict) = Int(item)
+lookup(item::T, dict::Dict{T,V}) where {T} where V = dict[item]
 
 # Fetch example from filename and return it as String
 _example(name) = read(joinpath(dirname(@__FILE__), "../examples/docstrings", "$name.jl"), String)

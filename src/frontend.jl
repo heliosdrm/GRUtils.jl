@@ -953,7 +953,10 @@ $(_example("isosurface"))
 ```
 """)
 
-const XFORMS = ["boolean", "linear", "log", "loglog", "cubic", "equalized"]
+const XFORMS = Dict(
+    "boolean"=>0, "linear"=>1, "log"=>2,
+    "loglog"=>3, "cubic"=>4, "equalized"=>5
+)
 
 function _setargs_shade(f, x, y; kwargs...)
     # Determine type of footprint
@@ -968,7 +971,7 @@ function _setargs_shade(f, x, y; kwargs...)
     end
     # Transformation
     if haskey(kwargs, :xform)
-        xf = _index(kwargs[:xform], XFORMS, 0)
+        xf = lookup(kwargs[:xform], XFORMS)
         kwargs = (; kwargs..., xform=float(xf))
     end
     return ((x, y), kwargs)
@@ -1007,13 +1010,13 @@ $(_example("shade"))
 ```
 """)
 
-const ALGORITHMS = ["emission", "absorption", "mip"]
+const ALGORITHMS = Dict("emission"=>0, "absorption"=>1, "mip"=>2)
 
 function _setargs_volume(f, v::Array{T, 3}; kwargs...) where {T}
     (nx, ny, nz) = size(v)
     # Algorithm
     if haskey(kwargs, :algorithm)
-        alg = _index(kwargs[:algorithm], ALGORITHMS, 0)
+        alg = lookup(kwargs[:algorithm], ALGORITHMS)
         kwargs = (; kwargs..., algorithm=float(alg))
     end
     (([nx], [ny], [nz], vec(v)), kwargs)

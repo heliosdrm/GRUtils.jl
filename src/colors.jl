@@ -31,6 +31,13 @@ end
 
 Return the normalized RGB values (between 0 and 1)
 corresponding to a given hexadecimal color value.
+
+# Examples
+
+```jldoctest
+julia> GRUtils.rgb(0xff3300)
+(1.0, 0.2, 0.0)
+```
 """
 function rgb(color::Integer)
     r = float((color >> 16) & 0xff) / 255.0
@@ -43,6 +50,13 @@ end
     color(r, g, b)
 
 Return the hexadecimal integer corresponding to the given RGB values.
+
+# Examples
+
+```jldoctest
+julia> GRUtils.color(1, 0.2, 0)
+0x00ff3300
+```
 """
 function color(r, g, b)
     rint = round(UInt32, r * 255)
@@ -55,6 +69,16 @@ end
     switchbytes(hexcolor::UInt32)
 
 Switch the R and B channels of hexadecimal colors codes.
+
+Use this function to turn a byte-ordered hexadecimal color code (ARGB, little-endian)
+into a word-ordered color code (RGBA, big endian) and vice versa.
+
+# Examples
+
+```jldoctest
+julia> GRUtils.switchbytes(0xfe12ac34)
+0xfe34ac12
+```
 """
 switchbytes(c::UInt32) = (c & 0xff00ff00) + (c & 0x00ff0000) >> 16 + (c & 0x000000ff) << 16
 
@@ -76,14 +100,34 @@ end
 
 # Colormaps
 
+const COLORMAPS = Dict( k => i-1 for (i, k) in enumerate((
+    "uniform", "temperature", "grayscale", "glowing", "rainbowlike",
+    "geologic", "greenscale", "cyanscale", "bluescale", "magentascale",
+    "redscale", "flame", "brownscale", "pilatus", "autumn", "bone",
+    "cool", "copper", "gray", "hot", "hsv", "jet", "pink", "spectral",
+    "spring", "summer", "winter", "gistearth", "gistheat", "gistncar",
+    "gistrainbow", "giststern", "afmhot", "brg", "bwr", "coolwarm",
+    "cmrmap", "cubehelix", "gnuplot", "gnuplot2", "ocean", "rainbow",
+    "seismic", "terrain", "viridis", "inferno", "plasma", "magma"
+)))
+
 """
     setcolormap(cmap)
 
-Set the current colormap to one of the built-in colormaps
+Set the current colormap to one of the
+[GR built-in colormaps](https://gr-framework.org/colormaps.html).
+
+The argument `cmap` can be a `String` with the name of the color map
+or its numeric index.
 """
 function setcolormap(cmap)
     GR.setcolormap(cmap)
     COLOR_INDICES[:colormap] = cmap
+end
+
+function setcolormap(cmap::AbstractString)
+    cmap = lowercase(replace(cmap, (' ', '_') => ""))
+    setcolormap(lookup(cmap, COLORMAPS))
 end
 
 """
@@ -106,7 +150,7 @@ rgbcolormap() = colormap() .|> switchbytes .|> rgb
     to_rgba(value[, alpha, cmap])
 
 Calculate the hexadecimal color code of a normalized value between 0 and 1
-in the current colormap (byte-ordered).
+in the current colormap (byte-ordered, big-endian RGBA).
 
 Optionally, the level of the `alpha` channel can be passed as a value
 between 0 (transparent) and 1 (opaque), and a custom colormap can be
@@ -123,7 +167,6 @@ function to_rgba(value, alpha, cmap::Vector{<:Tuple})
     cmap_int = cmap .|> color .|> switchbytes
     t_rgba(value, alpha, cmap_int)
 end
-
 
 function to_rgba(value)
     isnan(value) && return zero(UInt32)
@@ -176,6 +219,9 @@ The value of the scheme can be one of the following numbers or strings:
 * 2: `"dark"`
 * 3: `"solarized light"`
 * 4: `"solarized dark"`
+
+# Examples
+
 """
 function colorscheme(scheme::Int)
     COLOR_INDICES[:scheme] = scheme
