@@ -189,9 +189,14 @@ end
 guide(::Val{:line3d}, args...) = guide(Val(:line), g, x, y)
 
 function guide(::Val{:bar}, g, x, y)
-    colorind = get(COLOR_INDICES, :barfill, 0)
-    colorind = COLOR_INDICES[:barfill] = colorind + 1
-    GR.setfillcolorind(SERIES_COLORS[colorind])
+    if haskey(g.attributes, :fillcolor)
+        colorind = colorindex(Int(g.attributes[:fillcolor]))
+    else
+        ind = get(COLOR_INDICES, :barfill, 0)
+        ind = COLOR_INDICES[:barfill] = colorind + 1
+        colorind = SERIES_COLORS[ind]
+    end
+    GR.setfillcolorind(colorind)
     GR.setfillintstyle(GR.INTSTYLE_SOLID)
     GR.fillrect(x - 0.03, x + 0.03, y - 0.015, y + 0.015)
     GR.setfillcolorind(1)

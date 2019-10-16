@@ -105,8 +105,9 @@ function Axes(kind, geoms::Array{<:Geometry}; grid=1, kwargs...)
         if !get(kwargs, :radians, true)
             options[:radians] = 0
         end
-    elseif kind == :camera # Not defined
-        tickdata = Dict{Symbol, AxisTickData}()
+    else # Not defined
+        tickdata = set_ticks(ranges, 0, (:x, :y); kwargs...)
+        options[:scale] = 0
     end
     haskey(kwargs, :tickdir) && (options[:tickdir] = kwargs[:tickdir])
     Axes(kind, ranges, tickdata, ticklabels, perspective, camera, options)

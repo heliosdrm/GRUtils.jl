@@ -128,10 +128,10 @@ function makeplot!(p::PlotObject, axes::Axes, geoms::Vector{<:Geometry},
     p
 end
 
-function PlotObject!(axes::Axes, geoms::Vector{<:Geometry},
+function PlotObject(axes::Axes, geoms::Vector{<:Geometry},
     legend::Legend=Legend(geoms), colorbar::Colorbar=Colorbar(axes); kwargs...)
     p = PlotObject()
-    makeplot!(p, viewport, axes, geoms, legend, colorbar; kwargs...)
+    makeplot!(p, axes, geoms, legend, colorbar; kwargs...)
 end
 
 """

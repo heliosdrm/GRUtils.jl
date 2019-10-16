@@ -342,10 +342,15 @@ function draw(g::Geometry, ::Val{:scatter3})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:bar})::Nothing
-    colorind = get(COLOR_INDICES, :barfill, 0)
-    colorind = COLOR_INDICES[:barfill] = colorind + 1
+    if haskey(g.attributes, :fillcolor)
+        colorind = colorindex(Int(g.attributes[:fillcolor]))
+    else
+        ind = get(COLOR_INDICES, :barfill, 0)
+        ind = COLOR_INDICES[:barfill] = colorind + 1
+        colorind = SERIES_COLORS[ind]
+    end
     for i = 1:2:length(g.x)
-        GR.setfillcolorind(SERIES_COLORS[colorind])
+        GR.setfillcolorind(colorind)
         GR.setfillintstyle(GR.INTSTYLE_SOLID)
         GR.fillrect(g.x[i], g.x[i+1], g.y[i], g.y[i+1])
         GR.setfillcolorind(1)
