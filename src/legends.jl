@@ -1,4 +1,4 @@
-const LEGEND_KINDS = (:line, :line3d)
+const LEGEND_KINDS = (:line, :line3d, :bar)
 
 const LEGEND_LOCATIONS = Dict(
     :left => [2, 3, 6],
@@ -154,6 +154,7 @@ function draw(lg::Legend, geoms, location=1)
             GR.uselinespec("")
         end
     end
+    resetcolors()
     GR.restorestate()
     return nothing
 end
@@ -174,10 +175,33 @@ function guide(g::Geometry, x, y)
 end
 
 function guide(::Val{:line}, g, x, y)
-    mask = GR.uselinespec(g.spec)
-    hasline(mask) && GR.polyline(x .+ [-0.03, 0.03], y .+ [0.0, 0.0])
-    hasmarker(mask) && GR.polymarker(x .+ [-0.02, 0.02], y .+ [0.0, 0.0])
+    mask = _uselinespec(g.spec, g.attributes)
+    if hasline(mask)
+        GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+        GR.polyline(x .+ [-0.03, 0.03], y .+ [0.0, 0.0])
+    end
+    if hasmarker(mask)
+        GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
+        GR.polymarker([x], [y])
+    end
     return nothing
 end
 guide(::Val{:line3d}, args...) = guide(Val(:line), g, x, y)
+
+function guide(::Val{:bar}, g, x, y)
+    if haskey(g.attributes, :fillcolor)
+        colorind = colorindex(Int(g.attributes[:fillcolor]))
+    else
+        ind = get(COLOR_INDICES, :barfill, 0)
+        ind = COLOR_INDICES[:barfill] = colorind + 1
+        colorind = SERIES_COLORS[ind]
+    end
+    GR.setfillcolorind(colorind)
+    GR.setfillintstyle(GR.INTSTYLE_SOLID)
+    GR.fillrect(x - 0.03, x + 0.03, y - 0.015, y + 0.015)
+    GR.setfillcolorind(1)
+    GR.setfillintstyle(GR.INTSTYLE_HOLLOW)
+    GR.fillrect(x - 0.03, x + 0.03, y - 0.015, y + 0.015)
+end
+
 guide(kind, g, x, y) = nothing

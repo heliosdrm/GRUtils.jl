@@ -1,3 +1,8 @@
+function search(s::AbstractString, c::Char)
+    result = findfirst(isequal(c), s)
+    result != nothing ? result : 0
+end
+
 function inqtext(x, y, s)
     if length(s) >= 2 && s[1] == '$' && s[end] == '$'
         GR.inqmathtex(x, y, s[2:end-1])

@@ -1,10 +1,12 @@
-const LOCATIONS = ["upper right", "upper left", "lower left", "lower right",
+const LOCATIONS = Dict( k => i-1 for (i, k) in enumerate((
+    "none", "upper right", "upper left", "lower left", "lower right",
     "right", "center left", "center right", "lower center", "upper center", "center",
-    "outer upper right", "outer center right", "outer lower right"]
+    "outer upper right", "outer center right", "outer lower right"
+)))
 
 # Legend
 function legend!(p::PlotObject, args...; location=1, kwargs...)
-    location = _index(location, LOCATIONS, 1, 0)
+    location = lookup(location, LOCATIONS)
     # Reset main viewport if there was a legend
     if haskey(p.attributes, :location) && p.attributes[:location] ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] += p.legend.size[1]
@@ -563,3 +565,86 @@ zoom(0.5)
 """
 zoom(r) = panzoom(0.0, 0.0, r)
 zoom!(pf, r) = panzoom!(pf, 0.0, 0.0, r)
+
+"""
+    colormap!(p, cmap)
+
+Apply a colormap `cmap` to the given plot `p`, which can be a `PlotObject`,
+or a `Figure` (in such case the colormap is applied to all the plots contained in it.)
+
+The value of `cmap` can be the number or the name of any of the
+[GR built-in colormaps](https://gr-framework.org/colormaps.html)
+(see [`colormap`](@ref) for more details).
+
+Use the keyword argument `colormap` in plotting functions, to set a particular
+colormap during the creation of plots (in this case it can only be identified
+by its number).
+
+# Examples
+
+```julia
+# Create a surface plot with the "grayscale" colormap (2)
+surface(x, y, z, colormap=2)
+# Change it to the "viridis" colormap
+colormap!(gcf(), "viridis")
+```
+"""
+function colormap!(p::PlotObject, cmap)
+    p.attributes[:colormap] = Int(cmap)
+    return nothing
+end
+
+function colormap!(p::PlotObject, cmap::AbstractString)
+    cmap = lowercase(replace(cmap, (' ', '_') => ""))
+    colormap!(p, COLORMAPS[cmap])
+end
+
+function colormap!(f::Figure, cmap)
+    for p in f.plots
+        colormap!(p, cmap)
+    end
+    draw(f)
+end
+
+
+"""
+    colorscheme!(p, scheme)
+
+Apply a color `scheme` to the given plot `p`, which can be a `PlotObject`,
+or a `Figure` (in such case the scheme is applied to all the plots contained in it.)
+
+The value of `scheme` can be the number or the name of any available
+color scheme (see [`colorscheme`](@ref) for more details).
+
+Use the keyword argument `scheme` in plotting functions, to set a particular
+color scheme during the creation of plots (in this case only the number of
+an already exisiting scheme is allowed).
+
+# Examples
+
+```julia
+# Create a plot with a dark scheme (2)
+plot(x, y, scheme=2)
+# Change it to the standard light scheme
+colorscheme!(currentplot(), "light")
+```
+"""
+function colorscheme!(p::PlotObject, scheme)
+    p.attributes[:scheme] = Int(scheme)
+    return nothing
+end
+
+function colorscheme!(p::PlotObject, scheme::AbstractString)
+    scheme = replace(scheme, " " => "")
+    scheme = lowercase(scheme)
+    scheme_dict = Dict("none" => 0, "light" => 1, "dark" => 2,
+        "solarizedlight" => 3, "solarizeddark" => 4)
+    colorscheme!(p, scheme_dict[scheme])
+end
+
+function colorscheme!(f::Figure, scheme)
+    for p in f.plots
+        colorscheme!(p, scheme)
+    end
+    draw(f)
+end

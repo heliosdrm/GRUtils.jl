@@ -20,7 +20,8 @@ functionlist = (
     ("Images", ("imshow",)),
     ("Isosurfaces", ("isosurface",)),
     ("Attributes", ("aspectratio", "ticks")),
-    ("Control", ("subplot",))
+    ("Control", ("subplot",)),
+    ("Colors", ("colorscheme", "colormap"))
 )
 
 # GR.gr3 has an issue in some systems

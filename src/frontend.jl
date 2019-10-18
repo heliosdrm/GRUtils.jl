@@ -1,5 +1,5 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :horizontal, :label, :linewidth, :markersize, :shadelines, :spec, :stair_position, :xform]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :fillcolor, :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
@@ -127,6 +127,8 @@ Additionally, specifications of lines and markers can be defined by keyword argu
 
 * `linewidth`: line width scale factor.
 * `markersize`: marker size scale factor.
+* `linecolor`: hexadecimal RGB color code for the line.
+* `marker`: hexadecimal RGB color code for the markers.
 
 This function can receive a single numeric vector or matrix, which will be
 interpreted as the Y coordinates; in such case the X coordinates will be a
@@ -271,6 +273,7 @@ of the error bars:
 
 * `linewidth::Float64`: line width scale factor.
 * `markersize::Float64`: marker size scale factor.
+* `linecolor`: hexadecimal RGB color code for the line.
 * `horizontal::Bool`: set it to `true` to draw horizontal error bars).
 * `capwidth`: fixed value of the width of the bar "caps", in units of
     the X axis (or Y axis if `horizontal` is `true`). If it is not given,
@@ -408,6 +411,9 @@ to modify the aspect of the bars, which by default is:
 * `baseline = 0.0` (bars starting at zero).
 * `horizontal = false` (vertical bars)
 
+Use also the keyword argument `fillcolor` to set a particular
+color for the bars, using an hexadecimal RGB color code.
+
 # Examples
 
 ```julia
@@ -463,6 +469,7 @@ The following keyword arguments can be supplied:
     the number of bins is computed as `3.3 * log10(n) + 1`,  with `n` being the
     number of elements in `data`.
 * `horizontal`: whether the histogram should be horizontal (`false` by default).
+* `fillcolor`: hexadecimal RGB color code for the bars.
 
 !!! note
 
@@ -502,6 +509,7 @@ The following keyword arguments can be supplied:
     grid are presented as factors of π.
 * `fullcircle`: Set this argument to `true` to scale the angular coordinates of
     the histogram and make the bars span over the whole circle.
+* `fillcolor`: hexadecimal RGB color code for the bars.
 
 !!! note
 
@@ -539,6 +547,8 @@ Additionally, specifications of lines and markers can be defined by keyword argu
 
 * `linewidth`: line width scale factor.
 * `markersize`: marker size scale factor.
+* `linecolor`: hexadecimal RGB color code for the line.
+* `markercolor`: hexadecimal RGB color code for the markers.
 
 # Examples
 
@@ -889,41 +899,13 @@ $(_example("hexbin"))
 ```
 """)
 
-# Needs to be extended
-function colormap()
-    rgb = zeros(256, 3)
-    for colorind in 1:256
-        color = GR.inqcolor(999 + colorind)
-        rgb[colorind, 1] = float( color        & 0xff) / 255.0
-        rgb[colorind, 2] = float((color >> 8)  & 0xff) / 255.0
-        rgb[colorind, 3] = float((color >> 16) & 0xff) / 255.0
-    end
-    rgb
-end
-
-"""
-    to_rgba(value, cmap)
-
-Transform a normalized value into a color index given by the colormap `cmap`.
-"""
-function to_rgba(value, cmap)
-    if !isnan(value)
-        r, g, b = cmap[round(Int, value * 255 + 1), :]
-        a = 1.0
-    else
-        r, g, b, a = zeros(4)
-    end
-    round(UInt32, a * 255) << 24 + round(UInt32, b * 255) << 16 +
-    round(UInt32, g * 255) << 8  + round(UInt32, r * 255)
-end
-
 function _setargs_imshow(f, data; kwargs...)
     if isa(data, AbstractString)
         w, h, rgbdata = GR.readimage(data)
     else
         h, w = size(data)
-        cmap = colormap()
-        rgbdata = [to_rgba(value, cmap) for value ∈ transpose(data)]
+        GR.setcolormap(get(kwargs, :colormap, COLOR_INDICES[:colormap]))
+        rgbdata = [to_rgba(value) for value ∈ transpose(data)]
     end
     if get(kwargs, :xflip, false)
         rgbdata = reverse(rgbdata, dims=2)
@@ -981,7 +963,10 @@ $(_example("isosurface"))
 ```
 """)
 
-const XFORMS = ["boolean", "linear", "log", "loglog", "cubic", "equalized"]
+const XFORMS = Dict(
+    "boolean"=>0, "linear"=>1, "log"=>2,
+    "loglog"=>3, "cubic"=>4, "equalized"=>5
+)
 
 function _setargs_shade(f, x, y; kwargs...)
     # Determine type of footprint
@@ -996,7 +981,7 @@ function _setargs_shade(f, x, y; kwargs...)
     end
     # Transformation
     if haskey(kwargs, :xform)
-        xf = _index(kwargs[:xform], XFORMS, 0)
+        xf = lookup(kwargs[:xform], XFORMS)
         kwargs = (; kwargs..., xform=float(xf))
     end
     return ((x, y), kwargs)
@@ -1035,13 +1020,13 @@ $(_example("shade"))
 ```
 """)
 
-const ALGORITHMS = ["emission", "absorption", "mip"]
+const ALGORITHMS = Dict("emission"=>0, "absorption"=>1, "mip"=>2)
 
 function _setargs_volume(f, v::Array{T, 3}; kwargs...) where {T}
     (nx, ny, nz) = size(v)
     # Algorithm
     if haskey(kwargs, :algorithm)
-        alg = _index(kwargs[:algorithm], ALGORITHMS, 0)
+        alg = lookup(kwargs[:algorithm], ALGORITHMS)
         kwargs = (; kwargs..., algorithm=float(alg))
     end
     (([nx], [ny], [nz], vec(v)), kwargs)

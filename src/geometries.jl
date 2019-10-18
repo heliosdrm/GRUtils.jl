@@ -157,8 +157,28 @@ hasmarker(mask) = ( mask & 0x02 != 0)
 
 draw(g::Geometry, ::Any) = nothing # for unknown kinds
 
+# Extend GR.uselinespec to take into account explicit line or marker colors
+function _uselinespec(spec, attributes)
+    if haskey(attributes, :linecolor) || haskey(attributes, :markercolor)
+        # hack spec to force a color that will be replaced
+        spec = isempty(spec) ? "k-" : "k" * spec
+        mask = GR.uselinespec(spec)
+        if haskey(attributes, :linecolor)
+            colorind = colorindex(Int(attributes[:linecolor]))
+            GR.setlinecolorind(colorind)
+        end
+        if haskey(attributes, :markercolor)
+            colorind = colorindex(Int(attributes[:markercolor]))
+            GR.setmarkercolorind(colorind)
+        end
+    else
+        mask = GR.uselinespec(spec)
+    end
+    return mask
+end
+
 function draw(g::Geometry, ::Val{:line})::Nothing
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     if hasline(mask)
         GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         GR.polyline(g.x, g.y)
@@ -171,7 +191,7 @@ function draw(g::Geometry, ::Val{:line})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:line3d})::Nothing
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     if hasline(mask)
         GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         GR.polyline3d(g.x, g.y, g.z)
@@ -184,7 +204,7 @@ function draw(g::Geometry, ::Val{:line3d})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:stair})::Nothing
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     if hasline(mask)
         GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         n = length(g.x)
@@ -239,7 +259,7 @@ function draw(g::Geometry, ::Val{:stem})::Nothing
     GR.polyline(g.x[1:2], g.y[1:2])
     GR.setmarkertype(GR.MARKERTYPE_SOLID_CIRCLE)
     GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
-    GR.uselinespec(g.spec)
+    _uselinespec(g.spec, g.attributes)
     for i = 3:length(g.y)
         GR.polyline([g.x[i], g.x[i]], [g.y[1], g.y[i]])
         GR.polymarker([g.x[i]], [g.y[i]])
@@ -248,7 +268,7 @@ end
 
 function draw(g::Geometry, ::Val{:errorbar})::Nothing
     horizontal = get(g.attributes, :horizontal, 0.0) == 1.0
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     if hasline(mask)
         GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         if horizontal
@@ -289,7 +309,6 @@ function draw(g::Geometry, ::Val{:scatter})::Nothing
     GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
     if !isempty(g.z) || !isempty(g.c)
         if !isempty(g.c)
-            # cmin, cmax = plt.kvs[:crange]
             cmin, cmax = extrema(g.c)
             cnorm = map(x -> normalize_color(x, cmin, cmax), g.c)
             cind = Int[round(Int, 1000 + _i * 255) for _i in cnorm]
@@ -323,8 +342,15 @@ function draw(g::Geometry, ::Val{:scatter3})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:bar})::Nothing
+    if haskey(g.attributes, :fillcolor)
+        colorind = colorindex(Int(g.attributes[:fillcolor]))
+    else
+        ind = get(COLOR_INDICES, :barfill, 0)
+        ind = COLOR_INDICES[:barfill] = ind + 1
+        colorind = SERIES_COLORS[ind]
+    end
     for i = 1:2:length(g.x)
-        GR.setfillcolorind(989)
+        GR.setfillcolorind(colorind)
         GR.setfillintstyle(GR.INTSTYLE_SOLID)
         GR.fillrect(g.x[i], g.x[i+1], g.y[i], g.y[i+1])
         GR.setfillcolorind(1)
@@ -334,7 +360,7 @@ function draw(g::Geometry, ::Val{:bar})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:polarline})::Nothing
-    mask = GR.uselinespec(g.spec)
+    mask = _uselinespec(g.spec, g.attributes)
     ymax = maximum(abs.(g.y))
     ρ = g.y ./ ymax
     n = length(ρ)
@@ -355,8 +381,10 @@ function draw(g::Geometry, ::Val{:polarbar})::Nothing
     ymin, ymax = extrema(g.y)
     ρ = g.y ./ ymax
     θ = g.x
+    colorind = get(COLOR_INDICES, :barfill, 0)
+    colorind = COLOR_INDICES[:barfill] = colorind + 1
     for i = 1:2:length(ρ)
-        GR.setfillcolorind(989)
+        GR.setfillcolorind(SERIES_COLORS[colorind])
         GR.setfillintstyle(GR.INTSTYLE_SOLID)
         GR.fillarea([ρ[i] * cos(θ[i]), ρ[i] * cos(θ[i+1]), ρ[i+1] * cos(θ[i+1]), ρ[i+1] * cos(θ[i])],
                     [ρ[i] * sin(θ[i]), ρ[i] * sin(θ[i+1]), ρ[i+1] * sin(θ[i+1]), ρ[i+1] * sin(θ[i])])
@@ -409,11 +437,8 @@ end
 function draw(g::Geometry, ::Val{:heatmap})::Nothing
     w = length(g.x)
     h = length(g.y)
-    # cmap = colormap()
     cmin, cmax = extrema(g.c)
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
-    # rgba = [to_rgba(value, cmap) for value ∈ data]
-    # GR.cellarray(0.0, w, h, 0.0, w, h, rgba)
     colors = Int[round(Int, 1000 + _i * 255) for _i ∈ data]
     GR.cellarray(0.0, w, h, 0.0, w, h, colors)
 end
@@ -422,7 +447,6 @@ end
 function draw(g::Geometry, ::Val{:polarheatmap})::Nothing
     w = length(g.x)
     h = length(g.y)
-    # cmap = colormap()
     cmin, cmax = extrema(g.c)
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
     colors = Int[round(Int, 1000 + _i * 255) for _i ∈ data]

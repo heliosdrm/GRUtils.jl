@@ -13,6 +13,18 @@ struct Figure
     plots::Vector{PlotObject}
 end
 
+const EMPTYFIGURE = Figure((0.0, 0.0), [PlotObject()])
+const CURRENTFIGURE = Ref(EMPTYFIGURE)
+
+"""
+    gcf()
+    gcf(fig::Figure)
+
+Get the global current figure, or set it to be `fig`.
+"""
+gcf() = (CURRENTFIGURE[] == EMPTYFIGURE) ? Figure() : CURRENTFIGURE[]
+gcf(fig::Figure) = (CURRENTFIGURE[] = fig)
+
 """
     Figure([figsize::Tuple{Float64, Float64}, units::String])
 
