@@ -1,5 +1,5 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :fillcolor, :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
@@ -127,6 +127,8 @@ Additionally, specifications of lines and markers can be defined by keyword argu
 
 * `linewidth`: line width scale factor.
 * `markersize`: marker size scale factor.
+* `linecolor`: hexadecimal RGB color code for the line.
+* `marker`: hexadecimal RGB color code for the markers.
 
 This function can receive a single numeric vector or matrix, which will be
 interpreted as the Y coordinates; in such case the X coordinates will be a
@@ -271,6 +273,7 @@ of the error bars:
 
 * `linewidth::Float64`: line width scale factor.
 * `markersize::Float64`: marker size scale factor.
+* `linecolor`: hexadecimal RGB color code for the line.
 * `horizontal::Bool`: set it to `true` to draw horizontal error bars).
 * `capwidth`: fixed value of the width of the bar "caps", in units of
     the X axis (or Y axis if `horizontal` is `true`). If it is not given,
@@ -408,6 +411,9 @@ to modify the aspect of the bars, which by default is:
 * `baseline = 0.0` (bars starting at zero).
 * `horizontal = false` (vertical bars)
 
+Use also the keyword argument `fillcolor` to set a particular
+color for the bars, using an hexadecimal RGB color code.
+
 # Examples
 
 ```julia
@@ -463,6 +469,7 @@ The following keyword arguments can be supplied:
     the number of bins is computed as `3.3 * log10(n) + 1`,  with `n` being the
     number of elements in `data`.
 * `horizontal`: whether the histogram should be horizontal (`false` by default).
+* `fillcolor`: hexadecimal RGB color code for the bars.
 
 !!! note
 
@@ -502,6 +509,7 @@ The following keyword arguments can be supplied:
     grid are presented as factors of π.
 * `fullcircle`: Set this argument to `true` to scale the angular coordinates of
     the histogram and make the bars span over the whole circle.
+* `fillcolor`: hexadecimal RGB color code for the bars.
 
 !!! note
 
@@ -539,6 +547,8 @@ Additionally, specifications of lines and markers can be defined by keyword argu
 
 * `linewidth`: line width scale factor.
 * `markersize`: marker size scale factor.
+* `linecolor`: hexadecimal RGB color code for the line.
+* `markercolor`: hexadecimal RGB color code for the markers.
 
 # Examples
 
