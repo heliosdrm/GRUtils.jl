@@ -9,7 +9,7 @@ currentplot
 subplot
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/subplot.jl") # hide
 ```
 ```@docs

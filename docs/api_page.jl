@@ -27,7 +27,7 @@ open("./src/api/plotting.md", "w") do file begin
                 $fun
                 ```
                 ```@example plot
-                GRUtils.Figure(); # hide
+                Figure(); # hide
                 Base.include(GRUtils, "../examples/docstrings/$fun.jl") # hide
                 ```
                 """)

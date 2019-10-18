@@ -9,35 +9,35 @@ Random.seed!(111)
 plot
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/plot.jl") # hide
 ```
 ```@docs
 oplot
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/oplot.jl") # hide
 ```
 ```@docs
 stair
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/stair.jl") # hide
 ```
 ```@docs
 plot3
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/plot3.jl") # hide
 ```
 ```@docs
 polar
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/polar.jl") # hide
 ```
 ## Scatter plots
@@ -45,14 +45,14 @@ Base.include(GRUtils, "../examples/docstrings/polar.jl") # hide
 scatter
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/scatter.jl") # hide
 ```
 ```@docs
 scatter3
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/scatter3.jl") # hide
 ```
 ## Stem plots
@@ -60,14 +60,14 @@ Base.include(GRUtils, "../examples/docstrings/scatter3.jl") # hide
 stem
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/stem.jl") # hide
 ```
 ```@docs
 errorbar
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/errorbar.jl") # hide
 ```
 ## Bar plots
@@ -75,7 +75,7 @@ Base.include(GRUtils, "../examples/docstrings/errorbar.jl") # hide
 barplot
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/barplot.jl") # hide
 ```
 ## Histograms
@@ -83,21 +83,21 @@ Base.include(GRUtils, "../examples/docstrings/barplot.jl") # hide
 histogram
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/histogram.jl") # hide
 ```
 ```@docs
 polarhistogram
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/polarhistogram.jl") # hide
 ```
 ```@docs
 hexbin
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/hexbin.jl") # hide
 ```
 ## Contour plots
@@ -105,21 +105,21 @@ Base.include(GRUtils, "../examples/docstrings/hexbin.jl") # hide
 contour
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/contour.jl") # hide
 ```
 ```@docs
 contourf
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/contourf.jl") # hide
 ```
 ```@docs
 tricont
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/tricont.jl") # hide
 ```
 ## Surface plots
@@ -127,21 +127,21 @@ Base.include(GRUtils, "../examples/docstrings/tricont.jl") # hide
 surface
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/surface.jl") # hide
 ```
 ```@docs
 trisurf
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/trisurf.jl") # hide
 ```
 ```@docs
 wireframe
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/wireframe.jl") # hide
 ```
 ## Volume rendering
@@ -149,7 +149,7 @@ Base.include(GRUtils, "../examples/docstrings/wireframe.jl") # hide
 volume
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/volume.jl") # hide
 ```
 ## Heatmaps
@@ -157,14 +157,14 @@ Base.include(GRUtils, "../examples/docstrings/volume.jl") # hide
 heatmap
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/heatmap.jl") # hide
 ```
 ```@docs
 shade
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/shade.jl") # hide
 ```
 ## Images
@@ -172,7 +172,7 @@ Base.include(GRUtils, "../examples/docstrings/shade.jl") # hide
 imshow
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/imshow.jl") # hide
 ```
 ## Isosurfaces
@@ -180,6 +180,6 @@ Base.include(GRUtils, "../examples/docstrings/imshow.jl") # hide
 isosurface
 ```
 ```@example plot
-GRUtils.Figure(); # hide
+Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/isosurface.jl") # hide
 ```
