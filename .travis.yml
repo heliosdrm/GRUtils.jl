@@ -18,7 +18,7 @@ matrix:
   allow_failures:
     - julia: nightly
   exclude:
-    - os: ox
+    - os: osx
       arch: x86
     - os: osx
       arch: arm64
