@@ -1,7 +1,7 @@
 name = "GRUtils"
 uuid = "0337cf30-a0fd-11e9-31db-a79914c9d7ac"
 authors = ["Helios De Rosario"]
-version = "0.2.0"
+version = "0.2.1"
 
 [compat]
 julia = "1"

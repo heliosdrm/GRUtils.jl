@@ -3,9 +3,12 @@ os:
   - linux
   - osx
   - windows
+arch:
+  - x64
+  - x86
+  - arm64
 julia:
   - 1.0.4
-  - 1.1
   - 1.2
   - nightly
 branches:
@@ -14,5 +17,14 @@ branches:
 matrix:
   allow_failures:
     - julia: nightly
+  exclude:
+    - os: ox
+      arch: x86
+    - os: osx
+      arch: arm64
+    - os: windows
+      arch: arm64
+    - julia: nightly
+      arch: arm64
 notifications:
   email: false
