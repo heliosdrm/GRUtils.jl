@@ -44,7 +44,7 @@ xticklabels(x -> Base.Printf.@sprintf("%0.2f", x/256)) # hide
 
 ## High-contrast color set
 
-When various geometries of the same kind are included in the same plot (e.g. line plots with multiple data series), they are drawn using the predefined sequence of colors that is shown below -- unless a specific color is explicitly set by the user. That sequence has 20 different colors that approach [Kelly’s list of colors with maximum contrast](http://www.iscc-archive.org/pdf/PC54_1724_001.pdf) (leaving aside white and black), and the order of the first ones is reminiscent of the list one used by GNU Octave or Matlab.
+When various geometries of the same kind are included in the same plot (e.g. line plots with multiple data series), they are drawn using the predefined sequence of colors that is shown below -- unless a specific color is explicitly set by the user. That sequence has 20 different colors that approach [Kelly’s list of colors with maximum contrast](http://www.iscc-archive.org/pdf/PC54_1724_001.pdf) (leaving aside white and black), and the order of the first colors is reminiscent of the sequence used by GNU Octave or Matlab.
 
 ```@example colors
 Figure((600, 150)) # hide
@@ -80,11 +80,11 @@ The color system of GR, used by GRUtils, has room for nearly 1,000 colors define
 
 ## Using colors with GRUtils
 
-The general [Color scheme](@ref) and the colormap are set globally, but can be changed at any time during the session with the functions [`colorscheme`](@ref) and [`colormap`](@ref), or chosen specifically for particular plots with [`colorscheme!`](@ref) and [`colormap!`](@ref).
+The general color scheme and the colormap are set globally, but they can be changed at any time during the session with the functions [`colorscheme`](@ref) and [`colormap`](@ref), or chosen specifically for particular plots with [`colorscheme!`](@ref) and [`colormap!`](@ref).
 
-The [High-contrast color set](@ref) is managed automatically during the creation of plots, if no other colors are selected by the user. There are two ways to specify particular colors, depending on the kind of geometry:
+The high-contrast color set is managed automatically during the creation of plots, if no other colors are selected by the user. There are two ways to specify particular colors, depending on the kind of geometry:
 
-* Geometries based on lines and markers (e.g. in 2D or 3D line plots, among others), can receive a format string, as in [matplotlib](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.plot.html). Such strings may have color characters that correspond to the basic colors of the scheme:
+* Geometries based on lines and markers (e.g. in 2D or 3D line plots, among others), can receive a format string, as in [matplotlib](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.plot.html). Such strings may contain characters that correspond to the basic colors of the scheme:
 
     * `'r'` for **r**ed,
     * `'g'` for **g**reen,
@@ -94,7 +94,7 @@ The [High-contrast color set](@ref) is managed automatically during the creation
     * `'m'` for **m**agenta,
     * `'k'` for the foreground color (blac**k** in the default scheme),
     * `'w'` for the background color (**w**hite in the default scheme).
-* [User-defined colors](@ref) can be specified for the following attributes of some geometries:
+* Moreover, user-defined colors can be specified for the following attributes of some geometries:
     * `linecolor` for lines,
     * `markercolor` for markers,
     * `fillcolor` for filled areas.
@@ -106,8 +106,7 @@ Figure() # hide
 # Format string for a red line (straight)
 plot(LinRange(0, 1, 10), "-r")
 hold(true)
-# Add another line (curved) with the default color
-# but purple round markers
+# Add a purple line (curved)
 plot(exp.(LinRange(-1, 0, 10)),
     linecolor=GRUtils.color(0.5, 0, 0.75))
 ```

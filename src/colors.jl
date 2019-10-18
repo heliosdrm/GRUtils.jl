@@ -152,7 +152,7 @@ function colormap(::Type{T}, byteorder::Bool=false) where {T <: Integer}
     if byteorder
         return [T(GR.inqcolor(i)) for i ∈ 1000:1255]
     else
-        return switchbytes.([T(GR.inqcolor(i)) for i ∈ 1000:1255])
+        return [GR.inqcolor(i) |> UInt32 |> switchbytes |> T for i ∈ 1000:1255]
     end
 end
 
