@@ -166,9 +166,7 @@ geometries(p::PlotObject) = p.geoms
 ## `draw` methods ##
 ####################
 
-"""
-Fill the rectangle in given NDC by the given color index
-"""
+# Fill background, accepts a color, Bool or Nothing
 function fillbackground(rectndc, color)
     color < 0 && return nothing
     GR.savestate()
@@ -189,7 +187,12 @@ function draw(p::PlotObject)
     GR.setcolormap(get(p.attributes, :colormap, COLOR_INDICES[:colormap]))
     scheme = get(p.attributes, :scheme, COLOR_INDICES[:scheme])
     applycolorscheme(scheme)
-    bgcolor = Int(get(p.attributes, :backgroundcolor, (scheme == 0) ? -1 : 0))
+    default_bg = (scheme == 0) ? -1 : 0
+    if haskey(p.attributes, :background)
+        bgcolor = colorindex(p.attributes[:background])
+    else
+        bgcolor = default_bg
+    end
     fillbackground(outer, bgcolor)
     # Define the viewport
     GR.setviewport(inner...)

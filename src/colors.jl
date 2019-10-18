@@ -1,9 +1,9 @@
-const COLOR_SCHEMES = hcat(
-    [0xffffff, 0x000000, 0xff0000, 0x00ff00, 0x0000ff, 0x00ffff, 0xffff00, 0xff00ff],
-    [0x282c34, 0xd7dae0, 0xcb4e42, 0x99c27c, 0x85a9fc, 0x5ab6c1, 0xd09a6a, 0xc57bdb],
-    [0xfdf6e3, 0x657b83, 0xdc322f, 0x859900, 0x268bd2, 0x2aa198, 0xb58900, 0xd33682],
-    [0x002b36, 0x839496, 0xdc322f, 0x859900, 0x268bd2, 0x2aa198, 0xb58900, 0xd33682]
-)
+const COLOR_SCHEMES = [
+    (0xffffff, 0x000000, 0xff0000, 0x00ff00, 0x0000ff, 0x00ffff, 0xffff00, 0xff00ff),
+    (0x282c34, 0xd7dae0, 0xcb4e42, 0x99c27c, 0x85a9fc, 0x5ab6c1, 0xd09a6a, 0xc57bdb),
+    (0xfdf6e3, 0x657b83, 0xdc322f, 0x859900, 0x268bd2, 0x2aa198, 0xb58900, 0xd33682),
+    (0x002b36, 0x839496, 0xdc322f, 0x859900, 0x268bd2, 0x2aa198, 0xb58900, 0xd33682)
+]
 
 const BASIC_COLORS = [ 0, 1, 984, 987, 989, 983, 994, 988 ]
 
@@ -11,13 +11,12 @@ const SERIES_COLORS = [989, 982, 980, 981, 996, 983, 995, 988, 986, 990, 991, 98
 
 const COLOR_INDICES = Dict{Symbol, Int}(
     :scheme => 0,
-    :background => -1,
     :colormap => GR.COLORMAP_VIRIDIS
 )
 
 function resetcolors()
     for k in keys(COLOR_INDICES)
-        if k ∉ (:scheme, :background, :colormap)
+        if k ∉ (:scheme, :colormap)
             COLOR_INDICES[k] = 0
         end
     end
@@ -112,39 +111,55 @@ const COLORMAPS = Dict( k => i-1 for (i, k) in enumerate((
 )))
 
 """
-    setcolormap(cmap)
+    colormap(cmap)
+    colormap([cmap,] T::Type{<:Integer}[, byteorder::Bool=false])
 
-Set the current colormap to one of the
+Set or retrieve the values of the current colormap.
+
+Give the identifier `cmap` to set the colormap. This identifier can be
+the number or a string with the name of any of the
 [GR built-in colormaps](https://gr-framework.org/colormaps.html).
 
-The argument `cmap` can be a `String` with the name of the color map
-or its numeric index.
+Give an integer data type `T` to return the set of colors defined
+in the current colormap, as a vector of hexadecimal color codes.
+By default those codes represent the word-ordered RGB values
+in a little-endian system. The optional argument `byteorder`
+can be set to `true` in order to retrieve the codes as byte-ordered codes.
+
+At least one of the arguments `cmap::Union{Integer, AbstractString}`
+or `T::Type{<:Integer}` are required. If `cmap` not given, the previous
+colormap is left as current. If `T` is not given, the function returns
+`nothing`.
+
+# Examples
+
+```julia
+$(_example("colormap"))
+```
 """
-function setcolormap(cmap)
+function colormap(cmap::Integer)
     GR.setcolormap(cmap)
     COLOR_INDICES[:colormap] = cmap
+    return nothing
 end
 
-function setcolormap(cmap::AbstractString)
+function colormap(cmap::AbstractString)
     cmap = lowercase(replace(cmap, (' ', '_') => ""))
-    setcolormap(lookup(cmap, COLORMAPS))
+    colormap(lookup(cmap, COLORMAPS))
 end
 
-"""
-    colormap(T::DataType=UInt32)
+function colormap(::Type{T}, byteorder::Bool=false) where {T <: Integer}
+    if byteorder
+        return [T(GR.inqcolor(i)) for i ∈ 1000:1255]
+    else
+        return switchbytes.([T(GR.inqcolor(i)) for i ∈ 1000:1255])
+    end
+end
 
-Return a vector with the byte-ordered hexadecimal color values of the
-current colormap, with integer types defined by `T`.
-"""
-colormap(t::Type{T}=UInt32) where {T <: Integer} = [t(GR.inqcolor(i)) for i ∈ 1000:1255]
-
-"""
-    colormap()
-
-Return a vector with the RGB values of the current colormap.
-"""
-rgbcolormap() = colormap() .|> switchbytes .|> rgb
-
+function colormap(cmap::Union{Integer, AbstractString}, T::DataType, args...)
+    colormap(cmap)
+    colormap(T, args...)
+end
 
 """
     to_rgba(value[, alpha, cmap])
@@ -157,20 +172,15 @@ between 0 (transparent) and 1 (opaque), and a custom colormap can be
 defined by `cmap` with the corresponding RGB values
 (as byte-ordered hexadecimal colors or triplets of normalized float values).
 """
-function to_rgba(value, alpha, cmap=colormap()::Vector{<:Integer})
+function to_rgba(value, alpha, cmap=colormap(UInt32, true)::Vector{<:Integer})
     isnan(value) && return zero(UInt32)
     color = UInt32(cmap[round(Int, value * 255 + 1)])
     return color + round(UInt32, alpha * 255) << 24
 end
 
-function to_rgba(value, alpha, cmap::Vector{<:Tuple})
-    cmap_int = cmap .|> color .|> switchbytes
-    t_rgba(value, alpha, cmap_int)
-end
-
 function to_rgba(value)
     isnan(value) && return zero(UInt32)
-    colormap()[round(Int, value * 255 + 1)] + 0xff000000
+    colormap(UInt32, true)[round(Int, value * 255 + 1)] + 0xff000000
 end
 
 
@@ -183,11 +193,10 @@ Apply the given color scheme, coded as an integer number between 0 and 4.
 See [`colorscheme`](@ref) for the values of the color schemes.
 """
 function applycolorscheme(scheme)
-    # Default to transparent background if no scheme is given
     scheme == 0 && return nothing
     # Replace the basic color indices
     for colorind in 1:8
-        color = COLOR_SCHEMES[colorind, scheme]
+        color = COLOR_SCHEMES[scheme][colorind]
         r, g, b = rgb(color)
         # Set 1-8
         GR.setcolorrep(colorind - 1, r, g, b)
@@ -197,9 +206,9 @@ function applycolorscheme(scheme)
         end
     end
     # Background RGB values
-    r, g, b = rgb(COLOR_SCHEMES[1, scheme])
+    r, g, b = rgb(COLOR_SCHEMES[scheme][1])
     # Difference between foreground and background
-    rdiff, gdiff, bdiff = rgb(COLOR_SCHEMES[2, scheme]) .- (r, g, b)
+    rdiff, gdiff, bdiff = rgb(COLOR_SCHEMES[scheme][2]) .- (r, g, b)
     # replace the 12 "grey" shades
     for (colorind, f) in enumerate(LinRange(1, 0, 12))
         GR.setcolorrep(79 + colorind, r + f*rdiff, g + f*gdiff, b + f*bdiff)
@@ -220,12 +229,22 @@ The value of the scheme can be one of the following numbers or strings:
 * 3: `"solarized light"`
 * 4: `"solarized dark"`
 
+The scheme applies to all plots that are drawn after calling
+`colorscheme`, even if they have been created beforehand.
+To apply a particular scheme to some plot or figure, use
+[`colorscheme!`](@ref).
+
+If the scheme is `"none"` (`0`), the standard scheme is set, which
+is the same as `"light"` (1), except that the default background is transparent.
+
 # Examples
 
+```julia
+$(_example("colorscheme"))
+```
 """
 function colorscheme(scheme::Int)
     COLOR_INDICES[:scheme] = scheme
-    COLOR_INDICES[:background] = (scheme == 0) ? -1 : 0
     return nothing
 end
 

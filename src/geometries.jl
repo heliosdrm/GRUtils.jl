@@ -346,7 +346,7 @@ function draw(g::Geometry, ::Val{:bar})::Nothing
         colorind = colorindex(Int(g.attributes[:fillcolor]))
     else
         ind = get(COLOR_INDICES, :barfill, 0)
-        ind = COLOR_INDICES[:barfill] = colorind + 1
+        ind = COLOR_INDICES[:barfill] = ind + 1
         colorind = SERIES_COLORS[ind]
     end
     for i = 1:2:length(g.x)

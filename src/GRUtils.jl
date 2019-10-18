@@ -12,6 +12,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig,
     xflip, xlabel, xlim, xlog, xticks, xticklabels,
     yflip, ylabel, ylim, ylog, yticks, xticklabels,
     zflip, zlabel, zlim, zlog, zticks,
+    colormap, colorscheme,
 
     subplot!, plot!, plot3!, polar!, scatter!, scatter3!, stair!, stem!, oplot!,
     errorbar!, barplot!, histogram!, polarhistogram!,
@@ -21,7 +22,8 @@ export Figure, gcf, subplot, currentplot, draw, savefig,
     radians!, panzoom!, zoom!,
     xflip!, xlabel!, xlim!, xlog!, xticks!, xticklabels!,
     yflip!, ylabel!, ylim!, ylog!, yticks!, xticklabels!,
-    zflip!, zlabel!, zlim!, zlog!, zticks!
+    zflip!, zlabel!, zlim!, zlog!, zticks!,
+    colormap!, colorscheme!
 
 include("general.jl")
 include("colors.jl")
