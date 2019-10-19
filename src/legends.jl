@@ -1,4 +1,4 @@
-const LEGEND_KINDS = (:line, :line3d, :bar)
+const LEGEND_KINDS = (:line, :line3d, :bar, :errorbar)
 
 const LEGEND_LOCATIONS = Dict(
     :left => [2, 3, 6],
@@ -187,6 +187,21 @@ function guide(::Val{:line}, g, x, y)
     return nothing
 end
 guide(::Val{:line3d}, args...) = guide(Val(:line), g, x, y)
+
+function guide(::Val{:errorbar}, g, x, y)
+    mask = _uselinespec(g.spec, g.attributes)
+    if hasline(mask)
+        GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+        GR.polyline([x-0.03, x+0.03], [y, y]) # main bar
+        GR.polyline([x-0.03, x-0.03], [y-0.01, y+0.01]) # left bar
+        GR.polyline([x+0.03, x+0.03], [y-0.01, y+0.01]) # right bar
+    end
+    if hasmarker(mask)
+        GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
+        GR.polymarker([x], [y])
+    end
+    return nothing
+end
 
 function guide(::Val{:bar}, g, x, y)
     if haskey(g.attributes, :fillcolor)

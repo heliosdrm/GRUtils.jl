@@ -463,14 +463,18 @@ function draw(g::Geometry, ::Val{:isosurf})::Nothing
     nx, ny, nz = Int.(g.x)
     isovalue = g.y[1]
     values = UInt16.(reshape(g.z, (nx, ny, nz)))
-    color = (g.c...,)
+    if haskey(g.attributes, :skincolor)
+        skincolor = rgb(UInt32(g.attributes[:skincolor]))
+    else
+        skincolor = (0, 0.5, 0.8)
+    end
     GR.selntran(0)
     GR.gr3.clear()
     mesh = GR.gr3.createisosurfacemesh(values, (2/(nx-1), 2/(ny-1), 2/(nz-1)),
             (-1., -1., -1.),
             round(Int64, isovalue * (2^16-1)))
     GR.gr3.setbackgroundcolor(1, 1, 1, 0)
-    GR.gr3.drawmesh(mesh, 1, (0, 0, 0), (0, 0, 1), (0, 1, 0), color, (1, 1, 1))
+    GR.gr3.drawmesh(mesh, 1, (0, 0, 0), (0, 0, 1), (0, 1, 0), skincolor, (1, 1, 1))
     vp = GR.inqviewport()
     GR.gr3.drawimage(vp..., 500, 500, GR.gr3.DRAWABLE_GKS)
     GR.gr3.deletemesh(mesh)

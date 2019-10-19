@@ -98,6 +98,7 @@ The high-contrast color set is managed automatically during the creation of plot
     * `linecolor` for lines,
     * `markercolor` for markers,
     * `fillcolor` for filled areas.
+    * `skincolor` for isosurfaces.
 
 This can be done during the creation of the plots, as in the following examples:
 

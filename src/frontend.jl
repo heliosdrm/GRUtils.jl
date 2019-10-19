@@ -1,5 +1,5 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :fillcolor, :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :fillcolor, :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :skincolor, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
@@ -128,7 +128,7 @@ Additionally, specifications of lines and markers can be defined by keyword argu
 * `linewidth`: line width scale factor.
 * `markersize`: marker size scale factor.
 * `linecolor`: hexadecimal RGB color code for the line.
-* `marker`: hexadecimal RGB color code for the markers.
+* `markercolor`: hexadecimal RGB color code for the markers.
 
 This function can receive a single numeric vector or matrix, which will be
 interpreted as the Y coordinates; in such case the X coordinates will be a
@@ -345,7 +345,7 @@ docstring="""
 Draw a scatter plot.
 
 Points are defined by their `x` and `y` coordinates, given as numeric vectors.
-Additionally, values for markers' `size` and `color` can be provided
+Additionally, values for markers' `size` and `color` can be provided.
 Size values will determine the marker size in percent of the regular size,
 and color values will be used in combination with the current colormap.
 
@@ -934,12 +934,12 @@ $(_example("imshow"))
 ```
 """)
 
-function _setargs_isosurf(f, v, isovalue; color = [0.0, 0.5, 0.8], kwargs...)
+function _setargs_isosurf(f, v, isovalue; kwargs...)
     values = round.((v .- _min(v)) ./ (_max(v) .- _min(v)) .* (2^16-1))
     dimensions = float.(collect(size(v)))
     isoval_norm = (isovalue - _min(v)) / (_max(v) - _min(v))
     # x = dimensions, y = isovalue, z = values, c = color
-    ((dimensions, [isoval_norm], values[:], collect(color)), kwargs)
+    ((dimensions, [isoval_norm], values[:]), kwargs)
 end
 
 @plotfunction(isosurface, geom = :isosurf, axes = :axes3d, setargs = _setargs_isosurf,
@@ -954,7 +954,7 @@ considered to be outside the surface, and the values lower than `isovalue` are
 inside the surface.
 
 The color of the isosurface can be chosen with the keyword argument
-`color = (r, g, b)`, with the red, green and blue values (between 0 and 1).
+`skincolor`, with the hexadecimal RGB color code.
 
 # Examples
 
