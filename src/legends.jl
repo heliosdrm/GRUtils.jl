@@ -208,7 +208,7 @@ function guide(::Val{:bar}, g, x, y)
         colorind = colorindex(Int(g.attributes[:fillcolor]))
     else
         ind = get(COLOR_INDICES, :barfill, 0)
-        ind = COLOR_INDICES[:barfill] = colorind + 1
+        ind = COLOR_INDICES[:barfill] = ind + 1
         colorind = SERIES_COLORS[ind]
     end
     GR.setfillcolorind(colorind)

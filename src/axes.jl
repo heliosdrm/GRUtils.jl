@@ -268,10 +268,13 @@ The keyword arguments may be functions that transform numbers into strings,
 or collection of strings that are associated to the sequence of integers `1, 2, ...`.
 """
 function set_ticklabels!(ticklabels; kwargs...)
-    if haskey(kwargs, :xticklabels) || haskey(kwargs, :yticklabels)
-        ticklabels[:x] = get(kwargs, :xticklabels, identity) |> ticklabel_fun
-        ticklabels[:y] = get(kwargs, :yticklabels, identity) |> ticklabel_fun
+    if haskey(kwargs, :xticklabels)
+        ticklabels[:x] = ticklabel_fun(kwargs[:xticklabels])
     end
+    if haskey(kwargs, :yticklabels)
+        ticklabels[:y] = ticklabel_fun(kwargs[:yticklabels])
+    end
+    return nothing
 end
 
 function ticklabel_fun(f::Function)
@@ -367,7 +370,8 @@ function draw(ax::Axes)
     elseif ax.kind == :axes2d
         (ax.options[:grid] ≠ 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
         if !isempty(ax.ticklabels)
-            fx, fy = ax.ticklabels[:x], ax.ticklabels[:y]
+            fx = get(ax.ticklabels, :x, ticklabel_fun(identity))
+            fy = get(ax.ticklabels, :y, ticklabel_fun(identity))
             GR.axeslbl(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize, fx, fy)
         else
             GR.axes(xtick, ytick, xorg[1], yorg[1], majorx, majory, ticksize)

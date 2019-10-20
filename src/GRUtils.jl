@@ -10,7 +10,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig,
     aspectratio, colorbar, grid, hold, legend, radians,
     title, panzoom, zoom,
     xflip, xlabel, xlim, xlog, xticks, xticklabels,
-    yflip, ylabel, ylim, ylog, yticks, xticklabels,
+    yflip, ylabel, ylim, ylog, yticks, yticklabels,
     zflip, zlabel, zlim, zlog, zticks,
     colormap, colorscheme,
 
@@ -21,7 +21,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig,
     aspectratio!, colorbar!, grid!, hold!, legend!, title!,
     radians!, panzoom!, zoom!,
     xflip!, xlabel!, xlim!, xlog!, xticks!, xticklabels!,
-    yflip!, ylabel!, ylim!, ylog!, yticks!, xticklabels!,
+    yflip!, ylabel!, ylim!, ylog!, yticks!, yticklabels!,
     zflip!, zlabel!, zlim!, zlog!, zticks!,
     colormap!, colorscheme!
 
