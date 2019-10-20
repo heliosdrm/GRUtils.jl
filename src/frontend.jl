@@ -378,6 +378,51 @@ function barcoordinates(heights; barwidth=0.8, baseline=0.0, kwargs...)
     (wc, hc)
 end
 
+function barcoordinates(heights::AbstractMatrix; barposition="grouped", kwargs...)
+    if barposition == "grouped"
+        groupedbars(heights; kwargs...)
+    elseif barposition == "stacked"
+        stackedbars(heights; kwargs...)
+    else
+        throw(ArgumentError("""`barposition` must be `"grouped"` or `"stacked"`"""))
+    end
+end
+
+# stacked bar coordinates
+function stackedbars(heights; barwidth=0.8, baseline=0.0, kwargs...)
+    n, m = size(heights)
+    halfw = barwidth/2
+    wc = zeros(2n, m)
+    hc  = zeros(2n, m)
+    bases = repeat([baseline], n)
+    for c=1:m, r=1:n
+        value = heights[r, c]
+        wc[2r-1, c] = r - halfw
+        wc[2r, c]   = r + halfw
+        hc[2r-1, c] = bases[r]
+        hc[2r, c]   = bases[r] + value
+        bases[r] = hc[2r, c]
+    end
+    (wc, hc)
+end
+
+# grouped bar coordinates
+function groupedbars(heights; barwidth=0.8, baseline=0.0, kwargs...)
+    n, m = size(heights)
+    halfw = barwidth/2m
+    wc = zeros(2n, m)
+    hc  = zeros(2n, m)
+    for c=1:m, r=1:n
+        value = heights[r, c]
+        offset = (2c - 1 - m) * halfw
+        wc[2r-1, c] = r - halfw + offset
+        wc[2r, c]   = r + halfw + offset
+        hc[2r-1, c] = baseline
+        hc[2r, c]   = value
+    end
+    (wc, hc)
+end
+
 function _setargs_bar(f, labels, heights; horizontal=false, kwargs...)
     wc, hc = barcoordinates(heights; kwargs...)
     if horizontal
@@ -404,15 +449,22 @@ Draw a bar plot.
 If no specific labels are given, the bars are labelled with integer
 numbers starting from 1.
 
-Use the keyword arguments `barwidth`, `baseline` or `horizontal`
-to modify the aspect of the bars, which by default is:
+If `heights` is a matrix, each column is taken as a different set of data,
+which are represented as bars of different colors.
+Use the keyword argument `barposition` with the values `"grouped"` (default)
+or `"stacked"` to control if the bars are positioned side by side or
+stacked on top of the previous series.
+
+The keyword arguments `barwidth`, `baseline` and `horizontal`
+can also be used to modify the aspect of the bars, which by default is:
 
 * `barwidth = 0.8` (80% of the separation between bars).
 * `baseline = 0.0` (bars starting at zero).
 * `horizontal = false` (vertical bars)
 
-Use also the keyword argument `fillcolor` to set a particular
-color for the bars, using an hexadecimal RGB color code.
+The color of the bars is selected automatically, unless
+a specific hexadecimal RGB color code is given through
+the keyword argument `fillcolor`.
 
 # Examples
 
