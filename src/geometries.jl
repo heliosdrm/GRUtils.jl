@@ -395,6 +395,25 @@ function draw(g::Geometry, ::Val{:polarbar})::Nothing
     end
 end
 
+function draw(g::Geometry, ::Val{:quiver})::Nothing
+    _uselinespec(g.spec, g.attributes)
+    GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+    for i = 1:4:length(g.x)-3
+        GR.polyline(g.x[i:i+2], g.y[i:i+2])
+        GR.polyline([g.x[i+1], g.x[i+3]], [g.y[i+1], g.y[i+3]])
+    end
+    return nothing
+end
+
+function draw(g::Geometry, ::Val{:quiver3})::Nothing
+    _uselinespec(g.spec, g.attributes)
+    GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+    for i = 1:2:length(g.x)-1
+        GR.polyline3(g.x[i:i+1], g.y[i:i+1], g.z[i:i+1])
+    end
+    return nothing
+end
+
 function draw(g::Geometry, ::Val{:contour})::Nothing
     clabels = get(g.attributes, :clabels, 1.0)
     GR.contour(g.x, g.y, g.c, g.z, Int(clabels))

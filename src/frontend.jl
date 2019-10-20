@@ -624,6 +624,45 @@ function plot3!(f::Figure, x, y, z, u, v, args...; kwargs...)
     draw(f)
 end
 
+function _setargs_quiver(f, x, y, u, v, args...; arrowscale=1.0, headsize=1.0, kwargs...)
+    n = length(x)
+    xa = zeros(4n)
+    ya = zeros(4n)
+    for i = 1:n
+        j = 4i - 3
+        xa[j] = x[i]
+        xa[j+1] = x[i] + arrowscale*u[i]
+        xa[j+2] = xa[j+1] - 0.1732headsize*arrowscale*u[i] - 0.1headsize*arrowscale*v[i]
+        xa[j+3] = xa[j+2] + 0.2headsize*arrowscale*v[i]
+        ya[j] = y[i]
+        ya[j+1] = y[i] + arrowscale*v[i]
+        ya[j+2] = ya[j+1] - 0.1732headsize*arrowscale*v[i] + 0.1headsize*arrowscale*u[i]
+        ya[j+3] = ya[j+2] - 0.2headsize*arrowscale*u[i]
+    end
+    return ((xa, ya, args...), kwargs)
+end
+
+@plotfunction(quiver, geom = :quiver, axes = :axes2d, setargs = _setargs_quiver)
+
+function _setargs_quiver3(f, x, y, z, u, v, w, args...; arrowscale=1.0, headsize=1.0, kwargs...)
+    n = length(x)
+    xa = zeros(2n)
+    ya = zeros(2n)
+    za = zeros(2n)
+    for i = 1:n
+        j = 2i - 1
+        xa[j] = x[i]
+        xa[j+1] = x[i] + arrowscale*u[i]
+        ya[j] = y[i]
+        ya[j+1] = y[i] + arrowscale*v[i]
+        za[j] = z[i]
+        za[j+1] = z[i] + arrowscale*w[i]
+    end
+    return ((xa, ya, args...), kwargs)
+end
+
+@plotfunction(quiver3, geom = :quiver3, axes = :axes3d, setargs = _setargs_quiver3)
+
 _setargs_scatter3(f, x, y, z; kwargs...) = ((x,y,z), kwargs)
 _setargs_scatter3(f, x, y, z, c; kwargs...) = ((x,y,z,c), (;colorbar=true, kwargs...))
 
