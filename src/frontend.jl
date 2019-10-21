@@ -1,5 +1,6 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :fillcolor, :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :skincolor, :stair_position, :xform]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :color,
+    :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
@@ -378,7 +379,55 @@ function barcoordinates(heights; barwidth=0.8, baseline=0.0, kwargs...)
     (wc, hc)
 end
 
-function _setargs_bar(f, labels, heights; horizontal=false, kwargs...)
+function barcoordinates(heights::AbstractMatrix; barposition="grouped", kwargs...)
+    if barposition == "grouped"
+        groupedbars(heights; kwargs...)
+    elseif barposition == "stacked"
+        stackedbars(heights; kwargs...)
+    else
+        throw(ArgumentError("""`barposition` must be `"grouped"` or `"stacked"`"""))
+    end
+end
+
+# stacked bar coordinates
+function stackedbars(heights; barwidth=0.8, baseline=0.0, kwargs...)
+    n, m = size(heights)
+    halfw = barwidth/2
+    wc = zeros(2n, m)
+    hc  = zeros(2n, m)
+    bases = repeat([baseline], n)
+    for c=1:m, r=1:n
+        value = heights[r, c]
+        wc[2r-1, c] = r - halfw
+        wc[2r, c]   = r + halfw
+        hc[2r-1, c] = bases[r]
+        hc[2r, c]   = bases[r] + value
+        bases[r] = hc[2r, c]
+    end
+    (wc, hc)
+end
+
+# grouped bar coordinates
+function groupedbars(heights; barwidth=0.8, baseline=0.0, kwargs...)
+    n, m = size(heights)
+    halfw = barwidth/2m
+    wc = zeros(2n, m)
+    hc  = zeros(2n, m)
+    for c=1:m, r=1:n
+        value = heights[r, c]
+        offset = (2c - 1 - m) * halfw
+        wc[2r-1, c] = r - halfw + offset
+        wc[2r, c]   = r + halfw + offset
+        hc[2r-1, c] = baseline
+        hc[2r, c]   = value
+    end
+    (wc, hc)
+end
+
+function _setargs_bar(f, labels, heights; fillcolor=nothing, horizontal=false, kwargs...)
+    if fillcolor ≠ nothing # deprecate?
+        kwargs = (; color=fillcolor, kwargs...)
+    end
     wc, hc = barcoordinates(heights; kwargs...)
     if horizontal
         args = (hc, wc)
@@ -404,15 +453,22 @@ Draw a bar plot.
 If no specific labels are given, the bars are labelled with integer
 numbers starting from 1.
 
-Use the keyword arguments `barwidth`, `baseline` or `horizontal`
-to modify the aspect of the bars, which by default is:
+If `heights` is a matrix, each column is taken as a different set of data,
+which are represented as bars of different colors.
+Use the keyword argument `barposition` with the values `"grouped"` (default)
+or `"stacked"` to control if the bars are positioned side by side or
+stacked on top of the previous series.
+
+The keyword arguments `barwidth`, `baseline` and `horizontal`
+can also be used to modify the aspect of the bars, which by default is:
 
 * `barwidth = 0.8` (80% of the separation between bars).
 * `baseline = 0.0` (bars starting at zero).
 * `horizontal = false` (vertical bars)
 
-Use also the keyword argument `fillcolor` to set a particular
-color for the bars, using an hexadecimal RGB color code.
+The color of the bars is selected automatically, unless
+a specific hexadecimal RGB color code is given through
+the keyword argument `color`.
 
 # Examples
 
@@ -445,7 +501,10 @@ function hist(x, nbins=0, baseline=0.0)
     (wc, hc)
 end
 
-function _setargs_hist(f, x; nbins = 0, horizontal = false, kwargs...)
+function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, kwargs...)
+    if fillcolor ≠ nothing # deprecate?
+        kwargs = (; color=fillcolor, kwargs...)
+    end
     # Define baseline - 0.0 by default, unless using log scale
     if get(kwargs, :ylog, false) || horizontal && get(kwargs, :xlog, false)
         baseline = 1.0
@@ -469,7 +528,7 @@ The following keyword arguments can be supplied:
     the number of bins is computed as `3.3 * log10(n) + 1`,  with `n` being the
     number of elements in `data`.
 * `horizontal`: whether the histogram should be horizontal (`false` by default).
-* `fillcolor`: hexadecimal RGB color code for the bars.
+* `color`: hexadecimal RGB color code for the bars.
 
 !!! note
 
@@ -509,7 +568,7 @@ The following keyword arguments can be supplied:
     grid are presented as factors of π.
 * `fullcircle`: Set this argument to `true` to scale the angular coordinates of
     the histogram and make the bars span over the whole circle.
-* `fillcolor`: hexadecimal RGB color code for the bars.
+* `color`: hexadecimal RGB color code for the bars.
 
 !!! note
 
@@ -806,6 +865,9 @@ a wireframe plot. It can receive one of the following:
 - *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
     and a callable to determine `z` values.
 
+Also use the attributes `color` and `linecolor` to set the color of the
+surface and lines of the mesh, as RGB hexadecimal color values.
+ 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
 provided points, a value of 0 will be used.
@@ -934,7 +996,10 @@ $(_example("imshow"))
 ```
 """)
 
-function _setargs_isosurf(f, v, isovalue; kwargs...)
+function _setargs_isosurf(f, v, isovalue; skincolor=nothing, kwargs...)
+    if skincolor ≠ nothing # deprecate?
+        kwargs = (; color=skincolor, kwargs...)
+    end
     values = round.((v .- _min(v)) ./ (_max(v) .- _min(v)) .* (2^16-1))
     dimensions = float.(collect(size(v)))
     isoval_norm = (isovalue - _min(v)) / (_max(v) - _min(v))
@@ -954,7 +1019,7 @@ considered to be outside the surface, and the values lower than `isovalue` are
 inside the surface.
 
 The color of the isosurface can be chosen with the keyword argument
-`skincolor`, with the hexadecimal RGB color code.
+`color`, with the hexadecimal RGB color code.
 
 # Examples
 
