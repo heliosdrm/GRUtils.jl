@@ -204,8 +204,8 @@ function guide(::Val{:errorbar}, g, x, y)
 end
 
 function guide(::Val{:bar}, g, x, y)
-    if haskey(g.attributes, :fillcolor)
-        colorind = colorindex(Int(g.attributes[:fillcolor]))
+    if haskey(g.attributes, :color)
+        colorind = colorindex(Int(g.attributes[:color]))
     else
         ind = get(COLOR_INDICES, :barfill, 0)
         ind = COLOR_INDICES[:barfill] = ind + 1

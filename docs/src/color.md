@@ -16,7 +16,7 @@ By default there are light and dark flavours of both standard and solarized sche
 ```@example colors
 Figure((600,300)) # hide
 geoms = [GRUtils.Geometry(:bar, x=[-2,-1], y=[-2,-1], # hide
-    fillcolor=GRUtils.switchbytes(UInt32(GRUtils.GR.inqcolor(i)))) # hide
+    color=GRUtils.switchbytes(UInt32(GRUtils.GR.inqcolor(i)))) # hide
     for i ∈ GRUtils.BASIC_COLORS[3:end]] # hide
 axes = GRUtils.Axes(:axes2d, geoms, xlim=(0,1), ylim=(0,1), xticks=(0,0), yticks=(0,0)) # hide
 for (s, schemename) in enumerate(("LIGHT", "DARK", "SOLARIZED LIGHT", "SOLARIZED DARK")) # hide
@@ -49,7 +49,7 @@ When various geometries of the same kind are included in the same plot (e.g. lin
 ```@example colors
 Figure((600, 150)) # hide
 geoms = [GRUtils.Geometry(:bar, x=[-0.5,0.5] .+ i, y=[0,1], # hide
-    fillcolor=GRUtils.switchbytes( # hide
+    color=GRUtils.switchbytes( # hide
         UInt32(GRUtils.GR.inqcolor(GRUtils.SERIES_COLORS[i])) # hide
     )) # hide
     for i = 1:20] # hide
@@ -66,8 +66,8 @@ draw(gcf()) # hide
 Custom colors can be defined as hexadecimal codes joining the values of 8-bit RGB channels. E.g. the number \#FF6600 defines a bright orange color (R = \#FF, G = \#66, B = \#00). Those codes can be defined directly as integer numbers, or from the RGB values normalized between 0 and 1, with the function `color` (unexported). For instance, the code \#FF6600 can be defined in any of the following ways:
 
 ```julia
-0xff6600           # UInt32 number, equivalent to 16_737_792
-color(1, 0.4, 0)   # R = 1, G = 0.4, B= 0
+0xff6600                   # UInt32 number, equivalent to 16_737_792
+GRUtils.color(1, 0.4, 0)   # R = 1, G = 0.4, B= 0
 ```
 
 !!! warning
@@ -97,8 +97,7 @@ The high-contrast color set is managed automatically during the creation of plot
 * Moreover, user-defined colors can be specified for the following attributes of some geometries:
     * `linecolor` for lines,
     * `markercolor` for markers,
-    * `fillcolor` for filled areas.
-    * `skincolor` for isosurfaces.
+    * `color` for filled areas in bars, isosurfaces, etc.
 
 This can be done during the creation of the plots, as in the following examples:
 
