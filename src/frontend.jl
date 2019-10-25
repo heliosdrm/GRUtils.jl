@@ -867,7 +867,7 @@ a wireframe plot. It can receive one of the following:
 
 Also use the attributes `color` and `linecolor` to set the color of the
 surface and lines of the mesh, as RGB hexadecimal color values.
- 
+
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
 provided points, a value of 0 will be used.
@@ -1151,6 +1151,73 @@ $(_example("oplot"))
 """
 oplot(args...; kwargs...) = oplot!(gcf(), args...; kwargs...)
 
+function _setargs_annotation(f, x, y, s::AbstractString; kwargs...)
+    # only works in axes2d
+    p = currentplot(f)
+    p.axes.kind ≠ :axes2d && throw(ErrorException("annotations are only available for 2D plots"))
+    # Get coordinates of text box in NDC
+    GR.savestate()
+    GR.setwindow(p.axes.ranges[:x]..., p.axes.ranges[:y]...)
+    GR.setviewport(p.viewport.inner...)
+    GR.selntran(0)
+    width, height = stringsize(s, true)
+    GR.restorestate()
+    halign = get(kwargs, :halign, "left")
+    valign = get(kwargs, :valign, "bottom")
+    if halign == "center"
+        x -= 0.5 * width
+    elseif halign == "right"
+        x -= width
+    end
+    if valign == "center"
+        y -= 0.5 * height
+    elseif valign == "right"
+        y -= height
+    end
+    (([x, x+width], [y, y+height]), (; kwargs..., label=s))
+end
+
+@plotfunction(_annotation, kind=:text, geom=:text, axes=:axes2d, setargs=_setargs_annotation)
+
+function annotations!(f::Figure, x::Real, y::Real, s::AbstractString; kwargs...)
+    holdstate = get(currentplot(f).attributes, :hold, false)
+    hold!(currentplot(f), true)
+    _annotation!(f, x, y, s; kwargs...)
+    hold!(currentplot(f), holdstate)
+    draw(f)
+end
+
+function annotations!(f::Figure, x::AbstractArray, y::AbstractArray, s::AbstractArray{<:AbstractString}; kwargs...)
+    p = currentplot(f)
+    kwargs_ext = (; p.attributes..., kwargs...)
+    for i = 1:length(s)-1
+        args, kwargs_ext = _setargs_annotation(f, x[i], y[i], s[i]; kwargs_ext...)
+        append!(p.geoms, GRUtils.geometries(:text, args...; GRUtils.geom_attributes(;kwargs_ext...)...))
+    end
+    annotations!(f, x[end], y[end], s[end]; kwargs...)
+end
+
+"""
+    annotations(x, y, s)
+
+Add one ore more text annotations to the current plot.
+
+`x` and `y` can be scalars or vectors of coordinates, and `s` a string
+or a vector of strings, respectively. Annotations are only available
+for 2-D plots.
+
+By default the coordinates indicate the lower left corner of the text box.
+This can be changed by the following keyword arguments:
+
+* `halign` for the horizontal alignment (`"left"`, `"center"` or `"right"`).
+* `valign` for the vertical alignment (`"bottom"`, `"center"` or `"top"`).
+
+# Examples
+```julia
+$(_example("annotations"))
+```
+"""
+annotations(x, y, s; kwargs...) = annotations!(gcf(), x, y, s; kwargs...)
 
 """
     savefig(filename[, fig])
