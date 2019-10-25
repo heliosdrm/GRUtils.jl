@@ -5,5 +5,3 @@ y = (Y' .* ones(20))[:]
 u = x .* vec(sqrt.(X'.^2 .+ Y.^2))
 v = y .* vec(sqrt.(X'.^2 .+ Y.^2))
 GRUtils.quiver(x, y, u, y, arrowscale=0.1)
-GRUtils.quiver([0], [0], [1], [0])
-currentplot().geoms[1]

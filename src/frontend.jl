@@ -624,20 +624,50 @@ function plot3!(f::Figure, x, y, z, u, v, args...; kwargs...)
     draw(f)
 end
 
+# Quiver:
+
+# Arrow head corners for a given relative size
+# The arrow flanks are 22.5º away from (u,v)
+# The point of the arrow is at (0, 0)
+# Arrows are scaled by xf, yf in the X, Y axes
+function arrowhead(u, v, hsize, xf, yf)
+    x1 = -0.1848 * hsize * u - 0.0765 * hsize * v *xf
+    x2 = x1 + 0.1531 * hsize * v *xf
+    y1 = -0.1848 * hsize * v + 0.0765 * hsize * u * yf
+    y2 = y1 - 0.1531 * hsize * u * yf
+    return (x1, x2, y1, y2)
+end
+
+# Calculate the x and y factors taking into account
+# the ranges of the area covered by the arrows
+function quiver_xyfactors(x, y, u, v)
+    xrange = max(maximum(x), maximum(x.+u)) - min(minimum(x), minimum(x.+u))
+    yrange = max(maximum(y), maximum(y.+v)) - min(minimum(y), minimum(y.+v))
+    xrange = max(xrange, 0.01*yrange)
+    yrange = max(yrange, 0.01*xrange)
+    xf = xrange/yrange
+    yf = yrange/xrange
+    return xf, yf
+end
+
 function _setargs_quiver(f, x, y, u, v, args...; arrowscale=1.0, headsize=1.0, kwargs...)
+    u = u .* arrowscale
+    v = v .* arrowscale
+    xf, yf = quiver_xyfactors(x, y, u, v)
     n = length(x)
     xa = zeros(4n)
     ya = zeros(4n)
     for i = 1:n
         j = 4i - 3
+        x1, x2, y1, y2 = arrowhead(u[i], v[i], headsize, xf, yf)
         xa[j] = x[i]
-        xa[j+1] = x[i] + arrowscale*u[i]
-        xa[j+2] = xa[j+1] - 0.1732headsize*arrowscale*u[i] - 0.1headsize*arrowscale*v[i]
-        xa[j+3] = xa[j+2] + 0.2headsize*arrowscale*v[i]
+        xa[j+1] = x[i] + u[i]
+        xa[j+2] = xa[j+1] + x1
+        xa[j+3] = xa[j+1] + x2
         ya[j] = y[i]
-        ya[j+1] = y[i] + arrowscale*v[i]
-        ya[j+2] = ya[j+1] - 0.1732headsize*arrowscale*v[i] + 0.1headsize*arrowscale*u[i]
-        ya[j+3] = ya[j+2] - 0.2headsize*arrowscale*u[i]
+        ya[j+1] = y[i] + v[i]
+        ya[j+2] = ya[j+1] + y1
+        ya[j+3] = ya[j+1] + y2
     end
     return ((xa, ya, args...), kwargs)
 end

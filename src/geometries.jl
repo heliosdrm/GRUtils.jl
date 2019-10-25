@@ -398,9 +398,22 @@ end
 function draw(g::Geometry, ::Val{:quiver})::Nothing
     _uselinespec(g.spec, g.attributes)
     GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+    vp = GR.inqviewport()
+    # x, y factors to correct viewport proportions
+    ndcranges = (vp[2]-vp[1]), (vp[4]-vp[3])
+    yfactor, xfactor = ndcranges ./ maximum(ndcranges)
     for i = 1:4:length(g.x)-3
-        GR.polyline(g.x[i:i+2], g.y[i:i+2])
-        GR.polyline([g.x[i+1], g.x[i+3]], [g.y[i+1], g.y[i+3]])
+        GR.polyline(g.x[i:i+1], g.y[i:i+1])
+        GR.polyline(
+            [
+                g.x[i+1]*(1 - xfactor) + g.x[i+2]*xfactor, g.x[i+1],
+                g.x[i+1]*(1 - xfactor) + g.x[i+3]*xfactor
+            ],
+            [
+                g.y[i+1]*(1 - yfactor) + g.y[i+2]*yfactor, g.y[i+1],
+                g.y[i+1]*(1 - yfactor) + g.y[i+3]*yfactor
+            ],
+        )
     end
     return nothing
 end
