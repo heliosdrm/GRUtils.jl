@@ -25,7 +25,7 @@ for (s, schemename) in enumerate(("LIGHT", "DARK", "SOLARIZED LIGHT", "SOLARIZED
     legend("red","green","blue","cyan","yellow","magenta", location="center",maxrows=3) # hide
     title("\\n$schemename") # hide
 end # hide
-draw(gcf()) # hide
+gcf() # hide
 ```
 
 ## Colormaps
@@ -58,7 +58,7 @@ axes = GRUtils.Axes(:axes2d, geoms, # hide
     xlim=(0.5,20.5) # hide
 ) # hide
 GRUtils.makeplot!(currentplot(), axes, geoms) # hide
-draw(gcf()) # hide
+gcf() # hide
 ```
 
 ## User-defined colors
