@@ -650,7 +650,7 @@ function quiver_xyfactors(x, y, u, v)
     return xf, yf
 end
 
-function _setargs_quiver(f, x, y, u, v, args...; arrowscale=1.0, headsize=1.0, kwargs...)
+function _setargs_quiver(f, x, y, u, v, spec=""; arrowscale=1.0, headsize=1.0, kwargs...)
     u = u .* arrowscale
     v = v .* arrowscale
     xf, yf = quiver_xyfactors(x, y, u, v)
@@ -669,12 +669,33 @@ function _setargs_quiver(f, x, y, u, v, args...; arrowscale=1.0, headsize=1.0, k
         ya[j+2] = ya[j+1] + y1
         ya[j+3] = ya[j+1] + y2
     end
-    return ((xa, ya, args...), kwargs)
+    if !isempty(spec)
+        kwargs = (; spec=spec, kwargs...)
+    end
+    return ((xa, ya), kwargs)
 end
 
-@plotfunction(quiver, geom = :quiver, axes = :axes2d, setargs = _setargs_quiver)
+@plotfunction(quiver, geom = :quiver, axes = :axes2d, setargs = _setargs_quiver, docstring="""
+    quiver(x, y, u, v[, spec; kwargs...])
 
-function _setargs_quiver3(f, x, y, z, u, v, w, args...; arrowscale=1.0, headsize=1.0, kwargs...)
+Draw a vector field at points `(x,y)` with arrows
+of size `(u,v)`.
+
+The style and color of the arrow lines and -- optionally --
+the markers drawn at the `(x,y)` points can be configured through the
+format string `spec` and keyword arguments, as in [`plot`](@ref) and other functions.
+
+Use the keyword arguments `arrowscale` and `headsize` to give a scale factor
+for the size of the arrows and their heads.
+
+# Examples
+
+```julia
+$(_example("quiver"))
+```
+""")
+
+function _setargs_quiver3(f, x, y, z, u, v, w, spec=""; arrowscale=1.0, headsize=1.0, kwargs...)
     n = length(x)
     xa = zeros(2n)
     ya = zeros(2n)
@@ -688,10 +709,35 @@ function _setargs_quiver3(f, x, y, z, u, v, w, args...; arrowscale=1.0, headsize
         za[j] = z[i]
         za[j+1] = z[i] + arrowscale*w[i]
     end
-    return ((xa, ya, args...), kwargs)
+    if !isempty(spec)
+        kwargs = (; spec=spec, kwargs...)
+    end
+    return ((xa, ya, za), kwargs)
 end
 
-@plotfunction(quiver3, geom = :quiver3, axes = :axes3d, setargs = _setargs_quiver3)
+@plotfunction(quiver3, geom = :quiver3, axes = :axes3d, setargs = _setargs_quiver3, docstring="""
+    quiver3(x, y, z, u, v, w[, spec; kwargs...])
+
+Draw a three-dimensional vector field at points `(x,y,z)` with arrows
+of size `(u,v,w)`.
+
+The style and color of the arrow lines and -- optionally --
+the markers drawn at the `(x,y,z)` points can be configured through the
+format string `spec` and keyword arguments, as in [`plot`](@ref) and other functions.
+
+Use the keyword argument `arrowscale` to give a scale factor for the size of the arrows.
+
+!!! note
+    
+    Unlike in the case of 2d [`quiver`](@ref) plots, the 3-D arrows of
+    `quiver3` do not have heads.
+
+# Examples
+
+```julia
+$(_example("quiver3"))
+```
+""")
 
 _setargs_scatter3(f, x, y, z; kwargs...) = ((x,y,z), kwargs)
 _setargs_scatter3(f, x, y, z, c; kwargs...) = ((x,y,z,c), (;colorbar=true, kwargs...))

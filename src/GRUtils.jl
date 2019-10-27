@@ -3,7 +3,7 @@ module GRUtils
 import GR
 
 export Figure, gcf, subplot, currentplot, draw, savefig,
-    plot, plot3, polar, scatter, scatter3, stair, stem, oplot,
+    plot, plot3, polar, quiver, quiver3, scatter, scatter3, stair, stem, oplot,
     errorbar, barplot, histogram, polarhistogram,
     contour, contourf, shade, surface, tricont, trisurf, volume, wireframe,
     heatmap, polarheatmap, hexbin, imshow, isosurface,
@@ -14,7 +14,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig,
     zflip, zlabel, zlim, zlog, zticks,
     colormap, colorscheme,
 
-    subplot!, plot!, plot3!, polar!, scatter!, scatter3!, stair!, stem!, oplot!,
+    subplot!, plot!, plot3!, polar!, quiver!, quiver3!, scatter!, scatter3!, stair!, stem!, oplot!,
     errorbar!, barplot!, histogram!, polarhistogram!,
     contour!, contourf!, shade!, surface!, tricont!, trisurf!, volume!, wireframe!,
     heatmap!, polarheatmap!, hexbin!, imshow!, isosurface!,

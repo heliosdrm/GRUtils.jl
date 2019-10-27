@@ -11,6 +11,7 @@ open("./src/api/plotting.md", "w") do file begin
             ("Scatter plots", ("scatter", "scatter3")),
             ("Stem plots", ("stem", "errorbar")),
             ("Bar plots", ("barplot",)),
+            ("Vector fields", ("quiver", "quiver3")),
             ("Histograms", ("histogram", "polarhistogram", "hexbin")),
             ("Contour plots", ("contour", "contourf", "tricont")),
             ("Surface plots", ("surface", "trisurf", "wireframe")),
