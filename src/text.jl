@@ -3,18 +3,24 @@ function search(s::AbstractString, c::Char)
     result != nothing ? result : 0
 end
 
-function inqtext(x, y, s)
+function inqtext(x, y, s, wc=false)
     if length(s) >= 2 && s[1] == '$' && s[end] == '$'
-        GR.inqmathtex(x, y, s[2:end-1])
+        tbx, tby = GR.inqmathtex(x, y, s[2:end-1])
     elseif search(s, '\\') != 0 || search(s, '_') != 0 || search(s, '^') != 0
-        GR.inqtextext(x, y, s)
+        tbx, tby = GR.inqtextext(x, y, s)
     else
-        GR.inqtext(x, y, s)
+        tbx, tby = GR.inqtext(x, y, s)
     end
+    if wc
+        for i = 1:4
+            tbx[i], tby[i] = GR.ndctowc(tbx[i], tby[i])
+        end
+    end
+    tbx, tby
 end
 
-function stringsize(s)
-    tbx, tby = inqtext(0, 0, s)
+function stringsize(s, wc=false)
+    tbx, tby = inqtext(0, 0, s, wc)
     w = tbx[2] - tbx[1]
     h = tby[4] - tby[1]
     w, h

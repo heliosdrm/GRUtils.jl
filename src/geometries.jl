@@ -342,8 +342,8 @@ function draw(g::Geometry, ::Val{:scatter3})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:bar})::Nothing
-    if haskey(g.attributes, :fillcolor)
-        colorind = colorindex(Int(g.attributes[:fillcolor]))
+    if haskey(g.attributes, :color)
+        colorind = colorindex(Int(g.attributes[:color]))
     else
         ind = get(COLOR_INDICES, :barfill, 0)
         ind = COLOR_INDICES[:barfill] = ind + 1
@@ -460,7 +460,10 @@ function draw(g::Geometry, ::Val{:surface})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:wireframe})::Nothing
-    GR.setfillcolorind(0) # TBD: let choose the color
+    meshcolor = haskey(g.attributes, :color) ? colorindex(Int(g.attributes[:color])) : 0
+    linecolor = haskey(g.attributes, :linecolor) ? colorindex(Int(g.attributes[:linecolor])) : 1
+    GR.setfillcolorind(meshcolor)
+    GR.setlinecolorind(linecolor)
     GR.surface(g.x, g.y, g.z, GR.OPTION_FILLED_MESH)
 end
 
@@ -503,10 +506,10 @@ function draw(g::Geometry, ::Val{:isosurf})::Nothing
     nx, ny, nz = Int.(g.x)
     isovalue = g.y[1]
     values = UInt16.(reshape(g.z, (nx, ny, nz)))
-    if haskey(g.attributes, :skincolor)
-        skincolor = rgb(UInt32(g.attributes[:skincolor]))
+    if haskey(g.attributes, :color)
+        meshcolor = rgb(UInt32(g.attributes[:color]))
     else
-        skincolor = (0, 0.5, 0.8)
+        meshcolor = (0, 0.5, 0.8)
     end
     GR.selntran(0)
     GR.gr3.clear()
@@ -514,7 +517,7 @@ function draw(g::Geometry, ::Val{:isosurf})::Nothing
             (-1., -1., -1.),
             round(Int64, isovalue * (2^16-1)))
     GR.gr3.setbackgroundcolor(1, 1, 1, 0)
-    GR.gr3.drawmesh(mesh, 1, (0, 0, 0), (0, 0, 1), (0, 1, 0), skincolor, (1, 1, 1))
+    GR.gr3.drawmesh(mesh, 1, (0, 0, 0), (0, 0, 1), (0, 1, 0), meshcolor, (1, 1, 1))
     vp = GR.inqviewport()
     GR.gr3.drawimage(vp..., 500, 500, GR.gr3.DRAWABLE_GKS)
     GR.gr3.deletemesh(mesh)
@@ -538,3 +541,5 @@ function draw(g::Geometry, ::Val{:volume})::Vector{Float64}
     dmin, dmax = GR.gr3.volume(v, algorithm)
     [dmin, dmax]
 end
+
+draw(g::Geometry, ::Val{:text})::Nothing = text(g.x[1], g.y[1], g.label, true)

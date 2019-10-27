@@ -18,7 +18,8 @@ open("./src/api/plotting.md", "w") do file begin
             ("Volume rendering", ("volume",)),
             ("Heatmaps", ("heatmap", "shade")),
             ("Images", ("imshow",)),
-            ("Isosurfaces", ("isosurface",))
+            ("Isosurfaces", ("isosurface",)),
+            ("Text", ("annotations",))
         )
             section = data[1]
             write(file, "## $section\n")

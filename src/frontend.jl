@@ -1,5 +1,6 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :fillcolor, :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :skincolor, :stair_position, :xform]
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :color,
+    :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
 
@@ -423,7 +424,10 @@ function groupedbars(heights; barwidth=0.8, baseline=0.0, kwargs...)
     (wc, hc)
 end
 
-function _setargs_bar(f, labels, heights; horizontal=false, kwargs...)
+function _setargs_bar(f, labels, heights; fillcolor=nothing, horizontal=false, kwargs...)
+    if fillcolor ≠ nothing # deprecate?
+        kwargs = (; color=fillcolor, kwargs...)
+    end
     wc, hc = barcoordinates(heights; kwargs...)
     if horizontal
         args = (hc, wc)
@@ -464,7 +468,7 @@ can also be used to modify the aspect of the bars, which by default is:
 
 The color of the bars is selected automatically, unless
 a specific hexadecimal RGB color code is given through
-the keyword argument `fillcolor`.
+the keyword argument `color`.
 
 # Examples
 
@@ -497,7 +501,10 @@ function hist(x, nbins=0, baseline=0.0)
     (wc, hc)
 end
 
-function _setargs_hist(f, x; nbins = 0, horizontal = false, kwargs...)
+function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, kwargs...)
+    if fillcolor ≠ nothing # deprecate?
+        kwargs = (; color=fillcolor, kwargs...)
+    end
     # Define baseline - 0.0 by default, unless using log scale
     if get(kwargs, :ylog, false) || horizontal && get(kwargs, :xlog, false)
         baseline = 1.0
@@ -521,7 +528,7 @@ The following keyword arguments can be supplied:
     the number of bins is computed as `3.3 * log10(n) + 1`,  with `n` being the
     number of elements in `data`.
 * `horizontal`: whether the histogram should be horizontal (`false` by default).
-* `fillcolor`: hexadecimal RGB color code for the bars.
+* `color`: hexadecimal RGB color code for the bars.
 
 !!! note
 
@@ -561,7 +568,7 @@ The following keyword arguments can be supplied:
     grid are presented as factors of π.
 * `fullcircle`: Set this argument to `true` to scale the angular coordinates of
     the histogram and make the bars span over the whole circle.
-* `fillcolor`: hexadecimal RGB color code for the bars.
+* `color`: hexadecimal RGB color code for the bars.
 
 !!! note
 
@@ -973,6 +980,9 @@ a wireframe plot. It can receive one of the following:
 - *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
     and a callable to determine `z` values.
 
+Also use the attributes `color` and `linecolor` to set the color of the
+surface and lines of the mesh, as RGB hexadecimal color values.
+
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
 provided points, a value of 0 will be used.
@@ -1101,7 +1111,10 @@ $(_example("imshow"))
 ```
 """)
 
-function _setargs_isosurf(f, v, isovalue; kwargs...)
+function _setargs_isosurf(f, v, isovalue; skincolor=nothing, kwargs...)
+    if skincolor ≠ nothing # deprecate?
+        kwargs = (; color=skincolor, kwargs...)
+    end
     values = round.((v .- _min(v)) ./ (_max(v) .- _min(v)) .* (2^16-1))
     dimensions = float.(collect(size(v)))
     isoval_norm = (isovalue - _min(v)) / (_max(v) - _min(v))
@@ -1121,7 +1134,7 @@ considered to be outside the surface, and the values lower than `isovalue` are
 inside the surface.
 
 The color of the isosurface can be chosen with the keyword argument
-`skincolor`, with the hexadecimal RGB color code.
+`color`, with the hexadecimal RGB color code.
 
 # Examples
 
@@ -1253,6 +1266,73 @@ $(_example("oplot"))
 """
 oplot(args...; kwargs...) = oplot!(gcf(), args...; kwargs...)
 
+function _setargs_annotation(f, x, y, s::AbstractString; kwargs...)
+    # only works in axes2d
+    p = currentplot(f)
+    p.axes.kind ≠ :axes2d && throw(ErrorException("annotations are only available for 2D plots"))
+    # Get coordinates of text box in NDC
+    GR.savestate()
+    GR.setwindow(p.axes.ranges[:x]..., p.axes.ranges[:y]...)
+    GR.setviewport(p.viewport.inner...)
+    GR.selntran(0)
+    width, height = stringsize(s, true)
+    GR.restorestate()
+    halign = get(kwargs, :halign, "left")
+    valign = get(kwargs, :valign, "bottom")
+    if halign == "center"
+        x -= 0.5 * width
+    elseif halign == "right"
+        x -= width
+    end
+    if valign == "center"
+        y -= 0.5 * height
+    elseif valign == "right"
+        y -= height
+    end
+    (([x, x+width], [y, y+height]), (; kwargs..., label=s))
+end
+
+@plotfunction(_annotation, kind=:text, geom=:text, axes=:axes2d, setargs=_setargs_annotation)
+
+function annotations!(f::Figure, x::Real, y::Real, s::AbstractString; kwargs...)
+    holdstate = get(currentplot(f).attributes, :hold, false)
+    hold!(currentplot(f), true)
+    _annotation!(f, x, y, s; kwargs...)
+    hold!(currentplot(f), holdstate)
+    draw(f)
+end
+
+function annotations!(f::Figure, x::AbstractArray, y::AbstractArray, s::AbstractArray{<:AbstractString}; kwargs...)
+    p = currentplot(f)
+    kwargs_ext = (; p.attributes..., kwargs...)
+    for i = 1:length(s)-1
+        args, kwargs_ext = _setargs_annotation(f, x[i], y[i], s[i]; kwargs_ext...)
+        append!(p.geoms, GRUtils.geometries(:text, args...; GRUtils.geom_attributes(;kwargs_ext...)...))
+    end
+    annotations!(f, x[end], y[end], s[end]; kwargs...)
+end
+
+"""
+    annotations(x, y, s)
+
+Add one ore more text annotations to the current plot.
+
+`x` and `y` can be scalars or vectors of coordinates, and `s` a string
+or a vector of strings, respectively. Annotations are only available
+for 2-D plots.
+
+By default the coordinates indicate the lower left corner of the text box.
+This can be changed by the following keyword arguments:
+
+* `halign` for the horizontal alignment (`"left"`, `"center"` or `"right"`).
+* `valign` for the vertical alignment (`"bottom"`, `"center"` or `"top"`).
+
+# Examples
+```julia
+$(_example("annotations"))
+```
+"""
+annotations(x, y, s; kwargs...) = annotations!(gcf(), x, y, s; kwargs...)
 
 """
     savefig(filename[, fig])
