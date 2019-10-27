@@ -12,6 +12,7 @@ functionlist = (
     ("Scatter plots", ("scatter", "scatter3")),
     ("Stem plots", ("stem",)),
     ("Bar plots", ("barplot",)),
+    ("Vector fields", ("quiver", "quiver3")),
     ("Histograms", ("histogram", "polarhistogram", "hexbin")),
     ("Contour plots", ("contour", "contourf", "tricont")),
     ("Surface plots", ("surface", "trisurf", "wireframe")),

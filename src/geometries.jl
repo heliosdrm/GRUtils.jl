@@ -395,6 +395,46 @@ function draw(g::Geometry, ::Val{:polarbar})::Nothing
     end
 end
 
+function draw(g::Geometry, ::Val{:quiver})::Nothing
+    mask = _uselinespec(g.spec, g.attributes)
+    GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+    vp = GR.inqviewport()
+    # x, y factors to correct viewport proportions
+    ndcranges = (vp[2]-vp[1]), (vp[4]-vp[3])
+    yfactor, xfactor = ndcranges ./ maximum(ndcranges)
+    for i = 1:4:length(g.x)-3
+        GR.polyline(g.x[i:i+1], g.y[i:i+1])
+        GR.polyline(
+            [
+                g.x[i+1]*(1 - xfactor) + g.x[i+2]*xfactor, g.x[i+1],
+                g.x[i+1]*(1 - xfactor) + g.x[i+3]*xfactor
+            ],
+            [
+                g.y[i+1]*(1 - yfactor) + g.y[i+2]*yfactor, g.y[i+1],
+                g.y[i+1]*(1 - yfactor) + g.y[i+3]*yfactor
+            ],
+        )
+    end
+    if hasmarker(mask)
+        GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
+        GR.polymarker(view(g.x, 1:4:length(g.x)-3), view(g.y, 1:4:length(g.y)-3))
+    end
+    return nothing
+end
+
+function draw(g::Geometry, ::Val{:quiver3})::Nothing
+    mask = _uselinespec(g.spec, g.attributes)
+    GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
+    for i = 1:2:length(g.x)-1
+        GR.polyline3d(g.x[i:i+1], g.y[i:i+1], g.z[i:i+1])
+    end
+    if hasmarker(mask)
+        GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
+        GR.polymarker3d(view(g.x, 1:2:length(g.x)-1), view(g.y, 1:2:length(g.y)-1), view(g.z, 1:2:length(g.z)-1))
+    end
+    return nothing
+end
+
 function draw(g::Geometry, ::Val{:contour})::Nothing
     clabels = get(g.attributes, :clabels, 1.0)
     GR.contour(g.x, g.y, g.c, g.z, Int(clabels))
