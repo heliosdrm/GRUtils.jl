@@ -198,3 +198,11 @@ isosurface
 Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/isosurface.jl") # hide
 ```
+## Text
+```@docs
+annotations
+```
+```@example plot
+Figure(); # hide
+Base.include(GRUtils, "../examples/docstrings/annotations.jl") # hide
+```
