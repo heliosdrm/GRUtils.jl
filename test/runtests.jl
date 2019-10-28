@@ -1,5 +1,5 @@
 using Test
-using Random
+using Random, Printf
 using GRUtils
 
 Random.seed!(111)
