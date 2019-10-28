@@ -27,7 +27,7 @@ functionlist = (
 
 # GR.gr3 has an issue in some systems
 win = Sys.iswindows()
-in_gr3 = ("surface", "volume", "shade", "isosurface")
+in_gr3 = (,) #("surface", "volume", "shade", "isosurface")
 
 #Plotting functions
 @testset "$(functionlist[g][1])" for g in 1:length(functionlist)
