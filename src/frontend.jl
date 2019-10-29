@@ -1069,7 +1069,27 @@ $(_example("heatmap"))
 ```
 """)
 
-@plotfunction(polarheatmap, geom = :polarheatmap, axes = :polar, setargs = _setargs_heatmap, kwargs = (colorbar=true, overlay_axes=true, ratio=1.0))
+@plotfunction(polarheatmap, geom = :polarheatmap, axes = :polar, setargs = _setargs_heatmap,
+kwargs = (colorbar=true, overlay_axes=true, ratio=1.0), docstring="""
+    polarheatmap(data; kwargs...)
+
+Draw a polar heatmap
+
+The current colormap is used to display a two-dimensional array `data` as a polar heatmap.
+
+If `data` is an *N*×*M* array, the cells of the matrix will be plotted in
+a circle divided in *M* angular sectors and *N* rings, such that
+the values of the first row will be concentrated in the center of the circle,
+and the following rows will be drawn in increasing concentric rings.
+The columns of the array are drawn as radii of the circle in a
+counterclockwise order, starting and ending in horizontal axis pointing to the right.
+
+# Examples
+
+```julia
+$(_example("polarheatmap"))
+```
+""")
 
 _setargs_hexbin(f, x, y; kwargs...) = ((x, y, emptyvector(Float64), [0.0, 1.0]), kwargs)
 

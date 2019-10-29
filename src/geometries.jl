@@ -495,8 +495,8 @@ function draw(g::Geometry, ::Val{:heatmap})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:polarheatmap})::Nothing
-    w = length(g.x)
-    h = length(g.y)
+    w = length(g.x) == 1 ? Int(g.x[1]) : length(g.x) - 1
+    h = length(g.y) == 1 ? Int(g.y[1]) : length(g.y) - 1
     cmin, cmax = extrema(g.c)
     data = map(x -> normalize_color(x, cmin, cmax), g.c)
     colors = Int[round(Int, 1000 + _i * 255) for _i ∈ data]

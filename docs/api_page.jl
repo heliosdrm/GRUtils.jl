@@ -16,7 +16,7 @@ open("./src/api/plotting.md", "w") do file begin
             ("Contour plots", ("contour", "contourf", "tricont")),
             ("Surface plots", ("surface", "trisurf", "wireframe")),
             ("Volume rendering", ("volume",)),
-            ("Heatmaps", ("heatmap", "shade")),
+            ("Heatmaps", ("heatmap", "polarheatmap", "shade")),
             ("Images", ("imshow",)),
             ("Isosurfaces", ("isosurface",)),
             ("Text", ("annotations",))

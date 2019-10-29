@@ -17,7 +17,7 @@ functionlist = (
     ("Contour plots", ("contour", "contourf", "tricont")),
     ("Surface plots", ("surface", "trisurf", "wireframe")),
     ("Volume rendering", ("volume",)),
-    ("Heatmaps", ("heatmap", "shade")),
+    ("Heatmaps", ("heatmap", "polarheatmap", "shade")),
     ("Images", ("imshow",)),
     ("Isosurfaces", ("isosurface",)),
     ("Attributes", ("aspectratio", "ticks")),
