@@ -735,7 +735,7 @@ format string `spec` and keyword arguments, as in [`plot`](@ref) and other funct
 Use the keyword argument `arrowscale` to give a scale factor for the size of the arrows.
 
 !!! note
-    
+
     Unlike in the case of 2d [`quiver`](@ref) plots, the 3-D arrows of
     `quiver3` do not have heads.
 
@@ -1016,31 +1016,46 @@ $(_example("tricont"))
 ```
 """)
 
-function _setargs_heatmap(f, data; kwargs...)
-    h, w = size(data)
+function _setargs_heatmap(f, args...; kwargs...)
+    if length(args) == 1
+        data = args[1]
+        h, w = float.(size(data))
+        x = [w]
+        y = [h]
+        xl = (0.0, w)
+        yl = (0.0, h)
+    else
+        x, y, data = args
+        xl = extrema(x)
+        yl = extrema(y)
+    end
     if get(kwargs, :xflip, false)
         data = reverse(data, dims=1)
     end
     if get(kwargs, :yflip, false)
         data = reverse(data, dims=2)
     end
-    kwargs = (; xlim = (0.0, float(w)), ylim = (0.0, float(h)), kwargs...)
-    ((1.0:w, 1.0:h, emptyvector(Float64), vec(data')), kwargs)
+    kwargs = (; xlim = xl, ylim = yl, kwargs...)
+    ((x, y, emptyvector(Float64), vec(data')), kwargs)
 end
 
 @plotfunction(heatmap, geom = :heatmap, axes = :axes2d, setargs = _setargs_heatmap,
 kwargs = (colorbar=true, tickdir=-1), docstring="""
-    heatmap(data; kwargs...)
+    heatmap([x, y,] data; kwargs...)
 
 Draw a heatmap.
 
 The current colormap is used to display a two-dimensional array `data` as a heatmap.
 
 If `data` is an *N*×*M* array, the cells of the heatmap will be plotted in
-an uniform grid of square cells,spanning the interval `[1, M+1]` in the X-axis,
-and `[1, N+1]` in the Y-axis.
+an grid of rectangular cells, whose edges are defined by the coordinates
+`x` (a sorted vector with `M+1` values) and `y` (a sorted vector with `N+1` values).
+
+If `x` and `y` are not given, a uniform grid is drawn spanning the interval
+`[1, M+1]` in the X-axis, and `[1, N+1]` in the Y-axis.
+
 The array is drawn with its first value in the bottom left corner, so in some
-cases it may be neccessary to flip the columns.
+cases it may be neccessary to flip the axes.
 
 By default column and row indices are used for the x- and
 y-axes, respectively, so setting the axis limits is recommended. Also note that the
