@@ -8,10 +8,9 @@ Random.seed!(111)
 
 GRUtils stores the data generated in the creation of plots in objects of the type `Figure`. There is a global "current figure" that is silently used by all the basic functions to create, modify and save plots. New figures can be created with the [`Figure`](@ref) constructor, which in its simplest form is just a call to `Figure()`.
 
-As all Julia objects, figures can be assigned to variables, a useful resource to work with different figures. The current figure can be retrieved with the function `gcf()` -- standing for "get current figure". Also, a figure that is stored in the variable `fig` can be
-made the current figure with `gcf(fig)`.
+As all Julia objects, figures can be assigned to variables, a useful resource to work with different figures. The current figure can be retrieved with the function `gcf()` -- standing for "get current figure", and is also returned by plotting functions like `plot`. On the other hand, a figure that is stored in the variable `fig` can be made the current figure with `gcf(fig)`.
 
-Most functions to work with plots in GRUtils have methods or variants that allow to specifiy what figure will be used. For instance, all plotting functions (e.g. `plot`, `scatter`, `histogram`, etc.) have "in-place" versions whose name end with an exclamation mark (i.e. `plot!`, `scatter!`, `histogram!`...). The first argument of those functions is the `Figure` object where the plot will be created. Let's see an example:
+Most functions to work with plots in GRUtils have methods or variants that allow to specify what figure will be used. For instance, all plotting functions (e.g. `plot`, `scatter`, `histogram`, etc.) have "in-place" versions whose name end with an exclamation mark (i.e. `plot!`, `scatter!`, `histogram!`...). The first argument of those functions is the `Figure` object where the plot will be created. Let's see an example:
 
 ```julia
 plot(x, y)       # creates a plot in the current figure
@@ -24,13 +23,17 @@ gcf(fig)         # now `gcf()` will refer to `fig` again
 
 To save a particular figure in an image file, give the variable that contains the figure as second argument to the function `savefig`, i.e. `savefig(filename, fig)`.
 
-Some programming environments may provide only one graphic device, but you can still work with various figures, although only one can be seen at the same time. To show again a figure that might have been replaced by another on the display, you can use the function `draw`:
+Some programming environments may provide only one graphic device, but you can still work with various figures, although only one can be seen at the same time. To show again a figure that might have been replaced by another on the display, you just have to "call" it, or explicitly use the `display` function on it, like this:
 
 ```julia
-draw(fig) # `fìg` is a figure with a plot to be shown
+# `fìg` is a figure with a plot to be shown
+fig
+display(fig)  # Normally the same as just calling `fig`
 ```
 
-The `draw` function also comes in handy to update the visualization of a figure that might have been modified after its creation.
+This action also comes in handy to update the visualization of a figure that might have been modified after its creation.
+
+On the other hand, `show(fig)` will normally show the textual representation of the figure on the screen.
 
 ## Subplots
 
@@ -55,5 +58,5 @@ scatter(y, z)  # Scatter plot to the right hand side
 fig = gcf()
 title!(fig, "Nice plot")         # Same as `title("Nice plot")`
 title!(leftplot, "First plot")  # Set the title of the first plot
-draw(fig)   # The function `title!` does not update the visualization
+fig   # The function `title!` does not update the visualization
 ```

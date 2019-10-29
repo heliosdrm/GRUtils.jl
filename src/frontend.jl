@@ -82,7 +82,7 @@ macro plotfunction(fname, options...)
             end
             axes = GRUtils.Axes(Symbol($axes_k), geoms; kwargs...)
             GRUtils.makeplot!(f.plots[end], axes, geoms; kind=$plotkind, GRUtils.plot_attributes(; kwargs...)...)
-            GRUtils.draw(f)
+            return f
         end
         $fname(args...; kwargs...) = $fname!(GRUtils.gcf(), args...; kwargs...)
     end
@@ -335,7 +335,7 @@ for fun = [:plot!, :stair!, :stem!, :polar!]
             $fun(f, u, v, args...; kwargs...)
         end
         hold!(currentplot(f), holdstate)
-        draw(f)
+        return f
     end
 end
 
@@ -628,7 +628,7 @@ function plot3!(f::Figure, x, y, z, u, v, args...; kwargs...)
         plot3!(f, u, v, args...; kwargs...)
     end
     hold!(currentplot(f), holdstate)
-    draw(f)
+    return f
 end
 
 # Quiver:
@@ -1282,7 +1282,7 @@ function oplot!(f::Figure, args...; kwargs...)
         args = args[1:end-1]
     end
     append!(p.geoms, geometries(:line, args...; geom_attributes(; kwargs...)...))
-    draw(f)
+    return f
 end
 
 """

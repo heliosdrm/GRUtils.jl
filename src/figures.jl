@@ -62,6 +62,12 @@ function Figure(figsize=(600,450), units::String="px")
     CURRENTFIGURE[] = Figure(workstation, plots)
 end
 
+function Base.Multimedia.display(fig::Figure)
+    output = draw(fig)
+    output isa Nothing && return
+    display(output)
+end
+
 """
     currentplot([fig::Figure])
 
@@ -159,11 +165,12 @@ function draw(f::Figure)
     GR.setwsviewport(0.0, w, 0.0, h)
     ratio_w, ratio_h = wswindow(f)
     GR.setwswindow(0.0, ratio_w, 0.0, ratio_h)
+    drawn = false
     for p in f.plots
-        draw(p)
+        drawn = drawn || draw(p)
     end
     GR.updatews()
-    if GR.isinline()
+    if GR.isinline() && drawn
         return GR.show()
     else
         return
