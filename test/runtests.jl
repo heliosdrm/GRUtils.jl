@@ -42,4 +42,5 @@ end
 
 file_path = ENV["GKS_FILEPATH"]
 @test isfile(file_path)
+GRUtils.GR.reset()
 rm(file_path)
