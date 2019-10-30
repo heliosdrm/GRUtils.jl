@@ -62,6 +62,22 @@ function Figure(figsize=(600,450), units::String="px")
     CURRENTFIGURE[] = Figure(workstation, plots)
 end
 
+function Base.Multimedia.display(fig::Figure)
+    output = draw(fig)
+    output isa Nothing && return nothing
+    display(output)
+    return nothing
+end
+
+# Caution! This depends on GR internals
+Base.showable(::MIME"image/svg+xml", ::Figure) = GR.mime_type == "svg"
+Base.showable(::MIME"image/png", ::Figure) = GR.mime_type == "png"
+Base.showable(::MIME"text/html", ::Figure) = GR.mime_type ∈ ("mov", "mp4", "webm")
+
+Base.show(io::IO, mime::M, fig::Figure) where {
+    M <: Union{MIME"image/svg+xml", MIME"image/png", MIME"text/html"}
+    } = show(io, mime, draw(fig))
+
 """
     currentplot([fig::Figure])
 
@@ -159,11 +175,12 @@ function draw(f::Figure)
     GR.setwsviewport(0.0, w, 0.0, h)
     ratio_w, ratio_h = wswindow(f)
     GR.setwswindow(0.0, ratio_w, 0.0, ratio_h)
+    drawn = false
     for p in f.plots
-        draw(p)
+        drawn = draw(p) || drawn
     end
     GR.updatews()
-    if GR.isinline()
+    if GR.isinline() && drawn
         return GR.show()
     else
         return

@@ -58,7 +58,7 @@ ylabel("Y")
 title("Example plot")
 ```
 
-Depending on what environment you use (e.g. the Julia REPL, a Jupyter notebook, Atom or another IDE), this plot will be displayed in a different device (a plotting window, panel, a cell of the notebook...). If you want to keep it in a file for using it later, use the function [`savefig`](@ref), like this:
+Depending on what environment you use (e.g. the Julia REPL, a Jupyter notebook, Atom or another IDE), this plot will be displayed in a different device (a plotting window, panel, a cell of the notebook...). If you want to keep it as an image file, use the function [`savefig`](@ref), like this:
 
 ```julia
 savefig("example.svg")

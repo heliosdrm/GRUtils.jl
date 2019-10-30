@@ -180,7 +180,7 @@ function fillbackground(rectndc, color)
 end
 
 function draw(p::PlotObject)
-    (p.viewport == EMPTYVIEWPORT) && return nothing
+    (p.viewport == EMPTYVIEWPORT) && return false
     inner = p.viewport.inner
     outer = p.viewport.outer
     # Set color scales and paint background
@@ -222,7 +222,7 @@ function draw(p::PlotObject)
     # title and labels
     drawlabels(p)
 
-    return nothing
+    return true
 end
 
 function drawlabels(p)
