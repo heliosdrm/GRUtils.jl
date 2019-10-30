@@ -176,6 +176,13 @@ Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/heatmap.jl") # hide
 ```
 ```@docs
+polarheatmap
+```
+```@example plot
+Figure(); # hide
+Base.include(GRUtils, "../examples/docstrings/polarheatmap.jl") # hide
+```
+```@docs
 shade
 ```
 ```@example plot

@@ -70,7 +70,7 @@ legend("a", "b")
 function legend(args::AbstractString...; kwargs...)
     f = gcf()
     legend!(currentplot(f), args...; kwargs...)
-    draw(f)
+    return f
 end
 
 # Hold
@@ -123,7 +123,7 @@ title("")
 function title(s::AbstractString)
     f = gcf()
     title!(currentplot(f), s)
-    draw(f)
+    return f
 end
 
 const AXISLABEL_DOC = """
@@ -262,7 +262,7 @@ for ax = ("x", "y", "z")
     @eval @doc AXISLABEL_DOC function $fname(s::AbstractString)
         f = gcf()
         $fname!(currentplot(f), s)
-        draw(f)
+        return f
     end
 
     # xticks, etc.
@@ -280,7 +280,7 @@ for ax = ("x", "y", "z")
     @eval @doc TICKS_DOC function $fname(args...)
         f = gcf()
         $fname!(currentplot(f), args...)
-        draw(f)
+        return f
     end
 
     # xlim, etc.
@@ -315,7 +315,7 @@ for ax = ("x", "y", "z")
     @eval @doc AXISLIM_DOC function $fname(args...)
         f = gcf()
         $fname!(currentplot(f), args...)
-        draw(f)
+        return f
     end
 
     # xlog, xflip, etc.
@@ -333,7 +333,7 @@ for ax = ("x", "y", "z")
         @eval @doc $docstr function $fname(args...)
             f = gcf()
             $fname!(currentplot(f), args...)
-            draw(f)
+            return f
         end
     end
 end
@@ -373,7 +373,7 @@ for ax = ("x", "y")
     @eval @doc TICKLABELS_DOC function $fname(s)
         f = gcf()
         $fname!(currentplot(f), s)
-        draw(f)
+        return f
     end
 end
 
@@ -396,7 +396,7 @@ set the grid during the creation of plots.
 function grid(flag)
     f = gcf()
     grid!(currentplot(f), flag)
-    draw(f)
+    return f
 end
 
 # Colorbar
@@ -428,7 +428,7 @@ enable or disable the color bar during the creation of plots.
 function colorbar(flag)
     f = gcf()
     colorbar!(currentplot(f), flag)
-    draw(f)
+    return f
 end
 
 # Aspect ratio
@@ -457,7 +457,7 @@ $(_example("aspectratio"))
 function aspectratio(r)
     f = gcf()
     aspectratio!(currentplot(f), r)
-    draw(f)
+    return f
 end
 
 # Radians in polar axes
@@ -501,7 +501,7 @@ radians(false)
 function radians(flag)
     f = gcf()
     radians!(currentplot(f), flag)
-    draw(f)
+    return f
 end
 
 # Pan and zoom
@@ -545,7 +545,7 @@ panzoom(1, 0.2, 0.5)
 function panzoom(args...)
     f = gcf()
     panzoom!(currentplot(f), args...)
-    draw(f)
+    return f
 end
 
 """
@@ -603,7 +603,7 @@ function colormap!(f::Figure, cmap)
     for p in f.plots
         colormap!(p, cmap)
     end
-    draw(f)
+    return f
 end
 
 
@@ -646,5 +646,5 @@ function colorscheme!(f::Figure, scheme)
     for p in f.plots
         colorscheme!(p, scheme)
     end
-    draw(f)
+    return f
 end
