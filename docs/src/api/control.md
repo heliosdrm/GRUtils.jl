@@ -16,3 +16,14 @@ Base.include(GRUtils, "../examples/docstrings/subplot.jl") # hide
 hold
 savefig
 ```
+# Animations
+```@docs
+movie
+```
+```@example plot
+Figure(); # hide
+Base.include(GRUtils, "../examples/docstrings/movie.jl") # hide
+```
+```@docs
+savemovie
+```
