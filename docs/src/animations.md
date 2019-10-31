@@ -22,7 +22,7 @@ savemovie(figures, "sin.webm") # Written in a file
 
 The first line of this example creates a movie that can be properly displayed if the code is being executed in an environment that supports such kind of content, like IJulia notebooks or other HTML contexts. Otherwise, it may be more convenient to save the animation in a movie file, as in the second line of the example. Besides `"webm"`, other supported extensions for movies are `"mp4"` and `"mov"`.
 
-However, storing the figures in an array maya consume a lot of memory. So, unless you need to keep the figures for some other reason, it is more efficient to use a function that makes and draws the figures one after another. For instance:
+However, storing the figures in an array may consume a lot of memory. So, unless you need to keep the figures for some other reason, it is more efficient to use a function that overwrites the previous figure after drawing it. For instance:
 
 ```julia
 function sliding_sin()
@@ -45,7 +45,7 @@ movie(sliding_window, "webm")
 
 The key in that function is the loop with repeated calls to `draw(gcf())`. That command is the one that actually produces the graphic representation of the current figure, i.e. draws each frame of the movie. When making animations, it is not sufficient to call the function `plot` that creates the figures; it is necessary to `draw` them explicitly.
 
-Another convenient way of calling the "function-" versions of `savemovie` or `movie` is with the `do` syntax that lets you create anonymous functions "on the fly" and pass them silently as the first argument of a function. For instance, the following code produces the animation that is shown next:
+Another convenient way of calling the "function-" versions of `savemovie` or `movie` is with the `do` syntax that lets you create anonymous functions "on the fly", and pass them silently as the first argument of a function. For instance, the following code produces the animation that is shown next:
 
 ```@example plot
 using GRUtils # hide
