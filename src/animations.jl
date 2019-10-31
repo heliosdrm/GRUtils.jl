@@ -51,7 +51,7 @@ function savemovie(fun::Function, target, overwrite=false)
         fun()
         tmpfile = ENV["GKS_FILEPATH"]
         resetmime(mime)
-        return mv(tmpfile, target, overwrite)
+        return mv(tmpfile, target; force=overwrite)
     catch err
         resetmime(mime)
         throw(err)
