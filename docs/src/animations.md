@@ -25,7 +25,7 @@ The first line of this example creates a movie that can be properly displayed if
 However, storing the figures in an array may consume a lot of memory. So, unless you need to keep the figures for some other reason, it is more efficient to use a function that overwrites the previous figure after drawing it. For instance:
 
 ```julia
-function sliding_sin()
+function sliding_window()
   # Make a plot with the full window
   x = LinRange(0, 800, 100)
   y = sind.(x)
