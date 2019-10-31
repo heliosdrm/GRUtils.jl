@@ -7,6 +7,7 @@ makedocs(sitename="GRUtils.jl",
         "Introduction" => "index.md",
         "Multiple plots" => "multiple.md",
         "Color management" => "color.md",
+        "Animations" => "animations.md",
         "API reference" => [
             "api/plotting.md",
             "api/attributes.md",

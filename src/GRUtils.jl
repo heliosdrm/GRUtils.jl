@@ -2,7 +2,7 @@ module GRUtils
 
 import GR
 
-export Figure, gcf, subplot, currentplot, draw, savefig,
+export Figure, gcf, subplot, currentplot, draw, savefig, movie, savemovie,
     plot, plot3, polar, quiver, quiver3, scatter, scatter3, stair, stem, oplot,
     errorbar, barplot, histogram, polarhistogram,
     contour, contourf, shade, surface, tricont, trisurf, volume, wireframe,
@@ -36,5 +36,6 @@ include("text.jl")
 include("figures.jl")
 include("frontend.jl")
 include("attributes.jl")
+include("animations.jl")
 
 end # module
