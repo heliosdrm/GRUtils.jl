@@ -35,3 +35,69 @@ function deploylatest()
     commit = LibGit2.commit(docrepo, msg)
     LibGit2.branch!(docrepo, "gh-pages", string(commit))
 end
+
+function deploytag(tagname, addlink=true)
+    tagname = "v" * string(VersionNumber(tagname))
+    srcrepo = LibGit2.GitRepo(srcpath)
+    docrepo = LibGit2.GitRepo(docpath)
+    srctarget = LibGit2.GitTag(srcrepo, tagname) |> LibGit2.target
+    targetmsg = "Build from $(string(LibGit2.GitShortHash(srctarget, 7)))"
+    # Look for the commit with the target message
+    targetcommits = String[]
+    lookup_msg = (oid, repo) -> begin
+        msg = LibGit2.message(LibGit2.GitCommit(repo, string(oid)))
+        # push!(targetcommits, msg)
+        if msg == targetmsg
+            push!(targetcommits, string(oid))
+        end
+    end
+    LibGit2.with(LibGit2.GitRevWalker(docrepo)) do walker
+        LibGit2.map(lookup_msg, walker)
+    end
+    isempty(targetcommits) && return nothing
+    # The target commit exists ...
+    targethash = targetcommits[1]
+    baseref = LibGit2.lookup_branch(docrepo, "gh-pages")
+    LibGit2.checkout!(docrepo, string(targethash))
+    cp(joinpath(docpath, "latest"), joinpath(docpath, tagname), force=true)
+    write(joinpath(docpath, tagname, "siteinfo.js"), """var DOCUMENTER_CURRENT_VERSION = "$tagname";""")
+    LibGit2.branch!(docrepo, "gh-pages", string(LibGit2.GitHash(baseref)))
+    # Add links if requested
+    if addlink
+        # Create symlink to the minor version
+        linkname = joinpath(docpath, tagname[1:end-2])
+        islink(linkname) && rm(linkname)
+        symlink(tagname, joinpath(docpath, tagname[1:end-2]))
+        # Update list of versions
+        versionlist = readlines(joinpath(docpath, "versions.js"))
+        minortag = tagname[1:end-2]
+        newstable = true
+        for line = 1:length(versionlist)
+            m = match(r"(v\d+\.\d+)", versionlist[line])
+            m == nothing && continue # skip line
+            version = m.captures[1]
+            if version == minortag  # the version is already in the list
+                if newstable
+                    rm(joinpath(docpath, "stable"))
+                    symlink(tagname, joinpath(docpath, "stable"))
+                end
+                break
+            end
+            if VersionNumber(version) < VersionNumber(minortag)
+                # Add the version
+                insert!(versionlist, line, "  \"$minortag\",")
+                write(joinpath(docpath, "versions.js"), join(versionlist, "\n"))
+                if newstable
+                    rm(joinpath(docpath, "stable"))
+                    symlink(tagname, joinpath(docpath, "stable"))
+                end
+                break
+            end
+            newstable = false # there were higher versions released
+        end
+    end
+    # Add and commit to gh-pages
+    LibGit2.add!(docrepo, "*")
+    commit = LibGit2.commit(docrepo, "Deploy $tagname")
+    LibGit2.branch!(docrepo, "gh-pages", string(commit))
+end

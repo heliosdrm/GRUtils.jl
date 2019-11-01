@@ -20,6 +20,7 @@ functionlist = (
     ("Heatmaps", ("heatmap", "polarheatmap", "shade")),
     ("Images", ("imshow",)),
     ("Isosurfaces", ("isosurface",)),
+    ("Text", ("annotations",)),
     ("Attributes", ("aspectratio", "ticks")),
     ("Control", ("subplot",)),
     ("Colors", ("colorscheme", "colormap"))
