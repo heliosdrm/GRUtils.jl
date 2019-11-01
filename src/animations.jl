@@ -6,19 +6,19 @@ function resetmime(mime)
 end
 
 """
-    savemovie(fun::Function, target, overwrite=false)
-    savemovie(figs::AbstractArray{<:Fig}, target, overwrite=false)
+    videofile(fun::Function, target, overwrite=false)
+    videofile(figs::AbstractArray{<:Fig}, target, overwrite=false)
 
-Make a movie from a function or an array of figures and save it into a file.
+Make a video from a function or an array of figures and save it into a file.
 
 The first argument can be an array of `Figures` that will be displayed
-as a sequence of frames in the movie, or a function without arguments that draws
+as a sequence of frames in the video, or a function without arguments that draws
 the figures (normally a loop where the figures are created and drawn one after another).
-That function can be defined anonymously in the call to `movie` with
+That function can be defined anonymously in the call to `videofile` with
 the `do` syntax (see the example).
 
 The secondargument `target` must be a string with the name of
-the movie file, whose format is determined by the extension of the file.
+the video file, whose format is determined by the extension of the file.
 The supported extensions are `"webm"`, `"mp4"` or `"mov"`.
 
 Use `overwrite=false` to force the creation of `target` if the file already exists
@@ -31,8 +31,8 @@ Use `overwrite=false` to force the creation of `target` if the file already exis
 x = LinRange(0, 800, 100)
 y = sind.(x)
 plot(x,y)
-# Make a movie sliding over the X axis
-savemovie("sin.mp4") do
+# Make a video sliding over the X axis
+videofile("sin.mp4") do
   for d = 0:10:440
     xlim(d, d+360)
     draw(gcf())
@@ -40,7 +40,7 @@ savemovie("sin.mp4") do
 end
 ```
 """
-function savemovie(fun::Function, target, overwrite=false)
+function videofile(fun::Function, target, overwrite=false)
     name, ext = splitext(target)
     if length(ext) < 2
         ext = ".webm"
@@ -59,31 +59,31 @@ function savemovie(fun::Function, target, overwrite=false)
 end
 
 """
-    movie(fun::Function, target="webm")
-    movie(figs::AbstractArray{<:Fig}, target="webm")
+    video(fun::Function, target="webm")
+    video(figs::AbstractArray{<:Fig}, target="webm")
 
-Make a movie from a function or an array of figures.
+Make a video from a function or an array of figures.
 
 The first argument can be an array of `Figures` that will be displayed
-as a sequence of frames in the movie, or a function without arguments that draws
+as a sequence of frames in the video, or a function without arguments that draws
 the figures (normally a loop where the figures are created and drawn one after another).
-That function can be defined anonymously in the call to `movie` with
+That function can be defined anonymously in the call to `video` with
 the `do` syntax (see the example).
 
 The second (optional) argument `target` must be a string with
 one of the formats `"webm"` (default), `"mp4"` or `"mov"`.
 
-The output is an object that may be displayed as a movie of the given format
+The output is an object that may be displayed as a video of the given format
 (depending on the supported MIME outputs of the environment).
-Use [`savemovie`](@ref) to save such a movie in a file.
+Use [`videofile`](@ref) to save such a video in a file.
 
 # Examples
 
 ```julia
-$(_example("movie"))
+$(_example("video"))
 ```
 """
-function movie(fun::Function, target="webm")
+function video(fun::Function, target="webm")
     mime = GR.isinline() ? string(GR.mime_type) : ""
     GR.inline(target)
     try
@@ -97,7 +97,7 @@ function movie(fun::Function, target="webm")
     end
 end
 
-for fun in (:movie, :savemovie)
+for fun in (:video, :videofile)
     @eval function $fun(figs::AbstractArray{<:Figure}, args...)
         f = () -> for fg in figs draw(fg) end
         $fun(f, args...)

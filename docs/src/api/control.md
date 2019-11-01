@@ -20,14 +20,14 @@ Base.include(GRUtils, "../examples/docstrings/subplot.jl") # hide
 ```
 ## Animations
 ```@docs
-movie
+video
 ```
 ```@example plot
 Figure(); # hide
-Base.include(GRUtils, "../examples/docstrings/movie.jl") # hide
+Base.include(GRUtils, "../examples/docstrings/video.jl") # hide
 ```
 ## Save to files
 ```@docs
 savefig
-savemovie
+videofile
 ```
