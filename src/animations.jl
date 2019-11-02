@@ -80,7 +80,17 @@ Use [`videofile`](@ref) to save such a video in a file.
 # Examples
 
 ```julia
-$(_example("video"))
+# Make a plot with example data
+x = LinRange(0, 800, 100)
+y = sind.(x)
+plot(x,y)
+# Make a video sliding over the X axis
+video("webm") do
+  for d = 0:10:440
+    xlim(d, d+360)
+    draw(gcf())
+  end
+end
 ```
 """
 function video(fun::Function, target="webm")

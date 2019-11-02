@@ -22,10 +22,6 @@ Base.include(GRUtils, "../examples/docstrings/subplot.jl") # hide
 ```@docs
 video
 ```
-```@example plot
-Figure(); # hide
-Base.include(GRUtils, "../examples/docstrings/video.jl") # hide
-```
 ## Save to files
 ```@docs
 savefig
