@@ -548,13 +548,34 @@ function panzoom(args...)
     return f
 end
 
+# zoom for axes2d and axes3d with gr3
+zoom2d!(p, r) = panzoom!(p, 0.0, 0.0, r)
+
+function zoomgr3!(p::PlotObject, r)
+    p.axes.camera[1:3] ./= r
+    return nothing
+end
+
+function zoom!(p::PlotObject, r)
+    if p.axes.kind == :axes2d
+        zoom2d!(p, r)
+    elseif get(p.axes.options, :gr3, 0) ≠ 0
+        zoomgr3!(p, r)
+    end
+end
+
+zoom!(f::Figure, r) = zoom!(currentplot(f), r)
+
 """
-    zoom(s)
+    zoom(r)
 
-Zoom the current axes to the ratio indicated by `s`.
+Zoom the plot by the ratio indicated by `r`.
 
-The "zoomed" axes are centered around the same point,
-but proportionally resized to `s` times the original size.
+In two-dimensional plots, the "zoomed" axes are centered around the same point,
+but proportionally resized to `r` times the original size.
+
+In three-dimensional scenes defined with "camera" settings
+(e.g. in [`isosurface`](@ref) plots), the camera distance is divided by `r`.
 
 # Examples
 
@@ -563,8 +584,172 @@ but proportionally resized to `s` times the original size.
 zoom(0.5)
 ```
 """
-zoom(r) = panzoom(0.0, 0.0, r)
-zoom!(pf, r) = panzoom!(pf, 0.0, 0.0, r)
+function zoom(r)
+    f = gcf()
+    zoom!(currentplot(f), r)
+    return f
+end
+
+# 3-D perspectives
+
+function perspective!(p::PlotObject, rotation, tilt, distance=3.0)
+    p.axes.perspective .= [rotation, tilt]
+    if get(p.axes.options, :gr3, 0) ≠ 0
+        p.axes.camera .= set_camera(distance, rotation, tilt)
+    end
+    return nothing
+end
+
+perspective!(f::Figure, args...) = perspective!(currentplot(f), args...)
+
+"""
+    perspective(rotation, tilt[, distance])
+
+Reset the perspective of three-dimensional plots.
+
+`rotation` and `tilt` must be integer values that indicate the
+and "azimuth" and "elevation" angles of the view axis.
+
+If both angles are zero, the plot is viewed in the direction of the Y axis
+(i.e. the X-Z plane is seen). Positive `rotation` values mean a
+counterclockwise rotation of the line of sight (or a clockwise rotation of the scene)
+around the vertical axis. Positive `tilt` values mean an ascension
+of the view point.
+
+For scenes defined with "camera" settings, as [`isosurface`](@ref) plots,
+it is also possible to define the `distance` of the camera to the center of the scene.
+
+# Examples
+
+```julia
+# Reset the view to the X-Y plane
+# (rotation=0, tilt=90)
+perspective(0, 90)
+```
+"""
+function perspective(args...)
+    f = gcf()
+    perspective!(currentplot(f), args...)
+    return f
+end
+
+## Rotate the "up" camera vector
+function _rotate!(v, angle) # Around the second (vertical) axis
+    c = cosd(angle)
+    s = sind(angle)
+    v[1] = c*v[1]  + s*v[3]
+    v[3] = -s*v[1] + c*v[3]
+end
+
+function _tilt!(v, angle) # Around the first (transversal) axis (clockwise)
+    c = cosd(angle)
+    s = sind(angle)
+    v[1] = c*v[1]  + s*v[2]
+    v[2] = -s*v[1] + c*v[2]
+end
+
+# Move camera position
+function _movecamera!(position, rotation, tilt)
+    distance = norm(position)
+    position[1] = distance * sind(tilt) * sind(rotation)
+    position[2] = cosd(tilt)
+    position[3] = distance* sind(tilt) * cosd(rotation)
+end
+
+function rotate!(p::PlotObject, angle)
+    p.axes.perspective[1] += angle
+    if get(p.axes.options, :gr, 0) ≠ 0
+        _movecamera!(view(p.axes.camera, 1:3), p.axes.perspective...)
+        _rotate!(view(p.axes.camera, 7:9), angle)
+    end
+    return nothing
+end
+
+rotate!(f::Figure, angle) = rotate!(currentfigure(f), angle)
+
+function tilt!(p::PlotObject, angle)
+    p.axes.perspective[2] += angle
+    if get(p.axes.options, :gr, 0) ≠ 0
+        _movecamera!(view(p.axes.camera, 1:3), p.axes.perspective...)
+        up_vector = view(p.axes.camera, 7:9)
+        rotation = p.axes.perspective[1]
+        _rotate!(up_vector, -rotation)
+        _tilt!(up_vector, angle)
+        _rotate!(up_vector, rotation)
+    end
+    return nothing
+end
+
+tilt!(f::Figure, angle) = tilt!(currentfigure(f), angle)
+
+"""
+    rotate(angle::Int)
+
+Rotate the perspective of the current plot
+by `angle` degrees around the vertical axis.
+
+# Examples
+
+```julia
+# Rotate 10 degrees to the right
+rotate(10)
+```
+"""
+function rotate(angle)
+    f = gcf()
+    rotate!(currentplot(f), angle)
+    return f
+end
+
+"""
+    tilt(angle::Int)
+
+Tilt the perspective of the current plot
+by `angle` degrees around the horizontal axis.
+
+# Examples
+
+```julia
+# Tilt 10 degrees up
+tilt(10)
+```
+"""
+function tilt(angle)
+    f = gcf()
+    tilt!(currentplot(f), angle)
+    return f
+end
+
+function turncamera!(p::PlotObject, angle)
+    axis = normalize(p.axes.camera[1:3] .- p.axes.camera[4:6])
+    up_vector = view(p.axes.camera, 7:9)
+    up_times_ax = cross(axis, up_vector)
+    # Rodrigues formula
+    up_vector .+= sind(angle).*up_times_ax .+ (1-cosd(angle)).*cross(axis, up_times_ax)
+    return nothing
+end
+
+turncamera!(f::Figure, angle) = turncamera!(currentplot(f), angle)
+
+"""
+    turncamera(angle)
+
+Turn the orientation of the camera by `angle` degrees
+around its view axis (only for 3-D scenes created with camera settings).
+
+# Examples
+
+```julia
+# Turn the perspective 10 degrees
+turncamera(10)
+```
+"""
+function turncamera(angle)
+    f = gcf()
+    turncamera!(currentplot(f), angle)
+    return f
+end
+
 
 """
     colormap!(p, cmap)

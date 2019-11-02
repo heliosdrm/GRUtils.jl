@@ -312,19 +312,18 @@ function set_scale(; kwargs...)
     return scale
 end
 
-"""
-    set_camera(distance, perspective; kwargs...)
-"""
 function set_camera(distance, rotation, tilt;
-    focus = (0.0, 0.0, 0.0), twist = 0.0, kwargs...)
+    focus = zeros(3), twist = 0.0, kwargs...)
 
-    camera_position = (distance * sind(tilt) * sind(rotation),
+    camera_position = [distance * sind(tilt) * sind(rotation),
                        distance * cosd(tilt),
-                       distance* sind(tilt) * cosd(rotation))
-    camera_direction = camera_position .- focus
-    up_vector = (-sind(twist) * camera_direction[3],
-                 cosd(twist),
-                 sind(twist) * camera_direction[1])
+                       distance* sind(tilt) * cosd(rotation)]
+    camera_direction = normalize(camera_position .- focus)
+    up_vector = normalize([-sind(twist) * camera_direction[3],
+                          cosd(twist),
+                          sind(twist) * camera_direction[1]])
+    right_vector = normalize(cross(up_vector, camera_direction))
+    up_vector = cross(camera_direction, right_vector)
     return [camera_position..., focus..., up_vector...]
 end
 
