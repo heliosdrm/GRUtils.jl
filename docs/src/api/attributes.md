@@ -25,6 +25,14 @@ aspectratio
 zoom
 panzoom
 ```
+## 3-D views
+```@docs
+viewpoint
+rotate
+tilt
+movefocus
+turncamera
+```
 ## Axis scales
 ```@docs
 xflip
