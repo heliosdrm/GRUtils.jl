@@ -1,5 +1,5 @@
 ```@setup plot
-using GRUtils
+using GRUtils, Random
 Random.seed!(111)
 ```
 # Control operations

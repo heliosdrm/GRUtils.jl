@@ -1,5 +1,5 @@
 ```@setup attr
-using GRUtils
+using GRUtils, Random
 Random.seed!(111)
 ```
 # Plot attributes
