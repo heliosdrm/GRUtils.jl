@@ -312,19 +312,61 @@ function set_scale(; kwargs...)
     return scale
 end
 
+# Camera rotation
+
+function _rotate!(v, angle) # Around the third (vertical) axis
+    c = cosd(angle)
+    s = sind(angle)
+    v[1:2] .= (c*v[1] - s*v[2], s*v[1] + c*v[2])
+end
+
+function _tilt!(v, angle) # Around the first (transversal) axis (clockwise)
+    c = cosd(angle)
+    s = sind(angle)
+    v[2:3] .= (c*v[2]  + s*v[3], -s*v[2] + c*v[3])
+end
+
+function _focus!(params, target) # Rotate to focus on target point
+    oldaxis = normalize([params[4]-params[1], params[5]-params[2], params[6]-params[3]])
+    newaxis = normalize([target[1]-params[1], target[2]-params[2], target[3]-params[3]])
+    # Use the Rodrigues formula: v2 = v1 + sin(w)û×v1 + (1-cos(w))û×(û×v1)
+    f1 = oldaxis × newaxis # sin(w)û
+    all(f1 .≈ 0.0) && return nothing
+    k = (1/sum(f1.^2))
+    f2 = (k - sqrt(k*k-k)) .* f1 # (1-cos(w))û/sin(w)
+    vmod = f1 × view(params, 7:9)
+    params[4:6] .= target
+    params[7:9] .+= vmod .+ f2 × vmod
+    return nothing
+end
+
+"""
+    set_camera(distance, rotation, tilt; focus=zeros(3), twist=0.0)
+
+Return a vector with the 9 camera parameters (camera position, focus and "up" vector),
+given the distance from the center of the scene, rotation and tilt angles
+in degrees, and optionally (as keyword arguments) one focus point of the
+line of sight and the twist angle in degrees.
+
+If `rotation`, `tilt` and `twist` angles are zero, the direction of the line of sight
+is the Y axis, and the camera is positioned in the negative direction of that
+axis.
+"""
 function set_camera(distance, rotation, tilt;
     focus = zeros(3), twist = 0.0, kwargs...)
 
-    camera_position = [distance * sind(tilt) * sind(rotation),
-                       distance * cosd(tilt),
-                       distance* sind(tilt) * cosd(rotation)]
+    camera_position = [distance * cosd(tilt) * sind(rotation),
+                      -distance * cosd(tilt) * cosd(rotation),
+                       distance * sind(tilt)]
     camera_direction = normalize(camera_position .- focus)
-    up_vector = normalize([-sind(twist) * camera_direction[3],
-                          cosd(twist),
-                          sind(twist) * camera_direction[1]])
-    right_vector = normalize(cross(up_vector, camera_direction))
-    up_vector = cross(camera_direction, right_vector)
-    return [camera_position..., focus..., up_vector...]
+    up_vector = [sind(twist), 0, cosd(twist)]
+    _tilt!(up_vector, tilt)
+    _rotate!(up_vector, rotation)
+    parameters = [camera_position..., focus..., up_vector...]
+    if any(focus .== 0.0)
+        _focus!(parameters, focus)
+    end
+    return parameters
 end
 
 ####################

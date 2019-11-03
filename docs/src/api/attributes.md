@@ -1,5 +1,6 @@
 ```@setup attr
 using GRUtils
+Random.seed!(111)
 ```
 # Plot attributes
 
@@ -24,6 +25,14 @@ xlim
 aspectratio
 zoom
 panzoom
+```
+## 3-D views
+```@docs
+viewpoint
+rotate
+tilt
+movefocus
+turncamera
 ```
 ## Axis scales
 ```@docs

@@ -592,74 +592,49 @@ end
 
 # 3-D perspectives
 
-function perspective!(p::PlotObject, rotation, tilt, distance=3.0)
+function viewpoint!(p::PlotObject, rotation, tilt)
     p.axes.perspective .= [rotation, tilt]
     if get(p.axes.options, :gr3, 0) ≠ 0
+        distance = norm(view(p.axes.camera, 1:3))
         p.axes.camera .= set_camera(distance, rotation, tilt)
     end
     return nothing
 end
 
-perspective!(f::Figure, args...) = perspective!(currentplot(f), args...)
+viewpoint!(f::Figure, rotation, tilt) = viewpoint!(currentplot(f), rotation, tilt)
 
 """
-    perspective(rotation, tilt[, distance])
+    viewpoint(rotation, tilt)
 
-Reset the perspective of three-dimensional plots.
+Set the viewpoint of three-dimensional plots.
 
 `rotation` and `tilt` must be integer values that indicate the
-and "azimuth" and "elevation" angles of the view axis.
+"azimuth" and "elevation" angles of the line of sight (in degrees).
 
 If both angles are zero, the plot is viewed in the direction of the Y axis
 (i.e. the X-Z plane is seen). Positive `rotation` values mean a
 counterclockwise rotation of the line of sight (or a clockwise rotation of the scene)
-around the vertical axis. Positive `tilt` values mean an ascension
+around the vertical (Z) axis. Positive `tilt` values mean an ascension
 of the view point.
-
-For scenes defined with "camera" settings, as [`isosurface`](@ref) plots,
-it is also possible to define the `distance` of the camera to the center of the scene.
 
 # Examples
 
 ```julia
 # Reset the view to the X-Y plane
 # (rotation=0, tilt=90)
-perspective(0, 90)
+viewpoint(0, 90)
 ```
 """
-function perspective(args...)
+function viewpoint(rotation, tilt)
     f = gcf()
-    perspective!(currentplot(f), args...)
+    viewpoint!(currentplot(f), rotation, tilt)
     return f
-end
-
-## Rotate the "up" camera vector
-function _rotate!(v, angle) # Around the second (vertical) axis
-    c = cosd(angle)
-    s = sind(angle)
-    v[1] = c*v[1]  + s*v[3]
-    v[3] = -s*v[1] + c*v[3]
-end
-
-function _tilt!(v, angle) # Around the first (transversal) axis (clockwise)
-    c = cosd(angle)
-    s = sind(angle)
-    v[1] = c*v[1]  + s*v[2]
-    v[2] = -s*v[1] + c*v[2]
-end
-
-# Move camera position
-function _movecamera!(position, rotation, tilt)
-    distance = norm(position)
-    position[1] = distance * sind(tilt) * sind(rotation)
-    position[2] = cosd(tilt)
-    position[3] = distance* sind(tilt) * cosd(rotation)
 end
 
 function rotate!(p::PlotObject, angle)
     p.axes.perspective[1] += angle
-    if get(p.axes.options, :gr, 0) ≠ 0
-        _movecamera!(view(p.axes.camera, 1:3), p.axes.perspective...)
+    if get(p.axes.options, :gr3, 0) ≠ 0
+        _rotate!(view(p.axes.camera, 1:3), angle)
         _rotate!(view(p.axes.camera, 7:9), angle)
     end
     return nothing
@@ -669,10 +644,13 @@ rotate!(f::Figure, angle) = rotate!(currentfigure(f), angle)
 
 function tilt!(p::PlotObject, angle)
     p.axes.perspective[2] += angle
-    if get(p.axes.options, :gr, 0) ≠ 0
-        _movecamera!(view(p.axes.camera, 1:3), p.axes.perspective...)
-        up_vector = view(p.axes.camera, 7:9)
+    if get(p.axes.options, :gr3, 0) ≠ 0
         rotation = p.axes.perspective[1]
+        camera_position = view(p.axes.camera, 1:3)
+        _rotate!(camera_position, -rotation)
+        _tilt!(camera_position, angle)
+        _rotate!(camera_position, rotation)
+        up_vector = view(p.axes.camera, 7:9)
         _rotate!(up_vector, -rotation)
         _tilt!(up_vector, angle)
         _rotate!(up_vector, rotation)
@@ -685,8 +663,9 @@ tilt!(f::Figure, angle) = tilt!(currentfigure(f), angle)
 """
     rotate(angle::Int)
 
-Rotate the perspective of the current plot
-by `angle` degrees around the vertical axis.
+Rotate the viewpoint of the current plot
+by `angle` degrees around the vertical axis of the scene,
+with respect to its current position.
 
 # Examples
 
@@ -704,8 +683,9 @@ end
 """
     tilt(angle::Int)
 
-Tilt the perspective of the current plot
-by `angle` degrees around the horizontal axis.
+Tilt (elevate) the viewpoint of the current plot
+by `angle` degrees over the horizontal plane,
+with respect to its current position.
 
 # Examples
 
@@ -720,12 +700,42 @@ function tilt(angle)
     return f
 end
 
+# Only for 3-D scenes with gr3
+
+movefocus!(p::PlotObject, target) = _focus!(p.axes.camera, target)
+movefocus!(f::Figure, target) = movefocus!(currentplot(f), target)
+
+"""
+    movefocus(target)
+
+Rotate the camera view axis, moving the focus to the `target` point.
+
+This only affects 3-D scenes created with camera settings, e.g.
+[`isosurface`](@ref) plots. Moving the focus point rotates the camera
+without changing its position; in order to rotate the camera around
+the center of the scene, use the functions
+[`rotate`](@ref), [`tilt`](@ref) or [`viewpoint`](@ref).
+
+# Examples
+
+```julia
+# Move the focus to the point (1.0, 0.5, 0.0)
+movefocus([1.0, 0.5, 0.0])
+```
+"""
+function movefocus(target)
+    f = gcf()
+    movefocus!(currentplot(f), target)
+    return f
+end
+
 function turncamera!(p::PlotObject, angle)
-    axis = normalize(p.axes.camera[1:3] .- p.axes.camera[4:6])
-    up_vector = view(p.axes.camera, 7:9)
-    up_times_ax = cross(axis, up_vector)
-    # Rodrigues formula
-    up_vector .+= sind(angle).*up_times_ax .+ (1-cosd(angle)).*cross(axis, up_times_ax)
+    params = p.axes.camera
+    # Rotate up vector towards right vector around axis
+    axis = normalize([params[4]-params[1], params[5]-params[2], params[6]-params[3]])
+    up_vector = params[7:9]
+    right_vector = axis × up_vector
+    up_vector .= cosd(angle).*up_vector .+ sind(angle).*right_vector
     return nothing
 end
 
