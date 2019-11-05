@@ -26,18 +26,16 @@ functionlist = (
     ("Colors", ("colorscheme", "colormap"))
 )
 
-# GR.gr3 has an issue in some systems
-win = Sys.iswindows()
-in_gr3 = Tuple{}() # ("surface", "volume", "shade", "isosurface")
+# GR.gr3 had an issue in some systems
+# win = Sys.iswindows()
+# in_gr3 = ("surface", "volume", "shade", "isosurface")
 
 #Plotting functions
 @testset "$(functionlist[g][1])" for g in 1:length(functionlist)
     funs = functionlist[g][2]
     for f in funs
-        if f ∉ in_gr3
-            include(joinpath(examplesdir, "$f.jl"))
-            @test true
-        end
+        include(joinpath(examplesdir, "$f.jl"))
+        @test true
     end
 end
 
