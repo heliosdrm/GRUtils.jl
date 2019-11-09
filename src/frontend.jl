@@ -1322,7 +1322,7 @@ function _setargs_annotation(f, x, y, s::AbstractString; kwargs...)
     end
     if valign == "center"
         y -= 0.5 * height
-    elseif valign == "right"
+    elseif valign == "top"
         y -= height
     end
     (([x, x+width], [y, y+height]), (; kwargs..., label=s))
