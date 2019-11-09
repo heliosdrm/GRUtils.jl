@@ -215,6 +215,10 @@ $(_example("stem"))
 """)
 
 function _setargs_errorbar(f, x, y, args...; kwargs...)
+    if typeof(args[end]) <: AbstractString
+        kwargs = (; spec=args[end], kwargs...)
+        return _setargs_errorbar(f, x, y, args[1:end-1]...; kwargs...)
+    end
     # Define bar size
     if length(args) == 0
         throw(ArgumentError("errorbar sizes not defined"))
@@ -226,7 +230,7 @@ function _setargs_errorbar(f, x, y, args...; kwargs...)
         low = repeat(low, length(x))
     end
     if length(high) == 1
-        high = repeat(high, lenght(x))
+        high = repeat(high, length(x))
     end
     # Cap width
     horizontal = get(kwargs, :horizontal, false)
@@ -244,9 +248,6 @@ function _setargs_errorbar(f, x, y, args...; kwargs...)
     else
         x3 = (x' .+ [-w; 0.0; w])[:]
         y3 = (y' .+ [-vec(low)'; zeros(1, length(y)); vec(high)'])[:]
-    end
-    if typeof(args[end]) <: AbstractString
-        kwargs = (; spec=args[end], kwargs...)
     end
     return ((x3, y3), kwargs)
 end
