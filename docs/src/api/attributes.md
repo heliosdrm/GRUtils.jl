@@ -43,6 +43,7 @@ radians
 ## Geometry guides
 ```@docs
 legend
+geometrykinds
 colorbar
 ```
 
