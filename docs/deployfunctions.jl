@@ -8,22 +8,22 @@ function deploylatest()
     docrepo = LibGit2.GitRepo(docpath)
     # 1. Check that the repos are not dirty and in the appropriate branches
     if LibGit2.isdirty(srcrepo)
-        @error "Dirty source repository!"
+        throw(ErrorException("Dirty source repository!"))
     elseif LibGit2.isdirty(docrepo)
-        @error "Dirty docs repository!"
+        throw(ErrorException("Dirty docs repository!"))
     end
     src_head = LibGit2.head(srcrepo)
     doc_head = LibGit2.head(docrepo)
     if match(r"/heads/master$", LibGit2.name(src_head)) isa Nothing
-        @error "Source repository should be in master branch"
+        throw(ErrorException("Source repository should be in master branch"))
     elseif match(r"/heads/gh-pages$", LibGit2.name(doc_head)) isa Nothing
-        @error "Docs repository should be in the branch gh-pages"
+        throw(ErrorException("Docs repository should be in the branch gh-pages"))
     end
     # 2. Build docs and chek if it's ok
     include("make.jl")
     ask(prompt="") = (println(prompt); readline())
     okstr = ask("Is the build ok? (y/n): ")
-    (isempty(okstr) || okstr[1] ≠ 'y') && (@error "Deployment aborted")
+    (isempty(okstr) || okstr[1] ≠ 'y') && throw(ErrorException("Deployment aborted"))
     # 3. Create message for commit in doc repo
     head_commit = LibGit2.GitShortHash(LibGit2.GitHash(src_head), 7) |> string
     msg = "Build from $head_commit"
