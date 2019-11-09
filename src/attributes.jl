@@ -5,14 +5,16 @@ const LOCATIONS = Dict( k => i-1 for (i, k) in enumerate((
 )))
 
 # Legend
-function legend!(p::PlotObject, args...; location=1, kwargs...)
+function legend!(p::PlotObject, args...; location=1, kinds=Tuple{}(), kwargs...)
     location = lookup(location, LOCATIONS)
     # Reset main viewport if there was a legend
     if haskey(p.attributes, :location) && p.attributes[:location] ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] += p.legend.size[1]
     end
-    for i = 1:min(length(args), length(p.geoms))
-        p.geoms[i] = Geometry(p.geoms[i], label=args[i])
+    chosen = choosegeoms(p, kinds)
+    for i = 1:min(length(args), length(chosen))
+        j = chosen[i]
+        p.geoms[j] = Geometry(p.geoms[j], label=args[i])
     end
     maxrows = Int(get(kwargs, :maxrows, length(p.geoms)))
     p.legend = Legend(p.geoms, maxrows)
@@ -57,8 +59,14 @@ in the following table --- based on the convention of
 | 13| `"outer lower right"` |
 
 The labels are assigned to the geometries contained in the plot,
-in the same order as they were created. Only geometries with non-empty labels
-and an available guide for legends will be presented in the legend.
+in the same order as they were created. The assignment can be
+restricted to specific kinds of geometries through the keyword argument
+`kinds`, which can take a `Symbol` or a collection of `Symbol`s
+that identify the kinds. Use the helper function [`geometrykinds`](@ref)
+to see the list of kinds available in the current plot.
+
+Only geometries with non-empty labels and an available guide for legends
+will be presented in the legend.
 
 # Examples
 
@@ -72,6 +80,39 @@ function legend(args::AbstractString...; kwargs...)
     legend!(currentplot(f), args...; kwargs...)
     return f
 end
+
+"""
+    geometrykinds([p])
+
+Return a list with symbols that represent the kind
+of the geometries included in the given plot or figure `p`.
+
+If no argument is given, it takes the current plot of
+the current figure.
+
+# Examples
+
+```julia
+julia> # Plot a set of points at values `(x, y)`
+julia> # and a regression line passing through `(x, ŷ)`
+julia> scatter(x, y)
+julia> plot(x, ŷ)
+julia> geometrykinds()
+2-element Array{Symbol,1}:
+ :scatter
+ :line
+```
+"""
+geometrykinds(p::PlotObject) = [g.kind for g in p.geoms]
+geometrykinds(f::Figure=gcf()) = geometrykinds(currentplot(f))
+
+function choosegeoms(p::PlotObject, kinds=Tuple{}())
+    isempty(kinds) && return collect(1:length(p.geoms))
+    gk = geometrykinds(p)
+    findall(k -> k ∈ kinds, gk)
+end
+
+choosegeoms(p::PlotObject, kinds::Symbol) = choosegeoms(p, (kinds,))
 
 # Hold
 hold!(p::PlotObject, state::Bool) = (p.attributes[:hold] = state)
