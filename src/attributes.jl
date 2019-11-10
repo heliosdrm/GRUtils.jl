@@ -360,14 +360,14 @@ for ax = ("x", "y", "z")
     end
 
     # xlog, xflip, etc.
-    for (attr, docstr) ∈ ((:log, :AXISLOG_DOC), (:flip, :AXISFLIP_DOC))
+    for (attr, docstr) ∈ (("log", :AXISLOG_DOC), ("flip", :AXISFLIP_DOC))
         fname! = Symbol(ax, attr, :!)
         fname = Symbol(ax, attr)
         @eval function $fname!(p::PlotObject, flag=false)
             if p.axes.kind ∈ (:axes2d, :axes3d)
+                p.attributes[Symbol($ax, $attr)] = flag
                 p.axes.options[:scale] = set_scale(; p.attributes...)
             end
-            p.attributes[Symbol($ax, $attr)] = flag
             return nothing
         end
         @eval $fname!(f::Figure, args...) = $fname!(currentplot(f), args...)
