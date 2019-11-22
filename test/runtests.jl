@@ -39,6 +39,8 @@ functionlist = (
     end
 end
 
+include("extratests.jl")
+
 file_path = ENV["GKS_FILEPATH"]
 @test isfile(file_path)
 GRUtils.GR.reset()
