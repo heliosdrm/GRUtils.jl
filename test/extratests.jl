@@ -1,3 +1,5 @@
+using Printf
+
 @testset "Plot attributes" begin
     # Axis and geometry guides (2d)
     x = -2π:0.01:2π
@@ -7,7 +9,7 @@
     ylim(-1.15, 1.15)
     grid(false)
     # Pretty format for the tick labels
-    xticklabels((x)->Base.Printf.@sprintf("%0.1f\\pi",x/π))
+    xticklabels((x)->Printf.@sprintf("%0.1f\\pi",x/π))
     # Legend with various rows
     legend("\\phi = 0", "\\phi = 0.5\\pi", "\\phi = \\pi", "\\phi = 1.5\\pi",
         maxrows = 2, location="upper center")
