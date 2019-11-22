@@ -8,7 +8,7 @@ Random.seed!(111)
 
 GRUtils stores the data generated in the creation of plots in objects of the type `Figure`. There is a global "current figure" that is silently used by all the basic functions to create, modify and save plots. New figures can be created with the [`Figure`](@ref) constructor, which in its simplest form is just a call to `Figure()`.
 
-As all Julia objects, figures can be assigned to variables, a useful resource to work with different figures. The current figure can be retrieved with the function `gcf()` -- standing for "get current figure", and is also returned by plotting functions like `plot`. On the other hand, a figure that is stored in the variable `fig` can be made the current figure with `gcf(fig)`.
+As all Julia objects, figures can be assigned to variables, a useful resource to work with different figures. The current figure can be retrieved with the function `gcf()` -- standing for "get current figure", and is also returned by plotting functions like `plot`. On the other hand, a figure that is stored in the variable `fig` can be made the current figure by `gcf(fig)`.
 
 Most functions to work with plots in GRUtils have methods or variants that allow to specify what figure will be used. For instance, all plotting functions (e.g. `plot`, `scatter`, `histogram`, etc.) have "in-place" versions whose name end with an exclamation mark (i.e. `plot!`, `scatter!`, `histogram!`...). The first argument of those functions is the `Figure` object where the plot will be created. Let's see an example:
 

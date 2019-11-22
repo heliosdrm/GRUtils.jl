@@ -9,13 +9,13 @@ GRUtils is being maintained in a package apart from GR, in order to make its dev
 
 ## Installation
 
-Add GRUtils to your library of Julia packages, hitting `]` to enter in the "package management mode" and then typing:
+Add GRUtils to your library of Julia packages, typing `]` to enter in the "package management mode" and then typing:
 
 ```julia-repl
 add GRUtils
 ```
 
-Or if you feel like looking into GRUtil's code and maybe trying your own fixes and improvements, you can clone it for development (also in the package management mode):
+Or if you feel like looking into GRUtils' code and maybe trying your own fixes and improvements, you can clone it for development (also in the package management mode):
 
 ```julia-repl
 dev GRUtils
@@ -76,6 +76,5 @@ Many more functions to make and manipulate plots are also available in GRUtils. 
 * Matrices passed to [`imshow`](@ref) must contain numbers in the range [0, 1].
 * The function [`isosurface`](@ref) does not assume a default "isovalue", which has to be entered explicitly as second positional argument.
 * Staircase plots (not present in GR's documentation) are made with the function [`stair`](@ref) instead of `step`, in order to avoid name conflicts with [Base.step](https://docs.julialang.org/en/latest/base/collections/#Base.step).
-* The functions that modify [Plot attributes](@ref) update the visualization of the plot automatically.
 
 Some plots in GRUtils also allow extra features. Check the list of [Plotting functions](@ref) for more details.

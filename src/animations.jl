@@ -21,7 +21,7 @@ The secondargument `target` must be a string with the name of
 the video file, whose format is determined by the extension of the file.
 The supported extensions are `"webm"`, `"mp4"` or `"mov"`.
 
-Use `overwrite=false` to force the creation of `target` if the file already exists
+Use `overwrite=true` to force the creation of `target` if the file already exists
 (otherwise an error will be thrown in such cases).
 
 # Examples

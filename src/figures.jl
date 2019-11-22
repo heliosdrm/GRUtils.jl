@@ -126,7 +126,7 @@ new row starting after every `num_cols` subplots.
 
 The arguments `num_rows` and `num_cols` indicate the number of rows and columns
 of the grid of plots into which the figure is meant to be divided, and `indices`
-is an integer or an array of integers that identify a group of cells in that
+is an integer or a collection of integers that identify a group of cells in that
 grid. This function returns a plot with the minimum size that spans over all
 those cells, and appends it to the array of plots of the figure,
 such that it becomes its current plot.
