@@ -1,5 +1,5 @@
 ## Select keyword arguments from lists
-const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :color,
+const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :color, :headsize,
     :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
@@ -658,24 +658,16 @@ function quiver_xyfactors(x, y, u, v)
     return xf, yf
 end
 
-function _setargs_quiver(f, x, y, u, v, spec=""; arrowscale=1.0, headsize=1.0, kwargs...)
-    u = u .* arrowscale
-    v = v .* arrowscale
-    xf, yf = quiver_xyfactors(x, y, u, v)
+function _setargs_quiver(f, x, y, u, v, spec=""; arrowscale=1.0, kwargs...)
     n = length(x)
-    xa = zeros(4n)
-    ya = zeros(4n)
+    xa = zeros(2n)
+    ya = zeros(2n)
     for i = 1:n
-        j = 4i - 3
-        x1, x2, y1, y2 = arrowhead(u[i], v[i], headsize, xf, yf)
+        j = 2i - 1
         xa[j] = x[i]
-        xa[j+1] = x[i] + u[i]
-        xa[j+2] = xa[j+1] + x1
-        xa[j+3] = xa[j+1] + x2
+        xa[j+1] = x[i] + arrowscale*u[i]
         ya[j] = y[i]
-        ya[j+1] = y[i] + v[i]
-        ya[j+2] = ya[j+1] + y1
-        ya[j+3] = ya[j+1] + y2
+        ya[j+1] = y[i] + arrowscale*v[i]
     end
     if !isempty(spec)
         kwargs = (; spec=spec, kwargs...)
@@ -703,7 +695,7 @@ $(_example("quiver"))
 ```
 """)
 
-function _setargs_quiver3(f, x, y, z, u, v, w, spec=""; arrowscale=1.0, headsize=1.0, kwargs...)
+function _setargs_quiver3(f, x, y, z, u, v, w, spec=""; arrowscale=1.0, kwargs...)
     n = length(x)
     xa = zeros(2n)
     ya = zeros(2n)
