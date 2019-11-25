@@ -5,3 +5,5 @@ u = x .* (x.^2 .+ y.^2)
 v = y .* (x.^2 .+ y.^2)
 # Plot arrows
 quiver(x, y, u, y, arrowscale=0.1)
+# Expand the y-axes to see the whole arrows
+ylim(-1.15, 1.15)

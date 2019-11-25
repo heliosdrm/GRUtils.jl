@@ -398,26 +398,18 @@ end
 function draw(g::Geometry, ::Val{:quiver})::Nothing
     mask = _uselinespec(g.spec, g.attributes)
     GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
-    vp = GR.inqviewport()
-    # x, y factors to correct viewport proportions
-    ndcranges = (vp[2]-vp[1]), (vp[4]-vp[3])
-    yfactor, xfactor = ndcranges ./ maximum(ndcranges)
-    for i = 1:4:length(g.x)-3
-        GR.polyline(g.x[i:i+1], g.y[i:i+1])
-        GR.polyline(
-            [
-                g.x[i+1]*(1 - xfactor) + g.x[i+2]*xfactor, g.x[i+1],
-                g.x[i+1]*(1 - xfactor) + g.x[i+3]*xfactor
-            ],
-            [
-                g.y[i+1]*(1 - yfactor) + g.y[i+2]*yfactor, g.y[i+1],
-                g.y[i+1]*(1 - yfactor) + g.y[i+3]*yfactor
-            ],
-        )
+    headsize = get(g.attributes, :headsize, 1.0)
+    n = length(g.x)
+    vectorsizes = (g.x[2:2:n] .- g.x[1:2:n]).^2 .+ (g.y[2:2:n] .- g.y[1:2:n]).^2
+    maxsize = 2sum(vectorsizes)/n
+    for i = 1:2:n-1
+        hs = vectorsizes[(i+1)>>1] * headsize / maxsize
+        GR.setarrowsize(sqrt(hs))
+        GR.drawarrow(g.x[i], g.y[i], g.x[i+1], g.y[i+1])
     end
     if hasmarker(mask)
         GR.setmarkersize(2float(get(g.attributes, :markersize, 1.0)))
-        GR.polymarker(view(g.x, 1:4:length(g.x)-3), view(g.y, 1:4:length(g.y)-3))
+        GR.polymarker(view(g.x, 1:2:length(g.x)-1), view(g.y, 1:2:length(g.y)-1))
     end
     return nothing
 end
