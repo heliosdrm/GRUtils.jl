@@ -24,7 +24,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig, video, videofile,
     xflip!, xlabel!, xlim!, xlog!, xticks!, xticklabels!,
     yflip!, ylabel!, ylim!, ylog!, yticks!, yticklabels!,
     zflip!, zlabel!, zlim!, zlog!, zticks!,
-    colormap!, colorscheme!
+    backgroundcolor!, colormap!, colorscheme!
 
 include("general.jl")
 include("colors.jl")

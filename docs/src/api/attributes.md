@@ -49,6 +49,7 @@ colorbar
 
 ## Colors
 ```@docs
+backgroundcolor
 colormap
 ```
 ```@example attr

@@ -94,7 +94,8 @@ The high-contrast color set is managed automatically during the creation of plot
     * `'m'` for **m**agenta,
     * `'k'` for the foreground color (blac**k** in the default scheme),
     * `'w'` for the background color (**w**hite in the default scheme).
-* Moreover, user-defined colors can be specified for the following attributes of some geometries:
+* Moreover, user-defined colors can be specified for the following attributes of some plot elements:
+    * `backgroundcolor` for the background,
     * `linecolor` for lines,
     * `markercolor` for markers,
     * `color` for filled areas in bars, isosurfaces, etc.
@@ -110,5 +111,3 @@ hold(true)
 plot(exp.(LinRange(-1, 0, 10)),
     linecolor=GRUtils.color(0.5, 0, 0.75))
 ```
-
-The colors defined as keyword arguments this way override the specifications given as strings. See help

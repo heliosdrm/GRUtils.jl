@@ -806,7 +806,7 @@ end
     colormap!(p, cmap)
 
 Apply a colormap `cmap` to the given plot `p`, which can be a `PlotObject`,
-or a `Figure` (in such case the colormap is applied to all the plots contained in it.)
+or a `Figure` (in such case the colormap is applied to all the plots contained in it).
 
 The value of `cmap` can be the number or the name of any of the
 [GR built-in colormaps](https://gr-framework.org/colormaps.html)
@@ -847,7 +847,7 @@ end
     colorscheme!(p, scheme)
 
 Apply a color `scheme` to the given plot `p`, which can be a `PlotObject`,
-or a `Figure` (in such case the scheme is applied to all the plots contained in it.)
+or a `Figure` (in such case the scheme is applied to all the plots contained in it).
 
 The value of `scheme` can be the number or the name of any available
 color scheme (see [`colorscheme`](@ref) for more details).
@@ -884,3 +884,36 @@ function colorscheme!(f::Figure, scheme)
     end
     return f
 end
+
+"""
+    backgroundcolor!(p, bgcolor)
+
+Add a background color identified by the hexadecimal color code `bgcolor`
+to the given plot `p`, which can be a `PlotObject`, or a `Figure`
+(in such case the scheme is applied to all the plots contained in it).
+Use `bgcolor=nothing` to reset a transparent background.
+
+Use the keyword argument `backgroundcolor` in plotting functions, to set a
+particular background color during the creation of plots.
+
+# Examples
+```julia
+# Create a plot with light blue background
+plot(x, y, backgroundcolor=0x88ccff)
+# Remove the background
+backgroundcolor!(currentplot(), nothing)
+```
+"""
+function backgroundcolor!(p::PlotObject, bgcolor::Real)
+    p.attributes[:backgroundcolor] = Int(bgcolor)
+    return nothing
+end
+
+function backgroundcolor!(f::Figure, bgcolor::Real)
+    for p in f.plots
+        backgroundcolor!(p, bgcolor)
+    end
+    return f
+end
+
+backgroundcolor!(p, ::Nothing) = backgroundcolor!(p, -1)

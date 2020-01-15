@@ -166,7 +166,7 @@ geometries(p::PlotObject) = p.geoms
 ## `draw` methods ##
 ####################
 
-# Fill background, accepts a color, Bool or Nothing
+# Fill background
 function fillbackground(rectndc, color)
     color < 0 && return nothing
     GR.savestate()
@@ -188,8 +188,8 @@ function draw(p::PlotObject)
     scheme = get(p.attributes, :scheme, COLOR_INDICES[:scheme])
     applycolorscheme(scheme)
     default_bg = (scheme == 0) ? -1 : 0
-    if haskey(p.attributes, :background)
-        bgcolor = colorindex(p.attributes[:background])
+    if haskey(p.attributes, :backgroundcolor)
+        bgcolor = colorindex(p.attributes[:backgroundcolor])
     else
         bgcolor = default_bg
     end

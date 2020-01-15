@@ -23,7 +23,7 @@ functionlist = (
     ("Text", ("annotations",)),
     ("Attributes", ("aspectratio", "ticks")),
     ("Control", ("subplot",)),
-    ("Colors", ("colorscheme", "colormap"))
+    ("Colors", ("backgroundcolor", "colorscheme", "colormap"))
 )
 
 # GR.gr3 had an issue in some systems
