@@ -1,6 +1,11 @@
 MIT License
 
-Copyright (c) 2019 Helios De Rosario
+Copyright (c) 2019-2020 Helios De Rosario
+
+Copyright for portions of project GRUtils are held by Josef Heinen,
+Florian Rhiem, Christian Felder, and other contributors (2012-2019) as part
+of project GR (https://github.com/jheinen/GR.jl). All other copyright for
+project GRUtils are held by Helios De Rosario, 2019-2020.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
