@@ -89,7 +89,7 @@ axes = GRUtils.Axes(:axes2d, geoms, # hide
     xticklabels=x->repr(1-(x-1)/10, context=:compact=>true), #hide
     xlim=(0.5,11.5), grid=false) # hide
 GRUtils.makeplot!(currentplot(), axes, geoms) # hide
-gcf()
+gcf() # hide
 ```
 
 ## Using colors with GRUtils
