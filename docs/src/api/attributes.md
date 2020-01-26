@@ -49,7 +49,8 @@ colorbar
 
 ## Colors
 ```@docs
-backgroundcolor
+background
+background!
 colormap
 ```
 ```@example attr

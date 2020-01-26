@@ -74,13 +74,31 @@ GRUtils.color(1, 0.4, 0)   # R = 1, G = 0.4, B= 0
 
     The RGB channels in those hexadecimal color codes are assumed to be "word-ordered" in a little-endian system, i.e. the red-green-blue bytes are ordered from the most to the least significant. Take care of the byte order if you use integer color codes calculated from other sources.
 
-
-
 The color system of GR, used by GRUtils, has room for nearly 1,000 colors defined ad hoc by the user in each session -- let aside the color sets that have already been commented. There are more than 16 million of possible RGB combinations, although in practice you will never need more than a small fraction of the space for user-defined colors.
+
+## Transparency
+
+By default, colors are assumed to be "opaque", but an *alpha* level of transparency can be added to user-defined colors: this is a value that can vary between `0` (fully transparent) and `1` (fully opaque).
+
+```@example colors
+Figure((600, 150)) # hide
+geoms = [GRUtils.Geometry(:bar, x=[-0.5,0.5] .+ i, y=[0,1], # hide
+    color=0xcb3c33, alpha=1-(i-1)/10) for i = 1:11] # hide
+axes = GRUtils.Axes(:axes2d, geoms, # hide
+    xticks=(1,1), yticks=(0,0), # hide
+    xticklabels=x->repr(1-(x-1)/10, context=:compact=>true), #hide
+    xlim=(0.5,11.5), grid=false) # hide
+GRUtils.makeplot!(currentplot(), axes, geoms) # hide
+gcf()
+```
 
 ## Using colors with GRUtils
 
-The general color scheme and the colormap are set globally, but they can be changed at any time during the session with the functions [`colorscheme`](@ref) and [`colormap`](@ref), or chosen specifically for particular plots with [`colorscheme!`](@ref) and [`colormap!`](@ref).
+### General scheme and color map
+
+The general color scheme and the colormap are set globally, but they can be changed at any time during the session with the functions [`colorscheme`](@ref) and [`colormap`](@ref), or chosen specifically for particular plots with [`colorscheme!`](@ref) and [`colormap!`](@ref). See the documentation of those functions for more details.
+
+### Color of geometries
 
 The high-contrast color set is managed automatically during the creation of plots, if no other colors are selected by the user. There are two ways to specify particular colors, depending on the kind of geometry:
 
@@ -92,10 +110,10 @@ The high-contrast color set is managed automatically during the creation of plot
     * `'c'` for **c**yan,
     * `'y'` for **y**ellow,
     * `'m'` for **m**agenta,
-    * `'k'` for the foreground color (blac**k** in the default scheme),
     * `'w'` for the background color (**w**hite in the default scheme).
-* Moreover, user-defined colors can be specified for the following attributes of some plot elements:
-    * `backgroundcolor` for the background,
+    * `'k'` for the foreground color (blac**k** in the default scheme),
+
+* Moreover, user-defined colors can be specified for the following attributes of some geometries:
     * `linecolor` for lines,
     * `markercolor` for markers,
     * `color` for filled areas in bars, isosurfaces, etc.
@@ -111,3 +129,11 @@ hold(true)
 plot(exp.(LinRange(-1, 0, 10)),
     linecolor=GRUtils.color(0.5, 0, 0.75))
 ```
+
+The alpha channel of transparency can be also defined for all geometries using the keyword argument `alpha`, with any value between 0 and 1.
+
+### Background colors
+
+The background color of the areas that enclose the plot axes and legends is defined by the color scheme. By default, the outer area of the plots is either transparent or has the same background color, depending on the selected scheme (cf. [`colorscheme`](@ref)).
+
+The function [`background`](@ref) can be used to change the outer background of the figure, filling it with a user-defined color and a custom transparency level. This can be also done during the creation of the plot, using the keyword arguments `backgroundcolor` and `backgroundalpha`. This only affects the area outside the axes and legends.

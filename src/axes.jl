@@ -379,6 +379,13 @@ function draw(ax::Axes)
     if ax.kind == :axes3d
         get(ax.options, :gr3, 0) ≠ 0 && return draw_gr3axes(ax)
     end
+    # GR.savestate()
+    # Fill with background color
+    GR.selntran(0)
+    GR.setfillintstyle(GR.INTSTYLE_SOLID)
+    GR.setfillcolorind(0)
+    GR.fillrect(GR.inqviewport()...)
+    GR.selntran(1)
     # Set the window of data seen
     GR.setwindow(ax.ranges[:x]..., ax.ranges[:y]...)
     # Modify scale (log or flipped axes)
@@ -419,6 +426,7 @@ function draw(ax::Axes)
         end
         GR.axes(xtick, ytick, xorg[2], yorg[2], -majorx, -majory, -ticksize)
     end
+    GR.restorestate()
     return nothing
 end
 
@@ -435,6 +443,10 @@ function draw_polaraxes(ax)
     GR.setlinetype(GR.LINETYPE_SOLID)
     rmax = maximum(abs.(ax.ranges[:y]))
     tick = 0.5 * GR.tick(0.0, rmax)
+    # Fill with background color
+    GR.setfillintstyle(GR.INTSTYLE_SOLID)
+    GR.setfillcolorind(0)
+    GR.fillarc(-1, 1, -1, 1, 0, 359)
     # Draw the arcs and radii
     n = round(Int, rmax / tick + 0.5)
     for i in 0:n

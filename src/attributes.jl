@@ -885,35 +885,57 @@ function colorscheme!(f::Figure, scheme)
     return f
 end
 
+# Custom background
+
 """
-    backgroundcolor!(p, bgcolor)
+    background!(p, bgcolor[, alpha])
 
-Add a background color identified by the hexadecimal color code `bgcolor`
-to the given plot `p`, which can be a `PlotObject`, or a `Figure`
-(in such case the scheme is applied to all the plots contained in it).
-Use `bgcolor=nothing` to reset a transparent background.
+Add a custom background color to the given plot object or to all the plots
+inside the given figure. See [`background`](@ref) for more details.
+"""
+function background!(p::PlotObject, bgcolor)
+    p.attributes[:backgroundcolor] = Int(bgcolor)
+    return nothing
+end
 
-Use the keyword argument `backgroundcolor` in plotting functions, to set a
-particular background color during the creation of plots.
+function background!(p::PlotObject, bgcolor, alpha)
+    p.attributes[:backgroundcolor] = Int(bgcolor)
+    p.attributes[:backgroundalpha] = alpha
+    return nothing
+end
+
+background!(p::PlotObject, ::Nothing) = background!(p, -1)
+
+function background!(f::Figure, args...)
+    for p in f.plots
+        background!(p, args...)
+    end
+    return f
+end
+
+"""
+    background(color[, alpha])
+
+Add a custom background color to the current figure.
+
+The argument can be an hexadecimal color code or `nothing` for a transparent
+background. A partially transparent color can be defined adding the alpha
+value between 0 and 1 as second argument.
+
+Use the keyword arguments `backgroundcolor` and `backgroundalpha`
+in plotting functions, to set a particular background color configuration
+during the creation of plots.
+
+This overrides the default background defined by the [`colorscheme`](@ref) for
+the area outside the axes and legends of all the plots contained in the figure.
+Use [`background!`](@ref) to modify the background of individual subplots.
 
 # Examples
 ```julia
 # Create a plot with light blue background
 plot(x, y, backgroundcolor=0x88ccff)
 # Remove the background
-backgroundcolor!(currentplot(), nothing)
+background(nothing)
 ```
 """
-function backgroundcolor!(p::PlotObject, bgcolor::Real)
-    p.attributes[:backgroundcolor] = Int(bgcolor)
-    return nothing
-end
-
-function backgroundcolor!(f::Figure, bgcolor::Real)
-    for p in f.plots
-        backgroundcolor!(p, bgcolor)
-    end
-    return f
-end
-
-backgroundcolor!(p, ::Nothing) = backgroundcolor!(p, -1)
+background(args...) = background!(gcf(), args...)

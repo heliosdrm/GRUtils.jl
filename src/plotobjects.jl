@@ -167,13 +167,19 @@ geometries(p::PlotObject) = p.geoms
 ####################
 
 # Fill background
-function fillbackground(rectndc, color)
+function fillbackground(rectndc, color, alpha=1)
     color < 0 && return nothing
     GR.savestate()
     GR.selntran(0)
     GR.setfillintstyle(GR.INTSTYLE_SOLID)
     GR.setfillcolorind(color)
-    GR.fillrect(rectndc...)
+    if alpha ≠ 1
+        GR.settransparency(alpha)
+        GR.fillrect(rectndc...)
+        GR.settransparency(1)
+    else
+        GR.fillrect(rectndc...)
+    end
     GR.selntran(1)
     GR.restorestate()
     return nothing
@@ -193,7 +199,11 @@ function draw(p::PlotObject)
     else
         bgcolor = default_bg
     end
-    fillbackground(outer, bgcolor)
+    if haskey(p.attributes, :backgroundalpha)
+        fillbackground(outer, bgcolor, p.attributes[:backgroundalpha])
+    else
+        fillbackground(outer, bgcolor)
+    end
     # Define the viewport
     GR.setviewport(inner...)
     # Draw components of the plot

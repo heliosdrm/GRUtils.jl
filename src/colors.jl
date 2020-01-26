@@ -235,7 +235,8 @@ To apply a particular scheme to some plot or figure, use
 [`colorscheme!`](@ref).
 
 If the scheme is `"none"` (`0`), the standard scheme is set, which
-is the same as `"light"` (1), except that the default background is transparent.
+is the same as `"light"` (1), except that the default background of the figure
+is transparent.
 
 # Examples
 

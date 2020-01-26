@@ -130,7 +130,7 @@ function draw(lg::Legend, geoms, location=1)
     window = (0, w, -h, 0)
     GR.setwindow(window...)
     GR.setscale(0)
-    # Fill white rectangle
+    # Fill rectangle with background color
     GR.setfillintstyle(GR.INTSTYLE_SOLID)
     GR.setfillcolorind(0)
     GR.fillrect(window...)
