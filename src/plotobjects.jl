@@ -263,7 +263,7 @@ function drawlabels(p)
             text(outer[1] + 0.5 * charheight, 0.5 * (inner[3] + inner[4]), ylabel)
         end
     # 3d axes
-elseif p.axes.kind == :axes3d && (!isempty(xlabel) || !isempty(ylabel) || !isempty(zlabel))
+    elseif p.axes.kind == :axes3d && (!isempty(xlabel) || !isempty(ylabel) || !isempty(zlabel))
         GR.titles3d(xlabel, ylabel, zlabel)
     end
     GR.restorestate()
