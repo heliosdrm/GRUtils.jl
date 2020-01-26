@@ -13,7 +13,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig, video, videofile,
     xflip, xlabel, xlim, xlog, xticks, xticklabels,
     yflip, ylabel, ylim, ylog, yticks, yticklabels,
     zflip, zlabel, zlim, zlog, zticks,
-    colormap, colorscheme,
+    background, colormap, colorscheme,
 
     subplot!, plot!, plot3!, polar!, quiver!, quiver3!, scatter!, scatter3!, stair!, stem!, oplot!,
     errorbar!, barplot!, histogram!, polarhistogram!,
@@ -24,7 +24,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig, video, videofile,
     xflip!, xlabel!, xlim!, xlog!, xticks!, xticklabels!,
     yflip!, ylabel!, ylim!, ylog!, yticks!, yticklabels!,
     zflip!, zlabel!, zlim!, zlog!, zticks!,
-    colormap!, colorscheme!
+    background!, colormap!, colorscheme!
 
 include("general.jl")
 include("colors.jl")

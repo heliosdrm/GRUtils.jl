@@ -14,7 +14,7 @@ The fields contained in a `Legend` object are:
     scale of the bar (basically, if it is presented as linear or log scale).
 * **`margin`**: a `Float64` with the size of the extra margin between the main
     plot frame and the bar.
-* **`colors**`: an `Int` indicating the number of different grades in the color scale.
+* **`colors`**: an `Int` indicating the number of different grades in the color scale.
 """
 struct Colorbar
     range::Tuple{Float64, Float64}

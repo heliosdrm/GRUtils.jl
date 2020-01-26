@@ -806,7 +806,7 @@ end
     colormap!(p, cmap)
 
 Apply a colormap `cmap` to the given plot `p`, which can be a `PlotObject`,
-or a `Figure` (in such case the colormap is applied to all the plots contained in it.)
+or a `Figure` (in such case the colormap is applied to all the plots contained in it).
 
 The value of `cmap` can be the number or the name of any of the
 [GR built-in colormaps](https://gr-framework.org/colormaps.html)
@@ -847,7 +847,7 @@ end
     colorscheme!(p, scheme)
 
 Apply a color `scheme` to the given plot `p`, which can be a `PlotObject`,
-or a `Figure` (in such case the scheme is applied to all the plots contained in it.)
+or a `Figure` (in such case the scheme is applied to all the plots contained in it).
 
 The value of `scheme` can be the number or the name of any available
 color scheme (see [`colorscheme`](@ref) for more details).
@@ -884,3 +884,58 @@ function colorscheme!(f::Figure, scheme)
     end
     return f
 end
+
+# Custom background
+
+"""
+    background!(p, bgcolor[, alpha])
+
+Add a custom background color to the given plot object or to all the plots
+inside the given figure. See [`background`](@ref) for more details.
+"""
+function background!(p::PlotObject, bgcolor)
+    p.attributes[:backgroundcolor] = Int(bgcolor)
+    return nothing
+end
+
+function background!(p::PlotObject, bgcolor, alpha)
+    p.attributes[:backgroundcolor] = Int(bgcolor)
+    p.attributes[:backgroundalpha] = alpha
+    return nothing
+end
+
+background!(p::PlotObject, ::Nothing) = background!(p, -1)
+
+function background!(f::Figure, args...)
+    for p in f.plots
+        background!(p, args...)
+    end
+    return f
+end
+
+"""
+    background(color[, alpha])
+
+Add a custom background color to the current figure.
+
+The argument can be an hexadecimal color code or `nothing` for a transparent
+background. A partially transparent color can be defined adding the alpha
+value between 0 and 1 as second argument.
+
+Use the keyword arguments `backgroundcolor` and `backgroundalpha`
+in plotting functions, to set a particular background color configuration
+during the creation of plots.
+
+This overrides the default background defined by the [`colorscheme`](@ref) for
+the area outside the axes and legends of all the plots contained in the figure.
+Use [`background!`](@ref) to modify the background of individual subplots.
+
+# Examples
+```julia
+# Create a plot with light blue background
+plot(x, y, backgroundcolor=0x88ccff)
+# Remove the background
+background(nothing)
+```
+"""
+background(args...) = background!(gcf(), args...)

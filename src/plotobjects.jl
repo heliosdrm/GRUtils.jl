@@ -166,14 +166,20 @@ geometries(p::PlotObject) = p.geoms
 ## `draw` methods ##
 ####################
 
-# Fill background, accepts a color, Bool or Nothing
-function fillbackground(rectndc, color)
+# Fill background
+function fillbackground(rectndc, color, alpha=1)
     color < 0 && return nothing
     GR.savestate()
     GR.selntran(0)
     GR.setfillintstyle(GR.INTSTYLE_SOLID)
     GR.setfillcolorind(color)
-    GR.fillrect(rectndc...)
+    if alpha ≠ 1
+        GR.settransparency(alpha)
+        GR.fillrect(rectndc...)
+        GR.settransparency(1)
+    else
+        GR.fillrect(rectndc...)
+    end
     GR.selntran(1)
     GR.restorestate()
     return nothing
@@ -188,12 +194,16 @@ function draw(p::PlotObject)
     scheme = get(p.attributes, :scheme, COLOR_INDICES[:scheme])
     applycolorscheme(scheme)
     default_bg = (scheme == 0) ? -1 : 0
-    if haskey(p.attributes, :background)
-        bgcolor = colorindex(p.attributes[:background])
+    if haskey(p.attributes, :backgroundcolor)
+        bgcolor = colorindex(p.attributes[:backgroundcolor])
     else
         bgcolor = default_bg
     end
-    fillbackground(outer, bgcolor)
+    if haskey(p.attributes, :backgroundalpha)
+        fillbackground(outer, bgcolor, p.attributes[:backgroundalpha])
+    else
+        fillbackground(outer, bgcolor)
+    end
     # Define the viewport
     GR.setviewport(inner...)
     # Draw components of the plot
