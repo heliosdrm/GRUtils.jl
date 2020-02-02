@@ -217,7 +217,7 @@ function draw(p::PlotObject)
     end
     resetcolors()
     # Overlay axes if requested
-    get(p.attributes, :overlay_axes, false) && draw(p.axes)
+    get(p.attributes, :overlay_axes, false) && draw(p.axes, false)
     # Legend
     location = get(p.attributes, :location, 0)
     draw(p.legend, p.geoms, location)

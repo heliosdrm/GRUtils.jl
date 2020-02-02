@@ -373,20 +373,22 @@ end
 ## `draw` methods ##
 ####################
 
-function draw(ax::Axes)
+function draw(ax::Axes, background=true)
     # Special draw functions for polar axes and gr3
-    ax.kind == :polar && return draw_polaraxes(ax)
+    ax.kind == :polar && return draw_polaraxes(ax, background)
     if ax.kind == :axes3d
         get(ax.options, :gr3, 0) ≠ 0 && return draw_gr3axes(ax)
     end
-    # Fill with background color
-    # GR.savestate()
-    GR.selntran(0)
-    GR.setfillintstyle(GR.INTSTYLE_SOLID)
-    GR.setfillcolorind(0)
-    GR.fillrect(GR.inqviewport()...)
-    GR.selntran(1)
-    # GR.restorestate()
+    if background
+        # Fill with background color
+        # GR.savestate()
+        GR.selntran(0)
+        GR.setfillintstyle(GR.INTSTYLE_SOLID)
+        GR.setfillcolorind(0)
+        GR.fillrect(GR.inqviewport()...)
+        GR.selntran(1)
+        # GR.restorestate()
+    end
     # Set the window of data seen
     GR.setwindow(ax.ranges[:x]..., ax.ranges[:y]...)
     # Modify scale (log or flipped axes)
@@ -430,7 +432,7 @@ function draw(ax::Axes)
     return nothing
 end
 
-function draw_polaraxes(ax)
+function draw_polaraxes(ax, background=true)
     # Set the window as the unit circle
     GR.setwindow(-1.0, 1.0, -1.0, 1.0)
     # Modify scale (log or flipped axes)
@@ -443,10 +445,12 @@ function draw_polaraxes(ax)
     GR.setlinetype(GR.LINETYPE_SOLID)
     rmax = maximum(abs.(ax.ranges[:y]))
     tick = 0.5 * GR.tick(0.0, rmax)
-    # Fill with background color
-    GR.setfillintstyle(GR.INTSTYLE_SOLID)
-    GR.setfillcolorind(0)
-    GR.fillarc(-1, 1, -1, 1, 0, 359)
+    if background
+        # Fill with background color
+        GR.setfillintstyle(GR.INTSTYLE_SOLID)
+        GR.setfillcolorind(0)
+        GR.fillarc(-1, 1, -1, 1, 0, 359)
+    end
     # Draw the arcs and radii
     n = round(Int, rmax / tick + 0.5)
     for i in 0:n
