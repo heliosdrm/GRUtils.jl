@@ -715,7 +715,8 @@ function _setargs_quiver3(f, x, y, z, u, v, w, spec=""; arrowscale=1.0, kwargs..
     return ((xa, ya, za), kwargs)
 end
 
-@plotfunction(quiver3, geom = :quiver3, axes = :axes3d, setargs = _setargs_quiver3, docstring="""
+@plotfunction(quiver3, geom = :quiver3, axes = :axes3d, setargs = _setargs_quiver3,
+kwargs = (ratio=1.0,), docstring="""
     quiver3(x, y, z, u, v, w[, spec; kwargs...])
 
 Draw a three-dimensional vector field at points `(x,y,z)` with arrows
@@ -933,7 +934,7 @@ function _setargs_surface(f, x, y, fz::Function, args...; kwargs...)
 end
 
 @plotfunction(surface, geom = :surface, axes = :axes3d, setargs = _setargs_surface,
-kwargs = (colorbar=true, accelerate=true), docstring="""
+kwargs = (ratio=1.0, colorbar=true, accelerate=true), docstring="""
     surface(x, y, z; kwargs...)
 
 Draw a three-dimensional surface plot.
@@ -959,7 +960,8 @@ $(_example("surface"))
 ```
 """)
 
-@plotfunction(wireframe, geom = :wireframe, axes = :axes3d, setargs = _setargs_surface, docstring="""
+@plotfunction(wireframe, geom = :wireframe, axes = :axes3d, setargs = _setargs_surface,
+kwargs = (ratio=1.0,), docstring="""
     wireframe(x, y, z; kwargs...)
 
 Draw a three-dimensional wireframe plot.
@@ -988,7 +990,7 @@ $(_example("wireframe"))
 """)
 
 @plotfunction(trisurf, geom = :trisurf, axes = :axes3d, setargs = _setargs_tricont,
-kwargs = (colorbar=true,), docstring="""
+kwargs = (colorbar=true, ratio=1.0), docstring="""
     tricont(x, y, z; kwargs...)
 
 Draw a triangular surface plot.
@@ -1241,7 +1243,7 @@ function _setargs_volume(f, v::Array{T, 3}; kwargs...) where {T}
 end
 
 @plotfunction(volume, geom = :volume, axes = :axes3d, setargs = _setargs_volume,
-kwargs = (colorbar=true,), docstring="""
+kwargs = (colorbar=true, ratio=1.0), docstring="""
     volume(v; kwargs...)
 
 Draw a the three-dimensional array `v`, using volume rendering.
