@@ -786,7 +786,7 @@ function _setargs_contour(f, x, y, z, h; kwargs...)
     return ((vec(x), vec(y), vec(z), vec(h)), kwargs)
 end
 
-# Coordinates (x, y, z) with countor lines automatically calculated
+# Coordinates (x, y, z) with contour lines automatically calculated
 function _setargs_contour(f, x, y, z; levels = 20, kwargs...)
     (x, y, z, _), kwargs = _setargs_contour(f, x, y, z, []; kwargs...)
     levels = Int(levels)
@@ -802,9 +802,20 @@ function _setargs_contour(f, x, y, fz::Function, args...; kwargs...)
     _setargs_contour(f, x, y, z, args...; kwargs...)
 end
 
+# z values alone, without x,y coordinates
+function _setargs_contour(f, z; kwargs...)
+    sz = size(z)
+    _setargs_contour(f, 1:sz[2], 1:sz[1], z; kwargs...)
+end
+
+function _setargs_contour(f, z, h; kwargs...)
+    sz = size(z)
+    _setargs_contour(f, 1:sz[2], 1:sz[1], z, h; kwargs...)
+end
+
 @plotfunction(contour, geom = :contour, axes = :axes3d, setargs = _setargs_contour,
 kwargs = (rotation=0, tilt=90), docstring="""
-    contour(x, y, z; kwargs...)
+    contour([x, y,] z; kwargs...)
 
 Draw a contour plot.
 
@@ -817,6 +828,8 @@ of the following:
     and a set of `z` values on a *N*×*M* grid.
 - *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
     and a callable to determine `z` values.
+- `z` values on a *N*×*M* grid, with the *x* and *y* axes
+    defined as the indices of the columns and rows of the grid, respectively.
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
@@ -844,7 +857,7 @@ $(_example("contour"))
 
 @plotfunction(contourf, geom = :contourf, axes = :axes3d, setargs = _setargs_contour,
 kwargs = (rotation=0, tilt=90, tickdir=-1), docstring="""
-    contourf(x, y, z; kwargs...)
+    contourf([x, y,] z; kwargs...)
 
 Draw a filled contour plot.
 
@@ -857,6 +870,8 @@ of the following:
     and a set of `z` values on a *N*×*M* grid.
 - *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
     and a callable to determine `z` values.
+- `z` values on a *N*×*M* grid, with the *x* and *y* axes
+    defined as the indices of the columns and rows of the grid, respectively.
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
@@ -933,9 +948,20 @@ function _setargs_surface(f, x, y, fz::Function, args...; kwargs...)
     _setargs_surface(f, x, y, z, args...; kwargs...)
 end
 
+# z values alone, without x,y coordinates
+function _setargs_surface(f, z; kwargs...)
+    sz = size(z)
+    _setargs_surface(f, 1:sz[2], 1:sz[1], z; kwargs...)
+end
+
+function _setargs_surface(f, z, h; kwargs...)
+    sz = size(z)
+    _setargs_surface(f, 1:sz[2], 1:sz[1], z, h; kwargs...)
+end
+
 @plotfunction(surface, geom = :surface, axes = :axes3d, setargs = _setargs_surface,
 kwargs = (ratio=1.0, colorbar=true, accelerate=true), docstring="""
-    surface(x, y, z; kwargs...)
+    surface([x, y,] z; kwargs...)
 
 Draw a three-dimensional surface plot.
 
@@ -948,6 +974,8 @@ current colormap. It can receive one of the following:
     and a set of `z` values on a *N*×*M* grid.
 - *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
     and a callable to determine `z` values.
+- `z` values on a *N*×*M* grid, with the *x* and *y* axes
+    defined as the indices of the columns and rows of the grid, respectively.
 
 If a series of points is passed to this function, their values will be
 interpolated on a grid. For grid points outside the convex hull of the
@@ -962,7 +990,7 @@ $(_example("surface"))
 
 @plotfunction(wireframe, geom = :wireframe, axes = :axes3d, setargs = _setargs_surface,
 kwargs = (ratio=1.0,), docstring="""
-    wireframe(x, y, z; kwargs...)
+    wireframe([x, y,] z; kwargs...)
 
 Draw a three-dimensional wireframe plot.
 
@@ -974,6 +1002,8 @@ a wireframe plot. It can receive one of the following:
     and a set of `z` values on a *N*×*M* grid.
 - *M* sorted values of the `x` axis, *N* sorted values of the `y` axis,
     and a callable to determine `z` values.
+- `z` values on a *N*×*M* grid, with the *x* and *y* axes
+    defined as the indices of the columns and rows of the grid, respectively.
 
 Also use the attributes `color` and `linecolor` to set the color of the
 surface and lines of the mesh, as RGB hexadecimal color values.
@@ -1043,7 +1073,7 @@ Draw a heatmap.
 The current colormap is used to display a two-dimensional array `data` as a heatmap.
 
 If `data` is an *N*×*M* array, the cells of the heatmap will be plotted in
-an grid of rectangular cells, whose edges are defined by the coordinates
+a grid of rectangular cells, whose edges are defined by the coordinates
 `x` (a sorted vector with `M+1` values) and `y` (a sorted vector with `N+1` values).
 
 If `x` and `y` are not given, a uniform grid is drawn spanning the interval
