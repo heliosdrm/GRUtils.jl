@@ -553,7 +553,7 @@ function _setargs_polarhist(f, x; kwargs...)
     _setargs_hist(f, x; kwargs..., horizontal=false)
 end
 
-@plotfunction(polarhistogram, geom = :polarbar, axes = :polar, kind = :polarhist,
+@plotfunction(polarhistogram, geom = :polarhist, axes = :polar, kind = :polarhist,
 setargs = _setargs_polarhist, kwargs = (ratio=1.0, overlay_axes=true), docstring="""
     polarhistogram(data; kwargs...)
 
