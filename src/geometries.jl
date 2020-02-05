@@ -395,6 +395,23 @@ function draw(g::Geometry, ::Val{:polarbar})::Nothing
     end
 end
 
+function draw(g::Geometry, ::Val{:polarhist})::Nothing
+    ymin, ymax = extrema(g.y)
+    ρ = g.y ./ ymax
+    θ = g.x * 180/π
+    colorind = get(COLOR_INDICES, :barfill, 0)
+    colorind = COLOR_INDICES[:barfill] = colorind + 1
+    for i = 2:2:length(ρ)
+        GR.setfillcolorind(SERIES_COLORS[colorind])
+        GR.setfillintstyle(GR.INTSTYLE_SOLID)
+        GR.fillarc(-ρ[i], ρ[i], -ρ[i], ρ[i], θ[i-1], θ[i])
+        GR.setfillcolorind(1)
+        GR.setfillintstyle(GR.INTSTYLE_HOLLOW)
+        GR.fillarc(-ρ[i], ρ[i], -ρ[i], ρ[i], θ[i-1], θ[i])
+    end
+end
+
+
 function draw(g::Geometry, ::Val{:quiver})::Nothing
     mask = _uselinespec(g.spec, g.attributes)
     GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
