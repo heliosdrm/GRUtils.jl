@@ -1110,9 +1110,21 @@ function _setargs_imshow(f, data; kwargs...)
     if isa(data, AbstractString)
         w, h, rgbdata = GR.readimage(data)
     else
-        h, w = size(data)
-        GR.setcolormap(get(kwargs, :colormap, COLOR_INDICES[:colormap]))
-        rgbdata = [to_rgba(value) for value ∈ transpose(data)]
+        sz = size(data)
+        if length(sz) == 2
+            h, w = sz
+            GR.setcolormap(get(kwargs, :colormap, COLOR_INDICES[:colormap]))
+            rgbdata = [to_rgba(value) for value ∈ data']
+        elseif length(sz) == 3
+            h, w, c = sz
+            rgbdata = switchbytes.(color.(data[:,:,1], data[:,:,2], data[:,:,3]))
+            if c > 3
+                rgbdata .+= round.(UInt32, data[:,:,4] * 255) .<< 24
+            else
+                rgbdata .+= 0xff000000
+            end
+            rgbdata = rgbdata'
+        end
     end
     if get(kwargs, :xflip, false)
         rgbdata = reverse(rgbdata, dims=2)
