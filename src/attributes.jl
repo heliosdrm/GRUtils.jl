@@ -230,8 +230,7 @@ Additionally to the limits, the flag `adjust` can be used to
 tell whether or not the limits have to be adjusted.
 
 Use the keyword argument `xlim=(inf, sup)`, etc. in plotting functions, to
-set the axis limits during the creation of plots (`nothing` values are not
-allowed in this case).
+set the axis limits during the creation of plots.
 
 # Examples
 
@@ -328,16 +327,8 @@ for ax = ("x", "y", "z")
     fname! = Symbol(ax, :lim!)
     fname = Symbol(ax, :lim)
     @eval function $fname!(p::PlotObject, (minval, maxval), adjust::Bool=false)
-        nomin = isa(minval, Nothing)
-        nomax = isa(maxval, Nothing)
-        fullrange = (nomin || nomax) ? minmax(p.geoms)[Symbol($ax)] : float.((minval, maxval))
-        if nomin && !nomax     # (::Nothing, ::Number)
-            limits = (fullrange[1], float(maxval))
-        elseif !nomin && nomax # (::Number, Nothing)
-            limits = (float(minval), fullrange[2])
-        else # (::Number, ::Number) or (::Nothing, ::Nothing)
-            limits = fullrange
-        end
+        data_limits = minmax(p.geoms)[Symbol($ax)]
+        limits = set_limits((minval, maxval), data_limits)
         adjust && (limits = GR.adjustlimits(limits...))
         p.axes.ranges[Symbol($ax)] = limits
         tickdata = p.axes.tickdata
