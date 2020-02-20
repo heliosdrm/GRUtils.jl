@@ -373,6 +373,53 @@ end
 ## `draw` methods ##
 ####################
 
+# Convex hull using Graham's scan - to calculate the frame of 3d plots
+function graham_hull(x, y)
+    @assert length(x) == length(y) > 2 "lengths of x and y must be equal and greater than 2"
+    lowest = argmin(y)
+    dx = x .- x[lowest]
+    dy = y .- y[lowest]
+    # sort by angle
+    inds = sortperm(dx ./ sqrt.(dx.^2 .+ dy.^2), rev=true)
+    hullx = x[inds[1:2]]
+    hully = y[inds[1:2]]
+    for i in inds[3:end]
+        xn, yn = x[i], y[i] # next
+        turnleft = false
+        while !turnleft # try until there is a left turn
+            dxn = xn - hullx[end]
+            dyn = yn - hully[end]
+            dxp = hullx[end] - hullx[end-1]
+            dyp = hully[end] - hully[end-1]
+            turnleft = (dxp*dyn - dxn*dyp > 0)
+            if turnleft # add the point
+                push!(hullx, xn)
+                push!(hully, yn)
+            else # remove the previous point
+                pop!(hullx)
+                pop!(hully)
+            end
+        end
+    end
+    return hullx, hully
+end
+
+# Convex frame of 3d axes
+function axes3frame(ax::Axes)
+    xcorners = zeros(8)
+    ycorners = zeros(8)
+    i=0
+    for xi=(0,1), yi=(0,1), zi=(0,1)
+        i = xi*4 + yi*2 + zi + 1
+        # xr = ax.ranges[:x][xi+1]
+        # yr = ax.ranges[:y][yi+1]
+        zr = ax.ranges[:z][zi+1]
+        wc = GR.wc3towc(xi, yi, zr)
+        xcorners[i], ycorners[i] = GR.wctondc(wc[1], wc[2])
+    end
+    hullx, hully = graham_hull(xcorners, ycorners)
+end
+
 function draw(ax::Axes, background=true)
     # Special draw functions for polar axes and gr3
     ax.kind == :polar && return draw_polaraxes(ax, background)
@@ -385,7 +432,11 @@ function draw(ax::Axes, background=true)
         GR.selntran(0)
         GR.setfillintstyle(GR.INTSTYLE_SOLID)
         GR.setfillcolorind(0)
-        GR.fillrect(GR.inqviewport()...)
+        if ax.kind == :axes3d
+            GR.fillarea(axes3frame(ax)...)
+        else
+            GR.fillrect(GR.inqviewport()...)
+        end
         GR.selntran(1)
         # GR.restorestate()
     end
