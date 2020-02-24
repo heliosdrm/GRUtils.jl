@@ -421,17 +421,18 @@ function axes3frame(ax::Axes)
 end
 
 function fillaxesbackground(ax)
-    # GR.savestate()
+    GR.savestate()
     GR.selntran(0)
     GR.setfillintstyle(GR.INTSTYLE_SOLID)
     GR.setfillcolorind(0)
     if ax.kind == :axes3d
         GR.fillarea(axes3frame(ax)...)
     else
+        GR.setscale(0)
         GR.fillrect(GR.inqviewport()...)
     end
     GR.selntran(1)
-    # GR.restorestate()
+    GR.restorestate()
 end
 
 function draw(ax::Axes, background=true)
