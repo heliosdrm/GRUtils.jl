@@ -391,7 +391,7 @@ function graham_hull(x, y)
             dyn = yn - hully[end]
             dxp = hullx[end] - hullx[end-1]
             dyp = hully[end] - hully[end-1]
-            turnleft = (dxp*dyn - dxn*dyp > 0)
+            turnleft = (dxp*dyn - dxn*dyp >= 0)
             if turnleft # add the point
                 push!(hullx, xn)
                 push!(hully, yn)
@@ -411,13 +411,27 @@ function axes3frame(ax::Axes)
     i=0
     for xi=(0,1), yi=(0,1), zi=(0,1)
         i = xi*4 + yi*2 + zi + 1
-        # xr = ax.ranges[:x][xi+1]
-        # yr = ax.ranges[:y][yi+1]
+        xr = ax.ranges[:x][xi+1]
+        yr = ax.ranges[:y][yi+1]
         zr = ax.ranges[:z][zi+1]
-        wc = GR.wc3towc(xi, yi, zr)
+        wc = GR.wc3towc(xr, yr, zr)
         xcorners[i], ycorners[i] = GR.wctondc(wc[1], wc[2])
     end
     hullx, hully = graham_hull(xcorners, ycorners)
+end
+
+function fillaxesbackground(ax)
+    # GR.savestate()
+    GR.selntran(0)
+    GR.setfillintstyle(GR.INTSTYLE_SOLID)
+    GR.setfillcolorind(0)
+    if ax.kind == :axes3d
+        GR.fillarea(axes3frame(ax)...)
+    else
+        GR.fillrect(GR.inqviewport()...)
+    end
+    GR.selntran(1)
+    # GR.restorestate()
 end
 
 function draw(ax::Axes, background=true)
@@ -425,20 +439,6 @@ function draw(ax::Axes, background=true)
     ax.kind == :polar && return draw_polaraxes(ax, background)
     if ax.kind == :axes3d
         get(ax.options, :gr3, 0) ≠ 0 && return draw_gr3axes(ax)
-    end
-    if background
-        # Fill with background color
-        # GR.savestate()
-        GR.selntran(0)
-        GR.setfillintstyle(GR.INTSTYLE_SOLID)
-        GR.setfillcolorind(0)
-        if ax.kind == :axes3d
-            GR.fillarea(axes3frame(ax)...)
-        else
-            GR.fillrect(GR.inqviewport()...)
-        end
-        GR.selntran(1)
-        # GR.restorestate()
     end
     # Set the window of data seen
     GR.setwindow(ax.ranges[:x]..., ax.ranges[:y]...)
@@ -455,6 +455,7 @@ function draw(ax::Axes, background=true)
     # Branching for different kinds of axes
     if ax.kind == :axes3d
         GR.setspace(ax.ranges[:z]..., ax.perspective...)
+        background && fillaxesbackground(ax)
         ztick, zorg, majorz = ax.tickdata[:z]
         # Draw ticks as 2-D if it is the XY plane
         if ax.perspective == [0, 90]
@@ -470,6 +471,7 @@ function draw(ax::Axes, background=true)
             GR.axes3d(0, ytick, 0, xorg[2], yorg[1], zorg[1], 0, majory, 0, ticksize)
         end
     elseif ax.kind == :axes2d
+        background && fillaxesbackground(ax)
         (ax.options[:grid] ≠ 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
         if !isempty(ax.ticklabels)
             fx = get(ax.ticklabels, :x, ticklabel_fun(identity))
