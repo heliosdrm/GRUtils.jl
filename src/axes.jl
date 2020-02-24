@@ -197,6 +197,17 @@ end
 # Adjust ranges
 
 """
+    set_limits(limits1, limits2)
+
+Return a tuple of lower and upper limits, using the values given in `limits1`,
+or those from `limits2` if either value of `limits1` is a `Nothing`.
+"""
+set_limits(::Tuple{Nothing, Nothing}, limits2) = float.(limits2)
+set_limits((n, max1)::Tuple{Nothing, T}, (min2, max2)) where T = float.((min2, max1))
+set_limits((min1, n)::Tuple{T, Nothing}, (min2, max2)) where T = float.((min1, max2))
+set_limits(limits1, limits2) = float.(limits1)
+
+"""
     adjustranges!(ranges; kwargs...)
 
 Adjust the pre-calculated ranges of `Axes` &mdash; see [`minmax`](@ref),
@@ -208,7 +219,7 @@ function adjustranges!(ranges::Dict{Symbol, AxisRange}; kwargs...)
     for axname in keys(ranges)
         keylim = Symbol(axname, :lim)
         if haskey(kwargs, keylim)
-            ranges[axname] = kwargs[keylim]
+            ranges[axname] = set_limits(kwargs[keylim], ranges[axname])
         else
             keylog = Symbol(axname, :log)
             if !get(kwargs, keylog, false)

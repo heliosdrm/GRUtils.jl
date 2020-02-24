@@ -1136,13 +1136,32 @@ $(_example("hexbin"))
 ```
 """)
 
-function _setargs_imshow(f, data; kwargs...)
+function _setargs_imshow(f, data, limits=(0,1); kwargs...)
     if isa(data, AbstractString)
         w, h, rgbdata = GR.readimage(data)
     else
-        h, w = size(data)
-        GR.setcolormap(get(kwargs, :colormap, COLOR_INDICES[:colormap]))
-        rgbdata = [to_rgba(value) for value ∈ transpose(data)]
+        sz = size(data)
+        if length(sz) == 2
+            h, w = sz
+            data_t = data'
+            minval, maxval = set_limits(limits, extrema(data))
+            valrange = maxval - minval
+            GR.setcolormap(get(kwargs, :colormap, COLOR_INDICES[:colormap]))
+            rgbdata = zeros(UInt32, w, h)
+            for j=1:h, i=1:w
+                value = min(max(data_t[i,j], minval), maxval)
+                rgbdata[i,j] = to_rgba((value - minval)/valrange)
+            end
+        elseif length(sz) == 3
+            h, w, c = sz
+            rgbdata = switchbytes.(color.(data[:,:,1], data[:,:,2], data[:,:,3]))
+            if c > 3
+                rgbdata .+= round.(UInt32, data[:,:,4] * 255) .<< 24
+            else
+                rgbdata .+= 0xff000000
+            end
+            rgbdata = transpose(rgbdata)
+        end
     end
     if get(kwargs, :xflip, false)
         rgbdata = reverse(rgbdata, dims=2)
@@ -1157,12 +1176,18 @@ end
 @plotfunction(imshow, geom = :image, axes = :axes2d, setargs = _setargs_imshow,
 kwargs = (xticks=NULLPAIR, yticks=NULLPAIR, noframe=true), docstring="""
     imshow(img; kwargs...)
+    imshow(img, (minval, maxval); kwargs...)
 
-Draw an image.
-
-The input `img` can be either a string with a valid file name of an image,
-or a matrix of values between 0 and 1, which will be drawn with a hue
-corresponding to the relative position of each value in the current colormap.
+Draw an image, defined by any of the following:
+* A string with a valid file name of an image.
+* A 3-dimensional *H*×*W*×*C* array, which will be drawn as an
+  image *W* pixels wide and *H* pixels high, with *C* channels
+  (3 or 4), corresponding to RGB or RGBA values between 0 and 1.
+* A matrix of values, which will be drawn with a hue corresponding to
+  their relative position in the current colormap. The range of values
+  mapped in the colormap is by default `[0, 1]`, but can be set to
+  an arbitrary range between `minval` and `maxval`. Setting either limit
+  to `nothing` will cause it to be automatically determined based on the data.
 
 # Examples
 
