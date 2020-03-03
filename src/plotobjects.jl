@@ -199,6 +199,7 @@ function draw(p::PlotObject)
     else
         bgcolor = default_bg
     end
+    GR.setscale(0)
     if haskey(p.attributes, :backgroundalpha)
         fillbackground(outer, bgcolor, p.attributes[:backgroundalpha])
     else
