@@ -76,24 +76,21 @@ are used to calculate the different axis limits, ticks, etc.
 Keyword arguments are used to override the default calculations.
 """
 function Axes(kind, geoms::Array{<:Geometry}; grid=1, kwargs...)
-    # Set limits based on data
-    ranges = minmax(geoms)
+    # Set limits based on data and scale
+    scale = set_scale(; kwargs...)
+    ranges = minmax(geoms, scale)
     adjustranges!(ranges; kwargs...)
     ticklabels = Dict{Symbol, Function}()
     perspective = [0, 0]
     camera = zeros(9)
-    options = Dict{Symbol, Int}(:scale => 0, :grid => 1)
+    options = Dict{Symbol, Int}(:scale => scale, :grid => Int(grid))
     # Special cases dependin on axis kind
     if kind == :axes2d
         tickdata = set_ticks(ranges, 5, (:x, :y); kwargs...)
         set_ticklabels!(ticklabels; kwargs...)
-        options[:scale] = set_scale(; kwargs...)
-        options[:grid] = Int(grid)
     elseif kind == :axes3d
         tickdata = set_ticks(ranges, 2, (:x, :y, :z); kwargs...)
         perspective = [Int(get(kwargs, :rotation, 40)), Int(get(kwargs, :tilt, 70))]
-        options[:scale] = set_scale(; kwargs...)
-        options[:grid] = Int(grid)
         if get(kwargs, :gr3, false)
             options[:gr3] = 1
             cameradistance = get(kwargs, :cameradistance, 3.0)
@@ -101,13 +98,14 @@ function Axes(kind, geoms::Array{<:Geometry}; grid=1, kwargs...)
         end
     elseif kind == :polar
         tickdata = set_ticks(ranges, 2, (:x, :y); kwargs..., xlog=false, ylog=false, xflip=false, yflip=false)
-        options[:grid] = Int(grid)
+        options[:scale] = 0
         if !get(kwargs, :radians, true)
             options[:radians] = 0
         end
     else # Not defined
         tickdata = set_ticks(ranges, 0, (:x, :y); kwargs...)
         options[:scale] = 0
+        options[:grid] = 1
     end
     haskey(kwargs, :tickdir) && (options[:tickdir] = kwargs[:tickdir])
     Axes(kind, ranges, tickdata, ticklabels, perspective, camera, options)
@@ -121,31 +119,35 @@ end
 Calculate the ranges of a given array of values, a `Geometry` or a collection of `Geometry`
 """
 # Nested definitions of minmax: for array, Geometry and Array of Geometries
-function minmax(x::AbstractVecOrMat{<:Real}, (min_prev, max_prev))
+function minmax(x::AbstractVecOrMat{<:Real}, (min_prev, max_prev), skipnegative)
     isempty(x) && return (float(min_prev), float(max_prev))
+    if skipnegative
+        x = replace(v -> v > 0 ? v : NaN, x)
+    end
     x0, x1 = extrema64(x)
     newmin = min(x0, min_prev)
     newmax = max(x1, max_prev)
     return (newmin, newmax)
 end
 
-function minmax(g::Geometry, xminmax, yminmax, zminmax, cminmax)
-    xminmax = minmax(g.x, xminmax)
-    yminmax = minmax(g.y, yminmax)
-    zminmax = minmax(g.z, zminmax)
+function minmax(g::Geometry, xminmax, yminmax, zminmax, cminmax, scale)
+    # skip negative values if log scales:
+    xminmax = minmax(g.x, xminmax, scale & GR.OPTION_X_LOG != 0)
+    yminmax = minmax(g.y, yminmax, scale & GR.OPTION_Y_LOG != 0)
+    zminmax = minmax(g.z, zminmax, scale & GR.OPTION_Z_LOG != 0)
     if isempty(g.c)
-        cminmax = minmax(g.z, cminmax)
+        cminmax = minmax(g.z, cminmax, false)
     else
-        cminmax = minmax(g.c, cminmax)
+        cminmax = minmax(g.c, cminmax, false)
     end
     return xminmax, yminmax, zminmax, cminmax
 end
 
-function minmax(geoms::Array{<:Geometry})
+function minmax(geoms::Array{<:Geometry}, scale=0)
     # Calculate ranges of given values
     xminmax = yminmax = zminmax = cminmax = extrema64(Float64[])
     for g in geoms
-        xminmax, yminmax, zminmax, cminmax = minmax(g, xminmax, yminmax, zminmax, cminmax)
+        xminmax, yminmax, zminmax, cminmax = minmax(g, xminmax, yminmax, zminmax, cminmax, scale)
     end
     # Adjust ranges
     (xminmax == (Inf, -Inf)) && (xminmax = (0.0, 1.0))
