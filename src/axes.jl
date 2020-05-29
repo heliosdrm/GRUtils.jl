@@ -254,16 +254,11 @@ function set_ticks(ranges, major_count, coordinates; kwargs...)
 end
 
 function set_axis(axname, axrange, major; kwargs...)
-    if get(kwargs, Symbol(axname, :log), false)
-        tick = 10
-        major = 1
+    keyticks = Symbol(axname, :ticks)
+    if haskey(kwargs, keyticks)
+        tick, major = kwargs[keyticks]
     else
-        keyticks = Symbol(axname, :ticks)
-        if haskey(kwargs, keyticks)
-            tick, major = kwargs[keyticks]
-        else
-            tick = GR.tick(axrange...) / major
-        end
+        tick = GR.tick(axrange...) / major
     end
     org = get(kwargs, Symbol(axname, :flip), false) ? reverse(axrange) : axrange
     return tick, org, major
@@ -465,10 +460,23 @@ function draw(ax::Axes, background=true)
     GR.setcharheight(charheight)
     xtick, xorg, majorx = ax.tickdata[:x]
     ytick, yorg, majory = ax.tickdata[:y]
+    # Modify if xlog, etc.
+    if ax.options[:scale] & GR.OPTION_X_LOG != 0
+        xtick = 10
+        majorx = 1
+    end
+    if ax.options[:scale] & GR.OPTION_Y_LOG != 0
+        ytick = 10
+        majory = 1
+    end
     # Branching for different kinds of axes
     if ax.kind == :axes3d
         GR.setspace(ax.ranges[:z]..., ax.perspective...)
         ztick, zorg, majorz = ax.tickdata[:z]
+        if ax.options[:scale] & GR.OPTION_Z_LOG
+            ztick = 10
+            majorz = 1
+        end
         # Draw ticks as 2-D if it is the XY plane
         if ax.perspective == [0, 90]
             (ax.options[:grid] ≠ 0) && GR.grid(xtick, ytick, 0, 0, majorx, majory)
