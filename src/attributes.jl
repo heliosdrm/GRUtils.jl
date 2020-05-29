@@ -286,6 +286,19 @@ yflip(false)
 ```
 """
 
+@eval function _config_axislimits!(ax, p, (minval, maxval), adjust)
+    data_limits = minmax(p.geoms, p.axes.options[:scale])[ax]
+    limits = set_limits((minval, maxval), data_limits)
+    adjust && (limits = GR.adjustlimits(limits...))
+    p.axes.ranges[ax] = limits
+    tickdata = p.axes.tickdata
+    if haskey(tickdata, ax)
+        axisticks = tickdata[ax]
+        tickdata[ax] = (axisticks[1], limits, axisticks[3])
+    end
+    return nothing
+end
+
 for ax = ("x", "y", "z")
     # xlabel, etc.
     fname! = Symbol(ax, :label!)
@@ -326,20 +339,11 @@ for ax = ("x", "y", "z")
     # xlim, etc.
     fname! = Symbol(ax, :lim!)
     fname = Symbol(ax, :lim)
-    @eval function $fname!(p::PlotObject, (minval, maxval), adjust::Bool=false)
-        data_limits = minmax(p.geoms, p.axes.options[:scale])[Symbol($ax)]
-        limits = set_limits((minval, maxval), data_limits)
-        adjust && (limits = GR.adjustlimits(limits...))
-        p.axes.ranges[Symbol($ax)] = limits
-        tickdata = p.axes.tickdata
-        if haskey(tickdata, Symbol($ax))
-            axisticks = tickdata[Symbol($ax)]
-            tickdata[Symbol($ax)] = (axisticks[1], limits, axisticks[3])
-        end
-        p.attributes[Symbol($ax, :lim)] = (minval, maxval)
-        return nothing
+    @eval function $fname!(p::PlotObject, limits, adjust=false)
+        _config_axislimits!(Symbol($ax), p, limits, adjust)
+        p.attributes[Symbol($ax, :lim)] = limits
     end
-    @eval function $fname!(p::PlotObject, minval::Union{Nothing, Number}, maxval::Union{Nothing, Number}, adjust::Bool=false)
+    @eval function $fname!(p::PlotObject, minval::Union{Nothing, Number}, maxval::Union{Nothing, Number}, adjust=false)
         $fname!(p, (minval, maxval), adjust)
     end
     @eval $fname!(p::PlotObject) = $fname!(p, (nothing, nothing))
@@ -357,7 +361,12 @@ for ax = ("x", "y", "z")
         @eval function $fname!(p::PlotObject, flag=false)
             if p.axes.kind ∈ (:axes2d, :axes3d)
                 p.attributes[Symbol($ax, $attr)] = flag
-                p.axes.options[:scale] = set_scale(; p.attributes...)
+                newscale = set_scale(; p.attributes...)
+                if p.axes.options[:scale] != newscale
+                    p.axes.options[:scale] = set_scale(; p.attributes...)
+                    axlimits = get(p.attributes, $fname, (nothing, nothing))
+                    _config_axislimits!(Symbol($ax), p, axlimits, !flag)
+                end
             end
             return nothing
         end
