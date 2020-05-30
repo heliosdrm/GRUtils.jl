@@ -247,14 +247,23 @@ ylim((nothing, 1))
 """
 
 const AXISLOG_DOC = """
-    xlog(flag::Bool)
-    ylog(flag::Bool)
-    zlog(flag::Bool)
+    xlog(flag)
+    ylog(flag)
+    zlog(flag)
 
-Set the X-, Y- or Z-axis to be drawn in logarithmic scale.
+Set the X-, Y- or Z-axis to be drawn in logarithmic scale (`flag == true`),
+or in linear scale (`flag == false`).
 
 Use the keyword argument `xlog=<true/false>`, etc. in plotting functions, to
 set the logarithmic axes during the creation of plots.
+
+!!! note
+
+    When the axis is set to logarithmic scale, its lower limit is adjusted
+    to represent only positive values, even if the data of the plot contain
+    zero or negative values. The aspect of logarithmic axes with limits
+    explicitly set to contain negative values (with [`xlim`](@ref), etc.)
+    is undefined.
 
 # Examples
 
@@ -267,11 +276,12 @@ ylog(false)
 """
 
 const AXISFLIP_DOC = """
-    xflip(flag::Bool)
-    yflip(flag::Bool)
-    zflip(flag::Bool)
+    xflip(flag)
+    yflip(flag)
+    zflip(flag)
 
-Reverse the direction of the X-, Y- or Z-axis.
+Reverse the direction of the X-, Y- or Z-axis (`flag == true`),
+or set them back to their normal direction (`flag == false` ).
 
 Use the keyword argument `xflip=<true/false>`, etc. in plotting functions, to
 set reversed axes during the creation of plots.
@@ -358,14 +368,15 @@ for ax = ("x", "y", "z")
     for (attr, docstr) ∈ (("log", :AXISLOG_DOC), ("flip", :AXISFLIP_DOC))
         fname! = Symbol(ax, attr, :!)
         fname = Symbol(ax, attr)
-        @eval function $fname!(p::PlotObject, flag=false)
+        @eval function $fname!(p::PlotObject, flag)
             if p.axes.kind ∈ (:axes2d, :axes3d)
                 p.attributes[Symbol($ax, $attr)] = flag
                 newscale = set_scale(; p.attributes...)
                 if p.axes.options[:scale] != newscale
-                    p.axes.options[:scale] = set_scale(; p.attributes...)
-                    axlimits = get(p.attributes, $fname, (nothing, nothing))
-                    _config_axislimits!(Symbol($ax), p, axlimits, !flag)
+                    p.axes.options[:scale] = newscale
+                    axlimits = get(p.attributes, Symbol($ax, :lim), (nothing, nothing))
+                    adjust = !get(p.attributes, Symbol($ax, :log), false)
+                    _config_axislimits!(Symbol($ax), p, axlimits, adjust)
                 end
             end
             return nothing
