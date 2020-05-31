@@ -5,7 +5,9 @@ end
 
 function inqtext(x, y, s, wc=false)
     if length(s) >= 2 && s[1] == '$' && s[end] == '$'
-        tbx, tby = GR.inqmathtex(x, y, s[2:end-1])
+        # to be fixed (https://github.com/jheinen/GR.jl/issues/317)
+        # tbx, tby = GR.inqmathtex(x, y, s[2:end-1])
+        tbx, tby = GR.inqtext(x, y, s[2:end-1])
     elseif search(s, '\\') != 0 || search(s, '_') != 0 || search(s, '^') != 0
         tbx, tby = GR.inqtextext(x, y, s)
     else
