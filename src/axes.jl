@@ -473,7 +473,7 @@ function draw(ax::Axes, background=true)
     if ax.kind == :axes3d
         GR.setspace(ax.ranges[:z]..., ax.perspective...)
         ztick, zorg, majorz = ax.tickdata[:z]
-        if ax.options[:scale] & GR.OPTION_Z_LOG
+        if ax.options[:scale] & GR.OPTION_Z_LOG != 0
             ztick = 10
             majorz = 1
         end
