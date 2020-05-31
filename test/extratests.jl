@@ -9,9 +9,9 @@ using Printf
     ylim(-1.15, 1.15)
     grid(false)
     # Pretty format for the tick labels
-    xticklabels((x)->Printf.@sprintf("%0.1f\\pi",x/π))
+    xticklabels((x)->Printf.@sprintf("%0.1fπ",x/π))
     # Legend with various rows
-    legend("\\phi = 0", "\\phi = 0.5\\pi", "\\phi = \\pi", "\\phi = 1.5\\pi",
+    legend("φ = 0", "φ = 0.5π", "φ = π", "φ = 1.5π",
         maxrows = 2, location="upper center")
     @test true
 
