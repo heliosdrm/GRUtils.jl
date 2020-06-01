@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Introduction · GRUtils.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">GRUtils.jl</span></div><form class="docs-search" action="search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>Introduction</a><ul class="internal"><li><a class="tocitem" href="#Installation-1"><span>Installation</span></a></li><li><a class="tocitem" href="#A-basic-example-1"><span>A basic example</span></a></li><li><a class="tocitem" href="#Relationship-with-GR&#39;s-API-1"><span>Relationship with GR&#39;s API</span></a></li></ul></li><li><a class="tocitem" href="multiple/">Multiple plots</a></li><li><a class="tocitem" href="animations/">Animations</a></li><li><a class="tocitem" href="color/">Color management</a></li><li><span class="tocitem">API reference</span><ul><li><a class="tocitem" href="api/plotting/">Plotting functions</a></li><li><a class="tocitem" href="api/attributes/">Plot attributes</a></li><li><a class="tocitem" href="api/control/">Control operations</a></li></ul></li><li><span class="tocitem">Internals</span><ul><li><a class="tocitem" href="internals/structure/">Structure of plots</a></li><li><a class="tocitem" href="internals/drawing/">Drawing plots</a></li><li><a class="tocitem" href="internals/createplots/">Creating plots</a></li><li><a class="tocitem" href="internals/extending/">Extending GRUtils</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Introduction</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Introduction</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/heliosdrm/GRUtils.jl/blob/master/docs/src/index.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Introduction-to-GRUtils-1"><a class="docs-heading-anchor" href="#Introduction-to-GRUtils-1">Introduction to GRUtils</a><a class="docs-heading-anchor-permalink" href="#Introduction-to-GRUtils-1" title="Permalink"></a></h1><p><a href="https://github.com/heliosdrm/GRUtils.jl">GRUtils</a> is a refactoring of the module <code>jlgr</code> from <a href="https://github.com/jheinen/GR.jl">GR</a>, a graphics package for Julia. The purpose of GRUtils is to provide the main utilities of <code>jlgr</code> in a more &quot;Julian&quot; and modular style, easier to read, and facilitate code contributions by others.</p><p>GRUtils is being maintained in a package apart from GR, in order to make its development faster, assuming a temporary duplication of development efforts. Hopefully in a near future it will be clearer if the interface to GR provided in GRUtils deserves maintenance in such an independent &quot;plug-in&quot;, or if its code should be integrated in GR itself.</p><h2 id="Installation-1"><a class="docs-heading-anchor" href="#Installation-1">Installation</a><a class="docs-heading-anchor-permalink" href="#Installation-1" title="Permalink"></a></h2><p>Add GRUtils to your library of Julia packages, typing <code>]</code> to enter in the &quot;package management mode&quot; and then typing:</p><pre><code class="language-julia-repl">add GRUtils</code></pre><p>Or if you feel like looking into GRUtils&#39; code and maybe trying your own fixes and improvements, you can clone it for development (also in the package management mode):</p><pre><code class="language-julia-repl">dev GRUtils</code></pre><p>This package depends on <a href="https://github.com/jheinen/GR.jl">GR</a>. If you don&#39;t have it installed before, GRUtils will install GR and its dependencies. Building GR ocassionally fails; so to ensure that everything will work, check the messages printed after the installation, and if there is some error related to &quot;Building GR&quot;, retry:</p><pre><code class="language-julia-repl"># In &quot;normal&quot; REPL
+julia&gt; ENV[&quot;GRDIR&quot;] = &quot;&quot;
+# And in &quot;pkg mode&quot; (after `]`)
+pkg&gt; build GR</code></pre><p>(The <code>julia&gt;</code> and <code>pkg&gt;</code> tags do not have to be typed; they are there only to mark that the first instruction is in the normal REPL mode, and the second one in package management mode.)</p><h2 id="A-basic-example-1"><a class="docs-heading-anchor" href="#A-basic-example-1">A basic example</a><a class="docs-heading-anchor-permalink" href="#A-basic-example-1" title="Permalink"></a></h2><p>Let&#39;s see an example of a plot to start with:</p><pre><code class="language-julia"># Of course first you have to load the package
+using GRUtils
+# Example data
+x = LinRange(0, 10, 500)
+y = sin.(x.^2) .* exp.(-x)
+# Making a line plot is as simple as this:
+plot(x, y)
+# Then hold the plot to add the envelope...
+hold(true)
+# The envelope is given in two columns,
+# plotted as dashed lines (&quot;--&quot;) in black color (&quot;k&quot;)
+plot(exp.(0:10).^-1 .* [1 -1], &quot;--k&quot;)
+# Now set the Y-axis limits, and annotate the plot
+ylim(-0.5, 0.5)
+legend(&quot;signal&quot;, &quot;envelope&quot;)
+xlabel(&quot;X&quot;)
+ylabel(&quot;Y&quot;)
+title(&quot;Example plot&quot;)</code></pre><?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="614.5" height="460.75" viewBox="0 0 2458 1843">
+<defs>
+  <clipPath id="clip000">
+    <rect x="307" y="138" width="1967" height="1475"/>
+  </clipPath>
+</defs>
+<defs>
+  <clipPath id="clip001">
+    <rect x="0" y="0" width="2458" height="1843"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip001)" d="
+M307.25 1612.62 L2273.65 1612.62 L2273.65 138.225 L307.25 138.225  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip001)" style="stroke:#cccccc; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,1612.62 2273.65,1612.62 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,1465.18 2273.65,1465.18 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,1317.74 2273.65,1317.74 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,1170.3 2273.65,1170.3 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,1022.87 2273.65,1022.87 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#cccccc; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,875.425 2273.65,875.425 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,727.985 2273.65,727.985 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,580.545 2273.65,580.545 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,433.105 2273.65,433.105 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,285.665 2273.65,285.665 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#cccccc; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,138.225 2273.65,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#cccccc; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,1612.62 307.25,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  486.014,1612.62 486.014,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  664.777,1612.62 664.777,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  843.541,1612.62 843.541,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  1022.3,1612.62 1022.3,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#cccccc; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  1201.07,1612.62 1201.07,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  1379.83,1612.62 1379.83,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  1558.6,1612.62 1558.6,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  1737.36,1612.62 1737.36,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  1916.12,1612.62 1916.12,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#cccccc; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  2094.89,1612.62 2094.89,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#ededed; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  2273.65,1612.62 2273.65,138.225 
+  "/>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:start;" transform="rotate(0, 167.175, 1630.1)" x="167.175" y="1630.1">-</text>
+</g>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:start;" transform="rotate(0, 203.162, 1630.1)" x="203.162" y="1630.1">0.5</text>
+</g>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:start;" transform="rotate(0, 254.554, 892.897)" x="254.554" y="892.897">0</text>
+</g>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:start;" transform="rotate(0, 203.162, 155.697)" x="203.162" y="155.697">0.5</text>
+</g>
+<polyline clip-path="url(#clip001)" style="stroke:#000000; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,1612.62 307.25,1612.62 344.12,1612.62 307.25,1612.62 307.25,1465.18 325.685,1465.18 307.25,1465.18 307.25,1317.74 325.685,1317.74 307.25,1317.74 
+  307.25,1170.3 325.685,1170.3 307.25,1170.3 307.25,1022.87 325.685,1022.87 307.25,1022.87 307.25,875.425 344.12,875.425 307.25,875.425 307.25,727.985 
+  325.685,727.985 307.25,727.985 307.25,580.545 325.685,580.545 307.25,580.545 307.25,433.105 325.685,433.105 307.25,433.105 307.25,285.665 325.685,285.665 
+  307.25,285.665 307.25,138.225 344.12,138.225 307.25,138.225 
+  "/>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:start;" transform="rotate(0, 290.119, 1685.9)" x="290.119" y="1685.9">0</text>
+</g>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:start;" transform="rotate(0, 1183.94, 1685.9)" x="1183.94" y="1685.9">5</text>
+</g>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:start;" transform="rotate(0, 2060.62, 1685.9)" x="2060.62" y="1685.9">10</text>
+</g>
+<polyline clip-path="url(#clip001)" style="stroke:#000000; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,1612.62 307.25,1612.62 307.25,1575.76 307.25,1612.62 486.014,1612.62 486.014,1594.19 486.014,1612.62 664.777,1612.62 664.777,1594.19 664.777,1612.62 
+  843.541,1612.62 843.541,1594.19 843.541,1612.62 1022.3,1612.62 1022.3,1594.19 1022.3,1612.62 1201.07,1612.62 1201.07,1575.76 1201.07,1612.62 1379.83,1612.62 
+  1379.83,1594.19 1379.83,1612.62 1558.6,1612.62 1558.6,1594.19 1558.6,1612.62 1737.36,1612.62 1737.36,1594.19 1737.36,1612.62 1916.12,1612.62 1916.12,1594.19 
+  1916.12,1612.62 2094.89,1612.62 2094.89,1575.76 2094.89,1612.62 2273.65,1612.62 2273.65,1594.19 2273.65,1612.62 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#000000; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  2273.65,1612.62 2273.65,1612.62 2236.78,1612.62 2273.65,1612.62 2273.65,1465.18 2255.22,1465.18 2273.65,1465.18 2273.65,1317.74 2255.22,1317.74 2273.65,1317.74 
+  2273.65,1170.3 2255.22,1170.3 2273.65,1170.3 2273.65,1022.87 2255.22,1022.87 2273.65,1022.87 2273.65,875.425 2236.78,875.425 2273.65,875.425 2273.65,727.985 
+  2255.22,727.985 2273.65,727.985 2273.65,580.545 2255.22,580.545 2273.65,580.545 2273.65,433.105 2255.22,433.105 2273.65,433.105 2273.65,285.665 2255.22,285.665 
+  2273.65,285.665 2273.65,138.225 2236.78,138.225 2273.65,138.225 
+  "/>
+<polyline clip-path="url(#clip001)" style="stroke:#000000; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,138.225 307.25,138.225 307.25,175.085 307.25,138.225 486.014,138.225 486.014,156.655 486.014,138.225 664.777,138.225 664.777,156.655 664.777,138.225 
+  843.541,138.225 843.541,156.655 843.541,138.225 1022.3,138.225 1022.3,156.655 1022.3,138.225 1201.07,138.225 1201.07,175.085 1201.07,138.225 1379.83,138.225 
+  1379.83,156.655 1379.83,138.225 1558.6,138.225 1558.6,156.655 1558.6,138.225 1737.36,138.225 1737.36,156.655 1737.36,138.225 1916.12,138.225 1916.12,156.655 
+  1916.12,138.225 2094.89,138.225 2094.89,175.085 2094.89,138.225 2273.65,138.225 2273.65,156.655 2273.65,138.225 
+  "/>
+<polyline clip-path="url(#clip000)" style="stroke:#00528a; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  307.25,875.425 310.832,874.845 314.415,873.15 317.997,870.407 321.58,866.681 325.162,862.033 328.745,856.524 332.327,850.21 335.91,843.146 339.492,835.385 
+  343.074,826.978 346.657,817.975 350.239,808.422 353.822,798.366 357.404,787.851 360.987,776.92 364.569,765.616 368.151,753.98 371.734,742.05 375.316,729.867 
+  378.899,717.468 382.481,704.891 386.064,692.173 389.646,679.35 393.229,666.458 396.811,653.533 400.393,640.609 403.976,627.722 407.558,614.907 411.141,602.196 
+  414.723,589.626 418.306,577.23 421.888,565.042 425.47,553.096 429.053,541.426 432.635,530.065 436.218,519.046 439.8,508.404 443.383,498.17 446.965,488.379 
+  450.548,479.061 454.13,470.251 457.712,461.978 461.295,454.275 464.877,447.171 468.46,440.698 472.042,434.882 475.625,429.754 479.207,425.339 482.789,421.665 
+  486.372,418.754 489.954,416.631 493.537,415.316 497.119,414.831 500.702,415.192 504.284,416.416 507.867,418.516 511.449,421.504 515.031,425.388 518.614,430.175 
+  522.196,435.868 525.779,442.468 529.361,449.971 532.944,458.372 536.526,467.661 540.108,477.826 543.691,488.849 547.273,500.711 550.856,513.388 554.438,526.851 
+  558.021,541.069 561.603,556.006 565.186,571.622 568.768,587.874 572.35,604.714 575.933,622.091 579.515,639.949 583.098,658.23 586.68,676.872 590.263,695.809 
+  593.845,714.974 597.427,734.293 601.01,753.694 604.592,773.101 608.175,792.436 611.757,811.618 615.34,830.569 618.922,849.206 622.505,867.448 626.087,885.213 
+  629.669,902.423 633.252,918.997 636.834,934.858 640.417,949.932 643.999,964.147 647.582,977.434 651.164,989.73 654.746,1000.98 658.329,1011.12 661.911,1020.1 
+  665.494,1027.9 669.076,1034.46 672.659,1039.77 676.241,1043.79 679.824,1046.53 683.406,1047.98 686.988,1048.14 690.571,1047.02 694.153,1044.66 697.736,1041.08 
+  701.318,1036.32 704.901,1030.44 708.483,1023.49 712.065,1015.54 715.648,1006.67 719.23,996.963 722.813,986.508 726.395,975.404 729.978,963.754 733.56,951.665 
+  737.143,939.252 740.725,926.628 744.307,913.913 747.89,901.224 751.472,888.681 755.055,876.402 758.637,864.5 762.22,853.088 765.802,842.271 769.384,832.151 
+  772.967,822.821 776.549,814.364 780.132,806.857 783.714,800.365 787.297,794.942 790.879,790.629 794.462,787.457 798.044,785.44 801.626,784.581 805.209,784.87 
+  808.791,786.282 812.374,788.778 815.956,792.308 819.539,796.806 823.121,802.197 826.703,808.394 830.286,815.299 833.868,822.805 837.451,830.801 841.033,839.165 
+  844.616,847.774 848.198,856.501 851.781,865.22 855.363,873.803 858.945,882.127 862.528,890.073 866.11,897.53 869.693,904.392 873.275,910.567 876.858,915.972 
+  880.44,920.536 884.022,924.204 887.605,926.936 891.187,928.707 894.77,929.507 898.352,929.344 901.935,928.242 905.517,926.24 909.1,923.394 912.682,919.773 
+  916.264,915.46 919.847,910.548 923.429,905.141 927.012,899.351 930.594,893.297 934.177,887.099 937.759,880.882 941.341,874.766 944.924,868.871 948.506,863.309 
+  952.089,858.186 955.671,853.594 959.254,849.618 962.836,846.326 966.419,843.77 970.001,841.99 973.583,841.004 977.166,840.815 980.748,841.409 984.331,842.753 
+  987.913,844.799 991.496,847.483 995.078,850.729 998.66,854.447 1002.24,858.537 1005.83,862.894 1009.41,867.406 1012.99,871.961 1016.57,876.444 1020.16,880.747 
+  1023.74,884.767 1027.32,888.41 1030.9,891.59 1034.48,894.239 1038.07,896.3 1041.65,897.734 1045.23,898.519 1048.81,898.65 1052.4,898.14 1055.98,897.02 
+  1059.56,895.335 1063.14,893.148 1066.73,890.532 1070.31,887.574 1073.89,884.366 1077.47,881.009 1081.06,877.603 1084.64,874.252 1088.22,871.052 1091.8,868.098 
+  1095.39,865.47 1098.97,863.243 1102.55,861.473 1106.13,860.203 1109.72,859.462 1113.3,859.257 1116.88,859.582 1120.46,860.412 1124.05,861.706 1127.63,863.41 
+  1131.21,865.456 1134.79,867.766 1138.38,870.256 1141.96,872.835 1145.54,875.413 1149.12,877.901 1152.71,880.214 1156.29,882.275 1159.87,884.019 1163.45,885.391 
+  1167.04,886.351 1170.62,886.877 1174.2,886.96 1177.78,886.61 1181.36,885.852 1184.95,884.725 1188.53,883.283 1192.11,881.589 1195.69,879.715 1199.28,877.74 
+  1202.86,875.744 1206.44,873.806 1210.02,872.001 1213.61,870.399 1217.19,869.059 1220.77,868.028 1224.35,867.339 1227.94,867.012 1231.52,867.05 1235.1,867.441 
+  1238.68,868.159 1242.27,869.164 1245.85,870.404 1249.43,871.82 1253.01,873.343 1256.6,874.904 1260.18,876.432 1263.76,877.861 1267.34,879.128 1270.93,880.181 
+  1274.51,880.978 1278.09,881.488 1281.67,881.698 1285.26,881.605 1288.84,881.223 1292.42,880.578 1296,879.709 1299.59,878.663 1303.17,877.498 1306.75,876.272 
+  1310.33,875.049 1313.91,873.888 1317.5,872.846 1321.08,871.971 1324.66,871.304 1328.24,870.871 1331.83,870.689 1335.41,870.76 1338.99,871.071 1342.57,871.601 
+  1346.16,872.314 1349.74,873.167 1353.32,874.111 1356.9,875.092 1360.49,876.056 1364.07,876.95 1367.65,877.728 1371.23,878.35 1374.82,878.786 1378.4,879.017 
+  1381.98,879.036 1385.56,878.848 1389.15,878.47 1392.73,877.93 1396.31,877.264 1399.89,876.514 1403.48,875.727 1407.06,874.951 1410.64,874.231 1414.22,873.609 
+  1417.81,873.119 1421.39,872.788 1424.97,872.63 1428.55,872.65 1432.14,872.842 1435.72,873.188 1439.3,873.662 1442.88,874.23 1446.47,874.854 1450.05,875.492 
+  1453.63,876.102 1457.21,876.646 1460.79,877.091 1464.38,877.41 1467.96,877.586 1471.54,877.613 1475.12,877.492 1478.71,877.237 1482.29,876.868 1485.87,876.415 
+  1489.45,875.91 1493.04,875.39 1496.62,874.892 1500.2,874.449 1503.78,874.09 1507.37,873.839 1510.95,873.71 1514.53,873.707 1518.11,873.829 1521.7,874.061 
+  1525.28,874.383 1528.86,874.77 1532.44,875.192 1536.03,875.614 1539.61,876.008 1543.19,876.343 1546.77,876.597 1550.36,876.753 1553.94,876.803 1557.52,876.745 
+  1561.1,876.587 1564.69,876.346 1568.27,876.041 1571.85,875.7 1575.43,875.349 1579.02,875.017 1582.6,874.73 1586.18,874.509 1589.76,874.37 1593.35,874.321 
+  1596.93,874.364 1600.51,874.492 1604.09,874.693 1607.67,874.946 1611.26,875.23 1614.84,875.52 1618.42,875.791 1622,876.021 1625.59,876.193 1629.17,876.292 
+  1632.75,876.313 1636.33,876.257 1639.92,876.13 1643.5,875.947 1647.08,875.724 1650.66,875.484 1654.25,875.247 1657.83,875.034 1661.41,874.865 1664.99,874.752 
+  1668.58,874.704 1672.16,874.724 1675.74,874.807 1679.32,874.944 1682.91,875.121 1686.49,875.319 1690.07,875.52 1693.65,875.704 1697.24,875.855 1700.82,875.96 
+  1704.4,876.01 1707.98,876.003 1711.57,875.939 1715.15,875.828 1718.73,875.683 1722.31,875.517 1725.9,875.348 1729.48,875.193 1733.06,875.067 1736.64,874.982 
+  1740.23,874.943 1743.81,874.955 1747.39,875.014 1750.97,875.113 1754.55,875.24 1758.14,875.381 1761.72,875.521 1765.3,875.647 1768.88,875.744 1772.47,875.805 
+  1776.05,875.823 1779.63,875.799 1783.21,875.735 1786.8,875.641 1790.38,875.527 1793.96,875.407 1797.54,875.292 1801.13,875.197 1804.71,875.13 1808.29,875.098 
+  1811.87,875.103 1815.46,875.144 1819.04,875.214 1822.62,875.306 1826.2,875.408 1829.79,875.507 1833.37,875.594 1836.95,875.658 1840.53,875.693 1844.12,875.696 
+  1847.7,875.668 1851.28,875.612 1854.86,875.536 1858.45,875.451 1862.03,875.365 1865.61,875.29 1869.19,875.233 1872.78,875.202 1876.36,875.198 1879.94,875.222 
+  1883.52,875.27 1887.1,875.335 1890.69,875.408 1894.27,875.481 1897.85,875.544 1901.43,875.59 1905.02,875.614 1908.6,875.613 1912.18,875.589 1915.76,875.545 
+  1919.35,875.487 1922.93,875.424 1926.51,875.363 1930.09,875.313 1933.68,875.278 1937.26,875.264 1940.84,875.272 1944.42,875.299 1948.01,875.341 1951.59,875.394 
+  1955.17,875.448 1958.75,875.497 1962.34,875.535 1965.92,875.556 1969.5,875.56 1973.08,875.545 1976.67,875.514 1980.25,875.472 1983.83,875.425 1987.41,875.381 
+  1991,875.343 1994.58,875.319 1998.16,875.31 2001.74,875.318 2005.33,875.34 2008.91,875.374 2012.49,875.413 2016.07,875.453 2019.66,875.487 2023.24,875.511 
+  2026.82,875.522 2030.4,875.518 2033.98,875.501 2037.57,875.474 2041.15,875.44 2044.73,875.406 2048.31,875.375 2051.9,875.353 2055.48,875.343 2059.06,875.345 
+  2062.64,875.359 2066.23,875.383 2069.81,875.412 2073.39,875.441 2076.97,875.468 2080.56,875.487 2084.14,875.495 2087.72,875.493 2091.3,875.48 2094.89,875.459 
+  
+  "/>
+<polyline clip-path="url(#clip000)" style="stroke:#000000; stroke-width:3.686; stroke-opacity:1; fill:none" stroke-dasharray="15, 9" points="
+  486.014,-598.975 664.777,333.024 843.541,675.887 1022.3,802.019 1201.07,848.42 1379.83,865.491 1558.6,871.77 1737.36,874.081 1916.12,874.93 2094.89,875.243 
+  2273.65,875.358 
+  "/>
+<polyline clip-path="url(#clip000)" style="stroke:#000000; stroke-width:3.686; stroke-opacity:1; fill:none" stroke-dasharray="15, 9" points="
+  486.014,2349.82 664.777,1417.83 843.541,1074.96 1022.3,948.831 1201.07,902.43 1379.83,885.359 1558.6,879.08 1737.36,876.769 1916.12,875.92 2094.89,875.607 
+  2273.65,875.492 
+  "/>
+<defs>
+  <clipPath id="clip002">
+    <rect x="1628" y="211" width="573" height="231"/>
+  </clipPath>
+</defs>
+<path clip-path="url(#clip002)" d="
+M1628.18 441.935 L2199.91 441.935 L2199.91 211.945 L1628.18 211.945  Z
+  " fill="#ffffff" fill-rule="evenodd" fill-opacity="1"/>
+<polyline clip-path="url(#clip002)" style="stroke:#000000; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  1628.18,441.935 2199.91,441.935 2199.91,211.945 1628.18,211.945 1628.18,441.935 
+  "/>
+<polyline clip-path="url(#clip002)" style="stroke:#00528a; stroke-width:3.686; stroke-opacity:1; fill:none" points="
+  1652.76,271.65 1800.24,271.65 
+  "/>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:start;" transform="rotate(0, 1824.82, 293.65)" x="1824.82" y="293.65">signal</text>
+</g>
+<polyline clip-path="url(#clip002)" style="stroke:#000000; stroke-width:3.686; stroke-opacity:1; fill:none" stroke-dasharray="15, 9" points="
+  1652.76,368.215 1800.24,368.215 
+  "/>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:start;" transform="rotate(0, 1824.82, 390.215)" x="1824.82" y="390.215">envelope</text>
+</g>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:middle;" transform="rotate(0, 1290.45, 52.8)" x="1290.45" y="52.8">Example plot</text>
+</g>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:middle;" transform="rotate(0, 1290.45, 1819.46)" x="1290.45" y="1819.46">X</text>
+</g>
+<g clip-path="url(#clip001)">
+<text style="fill:#000000; fill-opacity:1; font-family:Arial,Helvetica Neue,Helvetica,sans-serif; font-size:60px; text-anchor:middle;" transform="rotate(-90, 67.548, 875.425)" x="67.548" y="875.425">Y</text>
+</g>
+</svg>
+<p>Depending on what environment you use (e.g. the Julia REPL, a Jupyter notebook, Atom or another IDE), this plot will be displayed in a different device (a plotting window, panel, a cell of the notebook...). If you want to keep it as an image file, use the function <a href="api/control/#GRUtils.savefig"><code>savefig</code></a>, like this:</p><pre><code class="language-julia">savefig(&quot;example.svg&quot;)</code></pre><p>The type of the file will be determined by the extension of the file. The list of available file types depends on the installed workstation, but common types (SVG, PNG, JGP, GIF, PS, PDF...) are usually supported.</p><h2 id="Relationship-with-GR&#39;s-API-1"><a class="docs-heading-anchor" href="#Relationship-with-GR&#39;s-API-1">Relationship with GR&#39;s API</a><a class="docs-heading-anchor-permalink" href="#Relationship-with-GR&#39;s-API-1" title="Permalink"></a></h2><p>Many more functions to make and manipulate plots are also available in GRUtils. Those functions have been designed to mimic the <a href="https://gr-framework.org/julia-jlgr.html">API of GR for Julia</a>, so if you have been using GR before, you may use them mostly in the same way. These are the most remarkable differences:</p><ul><li>All the plotting functions that can take matrices as bi-dimensional inputs (<a href="api/plotting/#GRUtils.contour"><code>contour</code></a>, <a href="api/plotting/#GRUtils.contourf"><code>contourf</code></a>, <a href="api/plotting/#GRUtils.surface"><code>surface</code></a>, <a href="api/plotting/#GRUtils.wireframe"><code>wireframe</code></a>, <a href="api/plotting/#GRUtils.heatmap"><code>heatmap</code></a>) consider that X coordinates are mapped to columns and Y to rows of the input matrix.</li><li>The radius of <a href="api/plotting/#GRUtils.polar"><code>polar</code></a> plots always has its centre at zero, instead of the minimum value of the represented data.</li><li>The angle labels in <a href="api/plotting/#GRUtils.polar"><code>polar</code></a> and <a href="api/plotting/#GRUtils.polarhistogram"><code>polarhistogram</code></a> are by default in radians; and the bins of <code>polarhistogram</code> are by default positioned according to the values of the input.</li><li>Matrices passed to <a href="api/plotting/#GRUtils.imshow"><code>imshow</code></a> must contain numbers in the range [0, 1].</li><li>The function <a href="api/plotting/#GRUtils.isosurface"><code>isosurface</code></a> does not assume a default &quot;isovalue&quot;, which has to be entered explicitly as second positional argument.</li><li>Staircase plots (not present in GR&#39;s documentation) are made with the function <a href="api/plotting/#GRUtils.stair"><code>stair</code></a> instead of <code>step</code>, in order to avoid name conflicts with <a href="https://docs.julialang.org/en/latest/base/collections/#Base.step">Base.step</a>.</li></ul><p>Some plots in GRUtils also allow extra features. Check the list of <a href="api/plotting/#Plotting-functions-1">Plotting functions</a> for more details.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="multiple/">Multiple plots »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 31 May 2020 22:32">Sunday 31 May 2020</span>. Using Julia version 1.1.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
