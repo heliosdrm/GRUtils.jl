@@ -247,14 +247,23 @@ ylim((nothing, 1))
 """
 
 const AXISLOG_DOC = """
-    xlog(flag::Bool)
-    ylog(flag::Bool)
-    zlog(flag::Bool)
+    xlog(flag)
+    ylog(flag)
+    zlog(flag)
 
-Set the X-, Y- or Z-axis to be drawn in logarithmic scale.
+Set the X-, Y- or Z-axis to be drawn in logarithmic scale (`flag == true`),
+or in linear scale (`flag == false`).
 
 Use the keyword argument `xlog=<true/false>`, etc. in plotting functions, to
 set the logarithmic axes during the creation of plots.
+
+!!! note
+
+    When the axis is set to logarithmic scale, its lower limit is adjusted
+    to represent only positive values, even if the data of the plot contain
+    zero or negative values. The aspect of logarithmic axes with limits
+    explicitly set to contain negative values (with [`xlim`](@ref), etc.)
+    is undefined.
 
 # Examples
 
@@ -267,11 +276,12 @@ ylog(false)
 """
 
 const AXISFLIP_DOC = """
-    xflip(flag::Bool)
-    yflip(flag::Bool)
-    zflip(flag::Bool)
+    xflip(flag)
+    yflip(flag)
+    zflip(flag)
 
-Reverse the direction of the X-, Y- or Z-axis.
+Reverse the direction of the X-, Y- or Z-axis (`flag == true`),
+or set them back to their normal direction (`flag == false` ).
 
 Use the keyword argument `xflip=<true/false>`, etc. in plotting functions, to
 set reversed axes during the creation of plots.
@@ -285,6 +295,19 @@ xflip(true)
 yflip(false)
 ```
 """
+
+@eval function _config_axislimits!(ax, p, (minval, maxval), adjust)
+    data_limits = minmax(p.geoms, p.axes.options[:scale])[ax]
+    limits = set_limits((minval, maxval), data_limits)
+    adjust && (limits = GR.adjustlimits(limits...))
+    p.axes.ranges[ax] = limits
+    tickdata = p.axes.tickdata
+    if haskey(tickdata, ax)
+        axisticks = tickdata[ax]
+        tickdata[ax] = (axisticks[1], limits, axisticks[3])
+    end
+    return nothing
+end
 
 for ax = ("x", "y", "z")
     # xlabel, etc.
@@ -326,20 +349,11 @@ for ax = ("x", "y", "z")
     # xlim, etc.
     fname! = Symbol(ax, :lim!)
     fname = Symbol(ax, :lim)
-    @eval function $fname!(p::PlotObject, (minval, maxval), adjust::Bool=false)
-        data_limits = minmax(p.geoms)[Symbol($ax)]
-        limits = set_limits((minval, maxval), data_limits)
-        adjust && (limits = GR.adjustlimits(limits...))
-        p.axes.ranges[Symbol($ax)] = limits
-        tickdata = p.axes.tickdata
-        if haskey(tickdata, Symbol($ax))
-            axisticks = tickdata[Symbol($ax)]
-            tickdata[Symbol($ax)] = (axisticks[1], limits, axisticks[3])
-        end
-        p.attributes[Symbol($ax, :lim)] = (minval, maxval)
-        return nothing
+    @eval function $fname!(p::PlotObject, limits, adjust=false)
+        _config_axislimits!(Symbol($ax), p, limits, adjust)
+        p.attributes[Symbol($ax, :lim)] = limits
     end
-    @eval function $fname!(p::PlotObject, minval::Union{Nothing, Number}, maxval::Union{Nothing, Number}, adjust::Bool=false)
+    @eval function $fname!(p::PlotObject, minval::Union{Nothing, Number}, maxval::Union{Nothing, Number}, adjust=false)
         $fname!(p, (minval, maxval), adjust)
     end
     @eval $fname!(p::PlotObject) = $fname!(p, (nothing, nothing))
@@ -354,10 +368,16 @@ for ax = ("x", "y", "z")
     for (attr, docstr) ∈ (("log", :AXISLOG_DOC), ("flip", :AXISFLIP_DOC))
         fname! = Symbol(ax, attr, :!)
         fname = Symbol(ax, attr)
-        @eval function $fname!(p::PlotObject, flag=false)
+        @eval function $fname!(p::PlotObject, flag)
             if p.axes.kind ∈ (:axes2d, :axes3d)
                 p.attributes[Symbol($ax, $attr)] = flag
-                p.axes.options[:scale] = set_scale(; p.attributes...)
+                newscale = set_scale(; p.attributes...)
+                if p.axes.options[:scale] != newscale
+                    p.axes.options[:scale] = newscale
+                    axlimits = get(p.attributes, Symbol($ax, :lim), (nothing, nothing))
+                    adjust = !get(p.attributes, Symbol($ax, :log), false)
+                    _config_axislimits!(Symbol($ax), p, axlimits, adjust)
+                end
             end
             return nothing
         end
