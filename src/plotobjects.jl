@@ -206,7 +206,7 @@ function draw(p::PlotObject)
         fillbackground(outer, bgcolor)
     end
     # Set font
-    GR.settextfontprec(232, 3) # CM Serif Roman
+    setfont()
     # Define the viewport
     GR.setviewport(inner...)
     # Draw components of the plot

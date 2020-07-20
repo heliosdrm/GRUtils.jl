@@ -1,13 +1,15 @@
+setfont() = GR.settextfontprec(232, 3) # CM Serif Roman
+
 function search(s::AbstractString, c::Char)
     result = findfirst(isequal(c), s)
     result != nothing ? result : 0
 end
 
 function inqtext(x, y, s, wc=false)
+    GR.savestate()
+    setfont() # needed for GR.inqmathtex
     if length(s) >= 2 && s[1] == '$' && s[end] == '$'
-        # to be fixed (https://github.com/jheinen/GR.jl/issues/317)
-        # tbx, tby = GR.inqmathtex(x, y, s[2:end-1])
-        tbx, tby = GR.inqtext(x, y, s[2:end-1])
+        tbx, tby = GR.inqmathtex(x, y, s[2:end-1])
     elseif search(s, '\\') != 0 || search(s, '_') != 0 || search(s, '^') != 0
         tbx, tby = GR.inqtextext(x, y, s)
     else
@@ -18,6 +20,7 @@ function inqtext(x, y, s, wc=false)
             tbx[i], tby[i] = GR.ndctowc(tbx[i], tby[i])
         end
     end
+    GR.restorestate()
     tbx, tby
 end
 
@@ -29,12 +32,14 @@ function stringsize(s, wc=false)
 end
 
 function text(x, y, s, wc = false)
+    GR.savestate() # to avoid side-effect of GR.mathtex
     if wc
         win = GR.inqwindow()
         vp = GR.inqviewport()
         x = (vp[2] - vp[1]) / (win[2] - win[1]) * x + (vp[1] * win[2] - vp[2] * win[1]) / (win[2] - win[1])
         y = (vp[4] - vp[3]) / (win[4] - win[3]) * y + (vp[3] * win[4] - vp[4] * win[3]) / (win[4] - win[3])
     end
+    setfont() # needed for GR.mathtex
     if length(s) >= 2 && s[1] == '$' && s[end] == '$'
         GR.mathtex(x, y, s[2:end-1])
     elseif search(s, '\\') != 0 || search(s, '_') != 0 || search(s, '^') != 0
@@ -42,4 +47,5 @@ function text(x, y, s, wc = false)
     else
         GR.text(x, y, s)
     end
+    GR.restorestate()
 end
