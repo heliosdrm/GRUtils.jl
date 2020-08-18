@@ -8,6 +8,7 @@ end
 function inqtext(x, y, s, wc=false)
     GR.savestate()
     setfont() # needed for GR.inqmathtex
+    GR.setcharheight(_tickcharheight()[2])
     if length(s) >= 2 && s[1] == '$' && s[end] == '$'
         tbx, tby = GR.inqmathtex(x, y, s[2:end-1])
     elseif search(s, '\\') != 0 || search(s, '_') != 0 || search(s, '^') != 0
@@ -39,7 +40,7 @@ function text(x, y, s, wc = false)
         x = (vp[2] - vp[1]) / (win[2] - win[1]) * x + (vp[1] * win[2] - vp[2] * win[1]) / (win[2] - win[1])
         y = (vp[4] - vp[3]) / (win[4] - win[3]) * y + (vp[3] * win[4] - vp[4] * win[3]) / (win[4] - win[3])
     end
-    setfont() # needed for GR.mathtex
+    # setfont() # needed for GR.mathtex
     if length(s) >= 2 && s[1] == '$' && s[end] == '$'
         GR.mathtex(x, y, s[2:end-1])
     elseif search(s, '\\') != 0 || search(s, '_') != 0 || search(s, '^') != 0

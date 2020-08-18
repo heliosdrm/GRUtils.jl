@@ -10,7 +10,7 @@ The majority of those attributes can also be defined at the time of the creation
 
 !! tip "Texts with LaTeX expressions"
 
-    Attributes with text like titles, axis guides and legends accept strings with UTF-8 characters and LaTeX expressions. The package [LaTeXStrings](https://github.com/stevengj/LaTeXStrings.jl/) can be used to reduce the burden of writing escape sequences in LaTeX expressions,
+    Attributes with text like titles, axis guides and legends accept strings with UTF-8 characters and LaTeX expressions. The package [LaTeXStrings](https://github.com/stevengj/LaTeXStrings.jl/) can be used to reduce the burden of writing escape sequences in LaTeX expressions.
 
 
 ## Titles

@@ -11,7 +11,8 @@ using Printf
     # Pretty format for the tick labels
     xticklabels((x)->Printf.@sprintf("%0.1fπ",x/π))
     # Legend with various rows
-    legend("\$\\phi = 0\$", "\$\\phi = 0.5\\pi\$", "φ = π", "φ = 1.5π",
+    legend("\$\\phi = 0\$", "\$\\phi = 0.5\\pi\$",
+        "\$\\phi = \\pi\$", "\$\\phi = 1.5\\pi\$",
         maxrows = 2, location="upper center")
     @test true
 

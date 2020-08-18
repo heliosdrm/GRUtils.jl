@@ -205,10 +205,10 @@ function draw(p::PlotObject)
     else
         fillbackground(outer, bgcolor)
     end
-    # Set font
-    setfont()
     # Define the viewport
     GR.setviewport(inner...)
+    # Set font
+    setfont()
     # Draw components of the plot
     draw(p.axes)
     GR.uselinespec(" ")
