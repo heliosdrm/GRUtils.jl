@@ -5,10 +5,11 @@ function search(s::AbstractString, c::Char)
     result != nothing ? result : 0
 end
 
-function inqtext(x, y, s, wc=false)
+function inqtext(x, y, s, wc, charheight)
     GR.savestate()
+    wc ? GR.selntran(1) : GR.selntran(0)
     setfont() # needed for GR.inqmathtex
-    GR.setcharheight(_tickcharheight()[2])
+    GR.setcharheight(charheight)
     if length(s) >= 2 && s[1] == '$' && s[end] == '$'
         tbx, tby = GR.inqmathtex(x, y, s[2:end-1])
     elseif search(s, '\\') != 0 || search(s, '_') != 0 || search(s, '^') != 0
@@ -16,17 +17,17 @@ function inqtext(x, y, s, wc=false)
     else
         tbx, tby = GR.inqtext(x, y, s)
     end
-    if wc
-        for i = 1:4
-            tbx[i], tby[i] = GR.ndctowc(tbx[i], tby[i])
-        end
-    end
     GR.restorestate()
     tbx, tby
 end
 
-function stringsize(s, wc=false)
-    tbx, tby = inqtext(0, 0, s, wc)
+function inqtext(x, y, s, wc=false)
+    charheight = _tickcharheight()[2]
+    inqtext(x, y, s, wc, charheight)
+end
+
+function stringsize(s, args...)
+    tbx, tby = inqtext(0, 0, s, args...)
     w = tbx[2] - tbx[1]
     h = tby[4] - tby[1]
     w, h

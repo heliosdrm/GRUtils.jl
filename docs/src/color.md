@@ -1,5 +1,5 @@
 ```@setup colors
-using GRUtils, Random
+using GRUtils, Random, Printf
 Random.seed!(111)
 ```
 # Color management
@@ -39,7 +39,7 @@ im = reshape(LinRange(0,1,256), 1, 256) # hide
 heatmap(im, colorbar=false, colormap=44, overlay_axes=true) # hide
 yticks(0,0) # hide
 xticks(25.6,1) # hide
-xticklabels(x -> Base.Printf.@sprintf("%0.2f", x/256)) # hide
+xticklabels(x -> Printf.@sprintf("%0.2f", x/256)) # hide
 ```
 
 ## High-contrast color set

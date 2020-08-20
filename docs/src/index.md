@@ -24,9 +24,7 @@ dev GRUtils
 This package depends on [GR](https://github.com/jheinen/GR.jl). If you don't have it installed before, GRUtils will install GR and its dependencies. Building GR ocassionally fails; so to ensure that everything will work, check the messages printed after the installation, and if there is some error related to "Building GR", retry:
 
 ```julia-repl
-# In "normal" REPL
 julia> ENV["GRDIR"] = ""
-# And in "pkg mode" (after `]`)
 pkg> build GR
 ```
 
@@ -70,7 +68,6 @@ The type of the file will be determined by the extension of the file. The list o
 
 Many more functions to make and manipulate plots are also available in GRUtils. Those functions have been designed to mimic the [API of GR for Julia](https://gr-framework.org/julia-jlgr.html), so if you have been using GR before, you may use them mostly in the same way. These are the most remarkable differences:
 
-* All the plotting functions that can take matrices as bi-dimensional inputs ([`contour`](@ref), [`contourf`](@ref), [`surface`](@ref), [`wireframe`](@ref), [`heatmap`](@ref)) consider that X coordinates are mapped to columns and Y to rows of the input matrix.
 * The radius of [`polar`](@ref) plots always has its centre at zero, instead of the minimum value of the represented data.
 * The angle labels in [`polar`](@ref) and [`polarhistogram`](@ref) are by default in radians; and the bins of `polarhistogram` are by default positioned according to the values of the input.
 * Matrices passed to [`imshow`](@ref) must contain numbers in the range [0, 1].

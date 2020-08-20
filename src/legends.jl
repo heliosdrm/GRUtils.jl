@@ -24,16 +24,16 @@ struct Legend
 end
 
 """
-    Legend(geoms [, maxrows])
+    Legend(geoms, charheight [, maxrows])
 
 Return a `Legend` object defined by the collection of geometries that
-are meant to be referred to in the legend.
+are meant to be referred to in the legend, and the character height.
 
 Optionally, this constructor can take the maximum number of items that
 are represented in each column of the legend. Only the items in that collection
 of geometries where `label` is not empty will be included.
 """
-function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
+function Legend(geoms::Array{<:Geometry}, charheight, maxrows=length(geoms))
     cursors = Tuple{Float64, Float64}[]
     row = 0
     x = 0.08         # width reserved for the guide
@@ -41,7 +41,7 @@ function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
     labelwidth = 0.0
     w = h = 0.0      # width and height of the full box
     scale = Int(GR.inqscale())
-    GR.selntran(0)
+    # GR.selntran(0)
     GR.setscale(0)
     for g in geoms
         if !isempty(g.label) && g.kind ∈ LEGEND_KINDS
@@ -54,7 +54,7 @@ function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
                 labelwidth = 0.0
                 row = 1
             end
-            sz = stringsize(g.label)
+            sz = stringsize(g.label, false, charheight)
             (sz[1] > labelwidth) && (labelwidth = sz[1]) # increase label width
             dy = max(sz[2] - 0.03, 0.0) # height of the item
             push!(cursors, (x, y - dy))
@@ -62,15 +62,20 @@ function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
         end
     end
     GR.setscale(scale)
-    GR.selntran(1)
+    # GR.selntran(1)
     if !isempty(cursors)
         # Define width and height
         (-y > h) && (h = -y)
-        w = x + labelwidth
+        w = x + labelwidth + 0.015
         return Legend((w, h), cursors)
     else
         return Legend()
     end
+end
+
+function Legend(geoms::Array{<:Geometry}, viewport::AbstractVector, args...)
+    charheight = _tickcharheight(viewport)[2]
+    Legend(geoms, charheight, args...)
 end
 
 const EMPTYLEGEND = Legend(NULLPAIR, Tuple{Float64, Float64}[])
@@ -124,6 +129,7 @@ function draw(lg::Legend, geoms, location=1)
     (lg == EMPTYLEGEND || location == 0) && return nothing
     # First draw the frame
     GR.savestate()
+    # GR.selntran(0)
     viewport = legend_box(GR.inqviewport(), lg.size, location)
     GR.setviewport(viewport...)
     w, h = lg.size
@@ -155,6 +161,7 @@ function draw(lg::Legend, geoms, location=1)
         end
     end
     resetcolors()
+    # GR.selntran(1)
     GR.restorestate()
     return nothing
 end
