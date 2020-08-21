@@ -563,10 +563,11 @@ end
 draw_gr3axes(ax) = GR.gr3.cameralookat(ax.camera...)
 
 """
-    _tickcharheight(vp)
+    _tickcharheight([vp])
 
-Return the size of the tick characters and the height of the tick marks,
-proportional to the size of the rectangle defined by `vp`.
+Return the size of the tick marks and the character height,
+proportional to the size of the rectangle defined by `vp`
+(by default the current viewport).
 """
 function _tickcharheight(vp=GR.inqviewport())
     diag = sqrt((vp[2] - vp[1])^2 + (vp[4] - vp[3])^2)
@@ -574,3 +575,11 @@ function _tickcharheight(vp=GR.inqviewport())
     charheight = max(0.018 * diag, 0.012)
     ticksize, charheight
 end
+
+"""
+    charheight([vp])
+
+Return the character height proportional to the size of the
+rectangle defined by `vp` (by default the current viewport)
+"""
+charheight(vp...) = _tickcharheight(vp...)[2]

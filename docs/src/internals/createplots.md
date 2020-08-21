@@ -46,7 +46,7 @@ Axes(::Any, ::Array{<:Geometry})
 ## `Legend` constructors
 
 ```@docs
-Legend(::Array{<:Geometry})
+Legend(::Array{<:Geometry}, ::Any)
 ```
 
 ## `Colorbar` constructors

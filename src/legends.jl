@@ -24,17 +24,23 @@ struct Legend
 end
 
 """
-    Legend(geoms, charheight [, maxrows])
+    Legend(geoms, frame [, maxrows])
 
 Return a `Legend` object defined by the collection of geometries that
-are meant to be referred to in the legend, and the character height.
+are meant to be referred to in the legend (`geoms`), and the dimensions
+(width, height) of the `frame` in which the legend should be drawn.
+
+The geometries are used to set the number of items to be drawn in the
+legend, and their labels. The frame is used to estimate the font size
+of the labels.
 
 Optionally, this constructor can take the maximum number of items that
 are represented in each column of the legend. Only the items in that collection
 of geometries where `label` is not empty will be included.
 """
-function Legend(geoms::Array{<:Geometry}, charheight, maxrows=length(geoms))
+function Legend(geoms::Array{<:Geometry}, frame, maxrows=length(geoms))
     cursors = Tuple{Float64, Float64}[]
+    charsize = charheight(frame)
     row = 0
     x = 0.08         # width reserved for the guide
     y = -0.015       # vertical top margin
@@ -54,7 +60,7 @@ function Legend(geoms::Array{<:Geometry}, charheight, maxrows=length(geoms))
                 labelwidth = 0.0
                 row = 1
             end
-            sz = stringsize(g.label, false, charheight)
+            sz = stringsize(g.label, charsize)
             (sz[1] > labelwidth) && (labelwidth = sz[1]) # increase label width
             dy = max(sz[2] - 0.03, 0.0) # height of the item
             push!(cursors, (x, y - dy))
@@ -71,11 +77,6 @@ function Legend(geoms::Array{<:Geometry}, charheight, maxrows=length(geoms))
     else
         return Legend()
     end
-end
-
-function Legend(geoms::Array{<:Geometry}, viewport::AbstractVector, args...)
-    charheight = _tickcharheight(viewport)[2]
-    Legend(geoms, charheight, args...)
 end
 
 const EMPTYLEGEND = Legend(NULLPAIR, Tuple{Float64, Float64}[])
@@ -220,10 +221,10 @@ function guide(::Val{:bar}, g, x, y)
     end
     GR.setfillcolorind(colorind)
     GR.setfillintstyle(GR.INTSTYLE_SOLID)
-    GR.fillrect(x - 0.03, x + 0.03, y - 0.015, y + 0.015)
+    GR.fillrect(x - 0.03, x + 0.03, y - 0.012, y + 0.012)
     GR.setfillcolorind(1)
     GR.setfillintstyle(GR.INTSTYLE_HOLLOW)
-    GR.fillrect(x - 0.03, x + 0.03, y - 0.015, y + 0.015)
+    GR.fillrect(x - 0.03, x + 0.03, y - 0.012, y + 0.012)
 end
 
 guide(kind, g, x, y) = nothing
