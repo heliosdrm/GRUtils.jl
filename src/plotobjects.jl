@@ -107,7 +107,7 @@ end
 PlotObject(; kwargs...) = PlotObject(Viewport(), Axes(:none), Geometry[], Legend(), Colorbar() ; kwargs...)
 
 function makeplot!(p::PlotObject, axes::Axes, geoms::Vector{<:Geometry},
-    legend::Legend=Legend(geoms), colorbar::Colorbar=Colorbar(axes); kwargs...)
+    legend::Legend=Legend(geoms, p.viewport.inner), colorbar::Colorbar=Colorbar(axes); kwargs...)
 
     # Adapt margins to legend and colorbar
     subplot = get(kwargs, :subplot, UNITSQUARE)
@@ -207,6 +207,8 @@ function draw(p::PlotObject)
     end
     # Define the viewport
     GR.setviewport(inner...)
+    # Set font
+    setfont()
     # Draw components of the plot
     draw(p.axes)
     GR.uselinespec(" ")

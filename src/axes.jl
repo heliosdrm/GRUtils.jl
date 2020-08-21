@@ -544,8 +544,9 @@ function draw_polaraxes(ax, background=true)
     if get(ax.options, :radians, 1) == 0
         labels = (("$θ^o" for θ in 0:45:315)...,)
     else
-        labels = ("0", "\\pi/4", "\\pi/2", "(3/4)\\pi",
-            "\\pi", "(5/4)\\pi", "(3/2)\\pi", "(7/4)\\pi")
+        labels = ("0", "\\frac{\\pi}{4}", "\\frac{\\pi}{2}",
+            "\\frac{3}{4}\\pi", "\\pi", "\\frac{5}{4}\\pi",
+            "\\frac{3}{2}\\pi", "\\frac{7}{4}\\pi")
     end
     for i = 0:7
         sinf = sin(i * 0.25π)
@@ -553,7 +554,7 @@ function draw_polaraxes(ax, background=true)
         GR.polyline([cosf, 0], [sinf, 0])
         GR.settextalign(GR.TEXT_HALIGN_CENTER, GR.TEXT_VALIGN_HALF)
         x, y = GR.wctondc(1.1 * cosf, 1.1 * sinf)
-        GR.textext(x, y, labels[i + 1])
+        GR.mathtex(x, y, labels[i + 1])
     end
     GR.restorestate()
     return nothing
@@ -562,10 +563,11 @@ end
 draw_gr3axes(ax) = GR.gr3.cameralookat(ax.camera...)
 
 """
-    _tickcharheight(vp)
+    _tickcharheight([vp])
 
-Return the size of the tick characters and the height of the tick marks,
-proportional to the size of the rectangle defined by `vp`.
+Return the size of the tick marks and the character height,
+proportional to the size of the rectangle defined by `vp`
+(by default the current viewport).
 """
 function _tickcharheight(vp=GR.inqviewport())
     diag = sqrt((vp[2] - vp[1])^2 + (vp[4] - vp[3])^2)
@@ -573,3 +575,11 @@ function _tickcharheight(vp=GR.inqviewport())
     charheight = max(0.018 * diag, 0.012)
     ticksize, charheight
 end
+
+"""
+    charheight([vp])
+
+Return the character height proportional to the size of the
+rectangle defined by `vp` (by default the current viewport)
+"""
+charheight(vp...) = _tickcharheight(vp...)[2]

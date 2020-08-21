@@ -17,7 +17,7 @@ function legend!(p::PlotObject, args...; location=1, kinds=Tuple{}(), kwargs...)
         p.geoms[j] = Geometry(p.geoms[j], label=args[i])
     end
     maxrows = Int(get(kwargs, :maxrows, length(p.geoms)))
-    p.legend = Legend(p.geoms, maxrows)
+    p.legend = Legend(p.geoms, p.viewport.inner, maxrows)
     # Redefine viewport if legend is set outside
     if p.legend.size ≠ NULLPAIR && location ∈ LEGEND_LOCATIONS[:right_out]
         p.viewport.inner[2] -= p.legend.size[1]

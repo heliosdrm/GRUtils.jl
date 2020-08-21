@@ -24,24 +24,30 @@ struct Legend
 end
 
 """
-    Legend(geoms [, maxrows])
+    Legend(geoms, frame [, maxrows])
 
 Return a `Legend` object defined by the collection of geometries that
-are meant to be referred to in the legend.
+are meant to be referred to in the legend (`geoms`), and the dimensions
+(width, height) of the `frame` in which the legend should be drawn.
+
+The geometries are used to set the number of items to be drawn in the
+legend, and their labels. The frame is used to estimate the font size
+of the labels.
 
 Optionally, this constructor can take the maximum number of items that
 are represented in each column of the legend. Only the items in that collection
 of geometries where `label` is not empty will be included.
 """
-function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
+function Legend(geoms::Array{<:Geometry}, frame, maxrows=length(geoms))
     cursors = Tuple{Float64, Float64}[]
+    charsize = charheight(frame)
     row = 0
     x = 0.08         # width reserved for the guide
     y = -0.015       # vertical top margin
     labelwidth = 0.0
     w = h = 0.0      # width and height of the full box
     scale = Int(GR.inqscale())
-    GR.selntran(0)
+    # GR.selntran(0)
     GR.setscale(0)
     for g in geoms
         if !isempty(g.label) && g.kind ∈ LEGEND_KINDS
@@ -54,7 +60,7 @@ function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
                 labelwidth = 0.0
                 row = 1
             end
-            sz = stringsize(g.label)
+            sz = stringsize(g.label, charsize)
             (sz[1] > labelwidth) && (labelwidth = sz[1]) # increase label width
             dy = max(sz[2] - 0.03, 0.0) # height of the item
             push!(cursors, (x, y - dy))
@@ -62,11 +68,11 @@ function Legend(geoms::Array{<:Geometry}, maxrows=length(geoms))
         end
     end
     GR.setscale(scale)
-    GR.selntran(1)
+    # GR.selntran(1)
     if !isempty(cursors)
         # Define width and height
         (-y > h) && (h = -y)
-        w = x + labelwidth
+        w = x + labelwidth + 0.015
         return Legend((w, h), cursors)
     else
         return Legend()
@@ -124,6 +130,7 @@ function draw(lg::Legend, geoms, location=1)
     (lg == EMPTYLEGEND || location == 0) && return nothing
     # First draw the frame
     GR.savestate()
+    # GR.selntran(0)
     viewport = legend_box(GR.inqviewport(), lg.size, location)
     GR.setviewport(viewport...)
     w, h = lg.size
@@ -155,6 +162,7 @@ function draw(lg::Legend, geoms, location=1)
         end
     end
     resetcolors()
+    # GR.selntran(1)
     GR.restorestate()
     return nothing
 end
@@ -213,10 +221,10 @@ function guide(::Val{:bar}, g, x, y)
     end
     GR.setfillcolorind(colorind)
     GR.setfillintstyle(GR.INTSTYLE_SOLID)
-    GR.fillrect(x - 0.03, x + 0.03, y - 0.015, y + 0.015)
+    GR.fillrect(x - 0.03, x + 0.03, y - 0.012, y + 0.012)
     GR.setfillcolorind(1)
     GR.setfillintstyle(GR.INTSTYLE_HOLLOW)
-    GR.fillrect(x - 0.03, x + 0.03, y - 0.015, y + 0.015)
+    GR.fillrect(x - 0.03, x + 0.03, y - 0.012, y + 0.012)
 end
 
 guide(kind, g, x, y) = nothing

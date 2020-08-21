@@ -1,7 +1,7 @@
 name = "GRUtils"
 uuid = "0337cf30-a0fd-11e9-31db-a79914c9d7ac"
 authors = ["Helios De Rosario"]
-version = "0.4.14"
+version = "0.5.0"
 
 [deps]
 GR = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
@@ -9,7 +9,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [compat]
 julia = "1"
-GR = "0.42,0.43,0.44,0.45,0.46,0.47,0.48,0.49,0.50,0.51"
+GR = "0.51"
 
 [extras]
 GR = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"

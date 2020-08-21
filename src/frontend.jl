@@ -1355,12 +1355,11 @@ function _setargs_annotation(f, x, y, s::AbstractString; kwargs...)
     # only works in axes2d
     p = currentplot(f)
     p.axes.kind ≠ :axes2d && throw(ErrorException("annotations are only available for 2D plots"))
-    # Get coordinates of text box in NDC
+    # Get coordinates of text box in world coordinates
     GR.savestate()
     GR.setwindow(p.axes.ranges[:x]..., p.axes.ranges[:y]...)
     GR.setviewport(p.viewport.inner...)
-    GR.selntran(0)
-    width, height = stringsize(s, true)
+    width, height = stringsize(s, charheight(p.viewport.inner), true)
     GR.restorestate()
     halign = get(kwargs, :halign, "left")
     valign = get(kwargs, :valign, "bottom")

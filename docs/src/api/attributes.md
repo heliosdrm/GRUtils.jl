@@ -8,6 +8,11 @@ The following functions can be used to modify existing plots, adding titles and 
 
 The majority of those attributes can also be defined at the time of the creation of the plot, adding a keyword argument with the name of the corresponding function and the value of its argument, e.g. `plot(x, y, grid=false)`. That option is commented in the descriptions of the functions that support it.
 
+!!! tip "Texts with LaTeX expressions"
+
+    Attributes with text like titles, axis guides and legends accept strings with UTF-8 characters and LaTeX expressions. The package [LaTeXStrings](https://github.com/stevengj/LaTeXStrings.jl/) can be used to reduce the burden of writing escape sequences in LaTeX expressions.
+
+
 ## Titles
 ```@docs
 title
