@@ -9,7 +9,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [compat]
 julia = "1"
-GR = "0.51"
+GR = "0.52"
 
 [extras]
 GR = "28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71"
