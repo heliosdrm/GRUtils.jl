@@ -304,6 +304,9 @@ yflip(false)
     tickdata = p.axes.tickdata
     if haskey(tickdata, ax)
         axisticks = tickdata[ax]
+        if get(p.attributes, Symbol(ax,:flip), false)
+            limits = reverse(limits)
+        end
         tickdata[ax] = (axisticks[1], limits, axisticks[3])
     end
     return nothing
