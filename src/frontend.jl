@@ -1051,6 +1051,7 @@ function _setargs_heatmap(f, args...; kwargs...)
         yl = (0.0, h)
     else
         x, y, data = args
+        @assert size(data) == (length(y), length(x)) "inconsistent dimensions of input data"
         xl = extrema(x)
         yl = extrema(y)
     end
