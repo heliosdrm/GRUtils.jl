@@ -479,13 +479,17 @@ $(_example("barplot"))
 """)
 
 # Coordinates of the bars of a histogram of the values in `x`
-function hist(x, nbins=0, baseline=0.0)
-    if nbins <= 1
-        nbins = round(Int, 3.3 * log10(length(x))) + 1
-    end
+function hist(x, nbins=0, baseline=0.0, edges=nothing)
+    if edges === nothing
+        if nbins <= 1
+            nbins = round(Int, 3.3 * log10(length(x))) + 1
+        end
 
-    xmin, xmax = extrema(x)
-    edges = range(xmin, stop = xmax, length = nbins + 1)
+        xmin, xmax = extrema(x)
+        edges = range(xmin, stop = xmax, length = nbins + 1)
+    else
+        nbins=length(edges)-1
+    end
     counts = zeros(nbins)
     buckets = Int[max(2, min(searchsortedfirst(edges, xᵢ), length(edges)))-1 for xᵢ in x]
     for b in buckets
@@ -502,7 +506,7 @@ function hist(x, nbins=0, baseline=0.0)
     (wc, hc)
 end
 
-function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, kwargs...)
+function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, edges=nothing, kwargs...)
     if fillcolor ≠ nothing # deprecate?
         kwargs = (; color=fillcolor, kwargs...)
     end
@@ -512,7 +516,7 @@ function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, k
     else
         baseline = 0.0
     end
-    wc, hc = hist(x, nbins, baseline)
+    wc, hc = hist(x, nbins, baseline, edges)
     args = horizontal ? (hc, wc) : (wc, hc)
     return (args, kwargs)
 end
@@ -530,6 +534,8 @@ The following keyword arguments can be supplied:
     number of elements in `data`.
 * `horizontal`: whether the histogram should be horizontal (`false` by default).
 * `color`: hexadecimal RGB color code for the bars.
+* `edges`: vector of bin edges; by default, the edges chosen to be linearly spaced
+  over the range of the data. If `edges` is passed, `nbins` is set accordingly.
 
 !!! note
 
