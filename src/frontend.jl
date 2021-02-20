@@ -478,14 +478,31 @@ $(_example("barplot"))
 ```
 """)
 
+
+# https://github.com/JuliaLang/julia/pull/39071/commits/874e6412fadd78b7e58deba7dc02a02f6af342cf
+function logrange(lo, hi, n::Integer)
+    lo, hi = promote(lo, hi)
+    if lo>0 && hi>0
+        (exp(x) for x in range(log(lo), log(hi), length=n))
+    elseif lo<0 && hi<0
+        (-exp(x) for x in range(log(-lo), log(-hi), length=n))
+    else
+        throw(DomainError((lo, hi), "logrange requires that first and last elements are both positive, or both negative"))
+    end
+end
+
+
 # Coordinates of the bars of a histogram of the values in `x`
-function hist(x, nbins=0, baseline=0.0)
+function hist(x, nbins=0, baseline=0.0, log_scale=false)
     if nbins <= 1
         nbins = round(Int, 3.3 * log10(length(x))) + 1
     end
-
     xmin, xmax = extrema(x)
-    edges = range(xmin, stop = xmax, length = nbins + 1)
+    if log_scale
+        edges = collect(logrange(xmin, xmax, nbins + 1))
+    else
+        edges = range(xmin, stop = xmax, length = nbins + 1)
+    end
     counts = zeros(nbins)
     buckets = Int[max(2, min(searchsortedfirst(edges, xᵢ), length(edges)))-1 for xᵢ in x]
     for b in buckets
@@ -507,12 +524,13 @@ function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, k
         kwargs = (; color=fillcolor, kwargs...)
     end
     # Define baseline - 0.0 by default, unless using log scale
-    if get(kwargs, :ylog, false) || horizontal && get(kwargs, :xlog, false)
+    if !horizontal && get(kwargs, :ylog, false) || horizontal && get(kwargs, :xlog, false)
         baseline = 1.0
     else
         baseline = 0.0
     end
-    wc, hc = hist(x, nbins, baseline)
+    bins_log_scale =  !horizontal && get(kwargs, :xlog, false) || horizontal && get(kwargs, :ylog, false)
+    wc, hc = hist(x, nbins, baseline, bins_log_scale)
     args = horizontal ? (hc, wc) : (wc, hc)
     return (args, kwargs)
 end
