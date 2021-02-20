@@ -487,7 +487,7 @@ function logrange(lo, hi, n::Integer)
     elseif lo<0 && hi<0
         (-exp(x) for x in range(log(-lo), log(-hi), length=n))
     else
-        throw(DomainError(p, "logrange requires that first and last elements are both positive, or both negative"))
+        throw(DomainError((lo, hi), "logrange requires that first and last elements are both positive, or both negative"))
     end
 end
 
@@ -524,12 +524,12 @@ function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, k
         kwargs = (; color=fillcolor, kwargs...)
     end
     # Define baseline - 0.0 by default, unless using log scale
-    if get(kwargs, :ylog, false) || horizontal && get(kwargs, :xlog, false)
+    if !horizontal && get(kwargs, :ylog, false) || horizontal && get(kwargs, :xlog, false)
         baseline = 1.0
     else
         baseline = 0.0
     end
-    bins_log_scale =  get(kwargs, :xlog, false) || horizontal && get(kwargs, :ylog, false)
+    bins_log_scale =  !horizontal && get(kwargs, :xlog, false) || horizontal && get(kwargs, :ylog, false)
     wc, hc = hist(x, nbins, baseline, bins_log_scale)
     args = horizontal ? (hc, wc) : (wc, hc)
     return (args, kwargs)
