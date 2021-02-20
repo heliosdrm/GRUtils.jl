@@ -478,17 +478,30 @@ $(_example("barplot"))
 ```
 """)
 
-# Coordinates of the bars of a histogram of the values in `x`
-function hist(x, nbins=0, baseline=0.0, edges=nothing)
-    if edges === nothing
-        if nbins <= 1
-            nbins = round(Int, 3.3 * log10(length(x))) + 1
-        end
 
-        xmin, xmax = extrema(x)
-        edges = range(xmin, stop = xmax, length = nbins + 1)
+# https://github.com/JuliaLang/julia/pull/39071/commits/874e6412fadd78b7e58deba7dc02a02f6af342cf
+function logrange(lo, hi, n::Integer)
+    lo, hi = promote(lo, hi)
+    if lo>0 && hi>0
+        (exp(x) for x in range(log(lo), log(hi), length=n))
+    elseif lo<0 && hi<0
+        (-exp(x) for x in range(log(-lo), log(-hi), length=n))
     else
-        nbins=length(edges)-1
+        throw(DomainError(p, "logrange requires that first and last elements are both positive, or both negative"))
+    end
+end
+
+
+# Coordinates of the bars of a histogram of the values in `x`
+function hist(x, nbins=0, baseline=0.0, log_scale=false)
+    if nbins <= 1
+        nbins = round(Int, 3.3 * log10(length(x))) + 1
+    end
+    xmin, xmax = extrema(x)
+    if log_scale
+        edges = collect(logrange(xmin, xmax, nbins + 1))
+    else
+        edges = range(xmin, stop = xmax, length = nbins + 1)
     end
     counts = zeros(nbins)
     buckets = Int[max(2, min(searchsortedfirst(edges, xᵢ), length(edges)))-1 for xᵢ in x]
@@ -506,7 +519,7 @@ function hist(x, nbins=0, baseline=0.0, edges=nothing)
     (wc, hc)
 end
 
-function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, edges=nothing, kwargs...)
+function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, kwargs...)
     if fillcolor ≠ nothing # deprecate?
         kwargs = (; color=fillcolor, kwargs...)
     end
@@ -516,7 +529,8 @@ function _setargs_hist(f, x; nbins = 0, fillcolor=nothing, horizontal = false, e
     else
         baseline = 0.0
     end
-    wc, hc = hist(x, nbins, baseline, edges)
+    bins_log_scale =  get(kwargs, :xlog, false) || horizontal && get(kwargs, :ylog, false)
+    wc, hc = hist(x, nbins, baseline, bins_log_scale)
     args = horizontal ? (hc, wc) : (wc, hc)
     return (args, kwargs)
 end
@@ -534,8 +548,6 @@ The following keyword arguments can be supplied:
     number of elements in `data`.
 * `horizontal`: whether the histogram should be horizontal (`false` by default).
 * `color`: hexadecimal RGB color code for the bars.
-* `edges`: vector of bin edges; by default, the edges chosen to be linearly spaced
-  over the range of the data. If `edges` is passed, `nbins` is set accordingly.
 
 !!! note
 
