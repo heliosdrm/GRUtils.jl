@@ -2,7 +2,9 @@
 const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :color, :headsize,
     :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundalpha, :backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
-    :xflip, :xlabel, :xlim, :xlog, :xticklabels, :yflip, :ylabel, :ylim, :ylog, :yticklabels, :zflip, :zlabel, :zlim, :zlog]
+    :xflip, :xlabel, :xlim, :xlog, :xticks, :xticklabels,
+    :yflip, :ylabel, :ylim, :ylog, :yticks, :yticklabels,
+    :zflip, :zlabel, :zlim, :zlog, :zticks]
 
 geom_attributes(; kwargs...) = filter(p -> p.first ∈ KEYS_GEOM_ATTRIBUTES, kwargs)
 plot_attributes(; kwargs...) = filter(p -> p.first ∈ KEYS_PLOT_ATTRIBUTES, kwargs)
