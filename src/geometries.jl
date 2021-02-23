@@ -558,4 +558,7 @@ function draw(g::Geometry, ::Val{:volume})::Vector{Float64}
     [dmin, dmax]
 end
 
-draw(g::Geometry, ::Val{:text})::Nothing = text(g.x[1], g.y[1], g.label, true)
+function draw(g::Geometry, ::Val{:text})::Nothing
+    wc = Bool(get(g.attributes, :wc, true))
+    text(g.x[1], g.y[1], g.label, wc)
+end
