@@ -1,6 +1,6 @@
 ## Select keyword arguments from lists
 const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :color, :headsize,
-    :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform]
+    :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform, :wc]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundalpha, :backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticks, :xticklabels,
     :yflip, :ylabel, :ylim, :ylog, :yticks, :yticklabels,
@@ -1418,7 +1418,7 @@ function annotations!(f::Figure, x::AbstractArray, y::AbstractArray, s::Abstract
 end
 
 """
-    annotations(x, y, s)
+    annotations(x, y, s; kwargs...)
 
 Add one ore more text annotations to the current plot.
 
@@ -1431,6 +1431,9 @@ This can be changed by the following keyword arguments:
 
 * `halign` for the horizontal alignment (`"left"`, `"center"` or `"right"`).
 * `valign` for the vertical alignment (`"bottom"`, `"center"` or `"top"`).
+
+Use the keyword argument `wc = false` if `x` and `y` are expressed in normalized
+device coordinates, instead of world coordinates -- which is the default.
 
 # Examples
 ```julia
