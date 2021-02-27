@@ -288,7 +288,7 @@ end
 function ticklabel_fun(f::Function)
     (x, y, svalue, value) -> begin
         GR.textext(x, y, string(f(value)))
-        return nothing
+        return Int32(0)
     end
 end
 
@@ -297,7 +297,7 @@ function ticklabel_fun(labels::AbstractVecOrMat{T}) where T <: AbstractString
         pos = findfirst(t->(value≈t), collect(1:length(labels)))
         lab = (pos === nothing) ? "" : labels[pos]
         GR.textext(x, y, lab)
-        return nothing
+        return Int32(0)
     end
 end
 
