@@ -221,6 +221,8 @@ function draw(p::PlotObject)
     resetcolors()
     # Overlay axes if requested
     get(p.attributes, :overlay_axes, false) && draw(p.axes, false)
+    # title and labels
+    drawlabels(p)
     # Legend
     location = get(p.attributes, :location, 0)
     draw(p.legend, p.geoms, location)
@@ -232,8 +234,6 @@ function draw(p::PlotObject)
             draw(p.colorbar, extrema(colorlimits))
         end
     end
-    # title and labels
-    drawlabels(p)
 
     return true
 end
