@@ -78,7 +78,7 @@ Base.showable(::MIME"text/html", ::Figure) = GR.mime_type[] ∈ ("mov", "mp4", "
 #     M <: Union{MIME"image/svg+xml", MIME"image/png", MIME"text/html"}
 #     } = show(io, mime, draw(fig))
     
-Base.show(io::IO, ::MIME"text/html", fig::Figure) = show(io, mime, draw(fig))
+Base.show(io::IO, mime::MIME"text/html", fig::Figure) = show(io, mime, draw(fig))
 
 for (mime, fmt) in (
     "image/png" => "png",
