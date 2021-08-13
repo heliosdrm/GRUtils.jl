@@ -70,9 +70,9 @@ function Base.Multimedia.display(fig::Figure)
 end
 
 # Caution! This depends on GR internals
-# Base.showable(::MIME"image/svg+xml", ::Figure) = GR.mime_type == "svg"
-# Base.showable(::MIME"image/png", ::Figure) = GR.mime_type == "png"
-Base.showable(::MIME"text/html", ::Figure) = GR.mime_type ∈ ("mov", "mp4", "webm")
+# Base.showable(::MIME"image/svg+xml", ::Figure) = GR.mime_type[] == "svg"
+# Base.showable(::MIME"image/png", ::Figure) = GR.mime_type[] == "png"
+Base.showable(::MIME"text/html", ::Figure) = GR.mime_type[] ∈ ("mov", "mp4", "webm")
 
 # Base.show(io::IO, mime::M, fig::Figure) where {
 #     M <: Union{MIME"image/svg+xml", MIME"image/png", MIME"text/html"}
@@ -86,7 +86,7 @@ for (mime, fmt) in (
 )
 
     @eval function Base.show(io::IO, mime::MIME{Symbol($mime)}, fig::Figure)
-        gr_mime = GR.isinline() ? string(GR.mime_type) : ""
+        gr_mime = GR.isinline() ? string(GR.mime_type[]) : ""
         GR.inline($fmt)
         try
             show(io, mime, draw(fig))
