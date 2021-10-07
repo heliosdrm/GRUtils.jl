@@ -37,6 +37,7 @@ Let's see an example of a plot to start with:
 ```@example plot
 # Of course first you have to load the package
 using GRUtils
+GRUtils.GR.inline("svg"); # hide
 Figure(); # hide
 # Example data
 x = LinRange(0, 10, 500)
