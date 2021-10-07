@@ -45,7 +45,7 @@ function videofile(fun::Function, target, overwrite=false)
     if length(ext) < 2
         ext = ".webm"
     end
-    mime = GR.isinline() ? string(GR.mime_type) : ""
+    mime = GR.isinline() ? string(GR.mime_type[]) : ""
     GR.inline(ext[2:end])
     try
         fun()
@@ -94,7 +94,7 @@ end
 ```
 """
 function video(fun::Function, target="webm")
-    mime = GR.isinline() ? string(GR.mime_type) : ""
+    mime = GR.isinline() ? string(GR.mime_type[]) : ""
     GR.inline(target)
     try
         fun()
