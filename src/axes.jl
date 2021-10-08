@@ -475,9 +475,7 @@ function draw(ax::Axes, background=true)
     end
     # Branching for different kinds of axes
     if ax.kind == :axes3d
-        # GR.setspace(ax.ranges[:z]..., ax.perspective...)
-        GR.setwindow3d(ax.ranges[:x]..., ax.ranges[:y]..., ax.ranges[:z]...)
-        GR.setspace3d(-40, 60, 30, 0)
+        GR.setspace(ax.ranges[:z]..., ax.perspective...)
         ztick, zorg, majorz = ax.tickdata[:z]
         if ax.options[:scale] & GR.OPTION_Z_LOG != 0
             ztick = 10
