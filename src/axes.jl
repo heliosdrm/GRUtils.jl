@@ -37,7 +37,8 @@ Axes are determined by their `kind`, which may be `:axes2d` for 2-D plots,
     + `options[:tickdir]` to determine how the ticks are drawn
         (positive value to draw them inside the plot area, negative value to
         draw them outside, or `0` to hide them).
-    + `options[:gr3] ≠ 0` to identify if the axes are a 3-D scene defined for the `gr3` interface.
+    + `options[:render3d]`: an integer code that indicates how 3-D scenes are rendered:
+        (`0` for "classic" 3-D layout, `1` for post-GR 0.58 3-D layouts, `3` for GR3 scenes)
     + `options[:radians] = 0` to transform angular values to degrees in polar axes.
 """
 struct Axes
@@ -91,8 +92,8 @@ function Axes(kind, geoms::Array{<:Geometry}; grid=1, kwargs...)
     elseif kind == :axes3d
         tickdata = set_ticks(ranges, 2, (:x, :y, :z); kwargs...)
         perspective = [Int(get(kwargs, :rotation, 40)), Int(get(kwargs, :tilt, 70))]
-        if get(kwargs, :gr3, false)
-            options[:gr3] = 1
+        options[:render3d] = render3d = get(kwargs, :render3d, 0)
+        if render3d == 2
             cameradistance = get(kwargs, :cameradistance, 3.0)
             camera = set_camera(cameradistance, perspective...; kwargs...)
         end
@@ -447,7 +448,7 @@ function draw(ax::Axes, background=true)
     # Special draw functions for polar axes and gr3
     ax.kind == :polar && return draw_polaraxes(ax, background)
     if ax.kind == :axes3d
-        get(ax.options, :gr3, 0) ≠ 0 && return draw_gr3axes(ax)
+        (ax.options[:render3d] == 2) && return draw_gr3axes(ax)
         GR.setwindow(0, 1, 0, 1)
         GR.setspace(0, 1, ax.perspective...)
     end
@@ -475,7 +476,12 @@ function draw(ax::Axes, background=true)
     end
     # Branching for different kinds of axes
     if ax.kind == :axes3d
-        GR.setspace(ax.ranges[:z]..., ax.perspective...)
+        if ax.options[:render3d] == 1
+            GR.setwindow3d(ax.ranges[:x]..., ax.ranges[:y]..., ax.ranges[:z]...)
+            GR.setspace3d(-40, 60, 30, 0)
+        else
+            GR.setspace(ax.ranges[:z]..., ax.perspective...)
+        end
         ztick, zorg, majorz = ax.tickdata[:z]
         if ax.options[:scale] & GR.OPTION_Z_LOG != 0
             ztick = 10

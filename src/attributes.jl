@@ -614,7 +614,7 @@ end
 function zoom!(p::PlotObject, r)
     if p.axes.kind == :axes2d
         zoom2d!(p, r)
-    elseif get(p.axes.options, :gr3, 0) ≠ 0
+    elseif get(p.axes.options, :render3d, 0) == 2
         zoomgr3!(p, r)
     end
 end
@@ -649,7 +649,7 @@ end
 
 function viewpoint!(p::PlotObject, rotation, tilt)
     p.axes.perspective .= [rotation, tilt]
-    if get(p.axes.options, :gr3, 0) ≠ 0
+    if get(p.axes.options, :render3d, 0) == 2
         distance = norm(view(p.axes.camera, 1:3))
         p.axes.camera .= set_camera(distance, rotation, tilt)
     end
@@ -688,7 +688,7 @@ end
 
 function rotate!(p::PlotObject, angle)
     p.axes.perspective[1] += angle
-    if get(p.axes.options, :gr3, 0) ≠ 0
+    if get(p.axes.options, :render3d, 0) == 2
         _rotate!(view(p.axes.camera, 1:3), angle)
         _rotate!(view(p.axes.camera, 7:9), angle)
     end
@@ -699,7 +699,7 @@ rotate!(f::Figure, angle) = rotate!(currentfigure(f), angle)
 
 function tilt!(p::PlotObject, angle)
     p.axes.perspective[2] += angle
-    if get(p.axes.options, :gr3, 0) ≠ 0
+    if get(p.axes.options, :render3d, 0) == 2
         rotation = p.axes.perspective[1]
         camera_position = view(p.axes.camera, 1:3)
         _rotate!(camera_position, -rotation)

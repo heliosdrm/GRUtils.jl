@@ -602,7 +602,7 @@ $(_example("polarhistogram"))
 ```
 """)
 
-@plotfunction(plot3, geom = :line3d, axes = :axes3d, kwargs = (ratio=1.0,), setargs=_setargs_line, docstring="""
+@plotfunction(plot3, geom = :line3d, axes = :axes3d, kwargs = (ratio=1.0, render3d=1), setargs=_setargs_line, docstring="""
     plot3(x, y, z[, spec; kwargs...])
     plot3(x1, y1, z1, x2, y2, z2...; kwargs...)
     plot3(x1, y1, z1, spec1...; kwargs...)
@@ -736,7 +736,7 @@ function _setargs_quiver3(f, x, y, z, u, v, w, spec=""; arrowscale=1.0, kwargs..
 end
 
 @plotfunction(quiver3, geom = :quiver3, axes = :axes3d, setargs = _setargs_quiver3,
-kwargs = (ratio=1.0,), docstring="""
+kwargs = (ratio=1.0, render3d=1), docstring="""
     quiver3(x, y, z, u, v, w[, spec; kwargs...])
 
 Draw a three-dimensional vector field at points `(x,y,z)` with arrows
@@ -764,7 +764,7 @@ _setargs_scatter3(f, x, y, z; kwargs...) = ((x,y,z), kwargs)
 _setargs_scatter3(f, x, y, z, c; kwargs...) = ((x,y,z,c), (;colorbar=true, kwargs...))
 
 @plotfunction(scatter3, geom = :scatter3, axes = :axes3d, setargs = _setargs_scatter3,
-kwargs = (ratio=1.0,), docstring="""
+kwargs = (ratio=1.0, render3d=1), docstring="""
     scatter3(x, y, z[, color; kwargs...])
 
 Draw a three-dimensional scatter plot.
@@ -980,7 +980,7 @@ function _setargs_surface(f, z, h; kwargs...)
 end
 
 @plotfunction(surface, geom = :surface, axes = :axes3d, setargs = _setargs_surface,
-kwargs = (ratio=1.0, colorbar=true, accelerate=true), docstring="""
+kwargs = (ratio=1.0, colorbar=true, accelerate=true, render3d=1), docstring="""
     surface([x, y,] z; kwargs...)
 
 Draw a three-dimensional surface plot.
@@ -1009,7 +1009,7 @@ $(_example("surface"))
 """)
 
 @plotfunction(wireframe, geom = :wireframe, axes = :axes3d, setargs = _setargs_surface,
-kwargs = (ratio=1.0,), docstring="""
+kwargs = (ratio=1.0, render3d=1), docstring="""
     wireframe([x, y,] z; kwargs...)
 
 Draw a three-dimensional wireframe plot.
@@ -1229,7 +1229,7 @@ function _setargs_isosurf(f, v, isovalue; skincolor=nothing, kwargs...)
 end
 
 @plotfunction(isosurface, geom = :isosurf, axes = :axes3d, setargs = _setargs_isosurf,
-kwargs = (xticks=NULLPAIR, yticks=NULLPAIR, zticks=NULLPAIR, ratio=1.0, gr3=true), docstring="""
+kwargs = (xticks=NULLPAIR, yticks=NULLPAIR, zticks=NULLPAIR, ratio=1.0, render3d=2), docstring="""
     isosurface(data, isovalue; kwargs...)
 
 Draw an isosurface determined by the region of the three-dimensional array `data`
@@ -1319,7 +1319,7 @@ function _setargs_volume(f, v::Array{T, 3}; kwargs...) where {T}
 end
 
 @plotfunction(volume, geom = :volume, axes = :axes3d, setargs = _setargs_volume,
-kwargs = (colorbar=true, ratio=1.0), docstring="""
+kwargs = (colorbar=true, ratio=1.0, render3d=1), docstring="""
     volume(v; kwargs...)
 
 Draw a the three-dimensional array `v`, using volume rendering.
