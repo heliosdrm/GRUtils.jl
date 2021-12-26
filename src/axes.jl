@@ -478,7 +478,8 @@ function draw(ax::Axes, background=true)
     if ax.kind == :axes3d
         if ax.options[:render3d] == 1
             GR.setwindow3d(ax.ranges[:x]..., ax.ranges[:y]..., ax.ranges[:z]...)
-            GR.setspace3d(-40, 60, 30, 0)
+            GR.setspace3d(-ax.perspective[1], ax.perspective[2], 30, 0)
+            GR.setcharheight(2*charheight)
         else
             GR.setspace(ax.ranges[:z]..., ax.perspective...)
         end
