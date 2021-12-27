@@ -419,8 +419,11 @@ function draw(g::Geometry, ::Val{:quiver})::Nothing
     n = length(g.x)
     vectorsizes = (g.x[2:2:n] .- g.x[1:2:n]).^2 .+ (g.y[2:2:n] .- g.y[1:2:n]).^2
     maxsize = 2sum(vectorsizes)/n
+    minsize = minimum(filter(!isequal(0), vectorsizes))
     for i = 1:2:n-1
-        hs = vectorsizes[(i+1)>>1] * headsize / maxsize
+        vs = vectorsizes[(i+1)>>1]
+        (vs == 0) && (vs = minsize) # to fix #102
+        hs = vs * headsize / maxsize
         GR.setarrowsize(sqrt(hs))
         GR.drawarrow(g.x[i], g.y[i], g.x[i+1], g.y[i+1])
     end
