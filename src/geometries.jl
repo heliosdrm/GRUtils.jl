@@ -203,12 +203,12 @@ function draw(g::Geometry, ::Val{:line3d})::Nothing
     return nothing
 end
 
-function draw(g::Geometry, ::Val{:stair})::Nothing
+function draw(g::Geometry, ::Val{:stairs})::Nothing
     mask = _uselinespec(g.spec, g.attributes)
     if hasline(mask)
         GR.setlinewidth(float(get(g.attributes, :linewidth, 1.0)))
         n = length(g.x)
-        if g.attributes[:stair_position] < 0 # pre
+        if g.attributes[:stairs_position] < 0 # pre
             xs = zeros(2n - 1)
             ys = zeros(2n - 1)
             xs[1] = g.x[1]
@@ -219,7 +219,7 @@ function draw(g::Geometry, ::Val{:stair})::Nothing
                 ys[2i]   = g.y[i+1]
                 ys[2i+1] = g.y[i+1]
             end
-        elseif g.attributes[:stair_position] > 0 # post
+        elseif g.attributes[:stairs_position] > 0 # post
             xs = zeros(2n - 1)
             ys = zeros(2n - 1)
             xs[1] = g.x[1]

@@ -8,7 +8,7 @@ examplesdir = joinpath(dirname(pathof(GRUtils)), "../examples/docstrings")
 GRUtils.GR.inline("pdf")
 
 functionlist = (
-    ("Line plots", ("plot", "oplot", "stair", "plot3", "polar")),
+    ("Line plots", ("plot", "oplot", "stairs", "plot3", "polar")),
     ("Scatter plots", ("scatter", "scatter3")),
     ("Stem plots", ("stem",)),
     ("Bar plots", ("barplot",)),

@@ -61,7 +61,7 @@ This method should contain the plotting instructions to draw the key associated 
 
 If the geometry also needs attributes that are not defined for other geometries (normally passed to the plotting function as keyword arguments), their name should also be added to the constant `KEYS_GEOM_ATTRIBUTES` in the first lines of `frontend.jl`.
 
-Take into account that the dictionary of geometry attributes only accepts `Float64` numbers, so they should be coded as numbers. If from the user perspective it is more convenient to define them as other types, the function indicated by `setargs` may be used to transform the user-provided argument into a suitable number. (See `_setargs_stair` for an example of this.)
+Take into account that the dictionary of geometry attributes only accepts `Float64` numbers, so they should be coded as numbers. If from the user perspective it is more convenient to define them as other types, the function indicated by `setargs` may be used to transform the user-provided argument into a suitable number. (See `_setargs_stairs` for an example of this.)
 
 ## Extension of plot attributes
 

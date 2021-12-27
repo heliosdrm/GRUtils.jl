@@ -2,12 +2,12 @@
 x = LinRange(-2, 2, 40)
 y = x.^3 .+ x.^2 .+ x
 # Plot x and y
-stair(x, y)
+stairs(x, y)
 # Plot y with indices for x values
-stair(y)
+stairs(y)
 # step directly after x each position
-stair(y, where="pre")
+stairs(y, where="pre")
 # step between two x positions
-stair(y, where="mid")
+stairs(y, where="mid")
 # step immediately before x each position
-stair(y, where="post")
+stairs(y, where="post")
