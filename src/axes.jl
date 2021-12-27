@@ -91,7 +91,7 @@ function Axes(kind, geoms::Array{<:Geometry}; grid=1, kwargs...)
         set_ticklabels!(ticklabels; kwargs...)
     elseif kind == :axes3d
         tickdata = set_ticks(ranges, 2, (:x, :y, :z); kwargs...)
-        perspective = [Int(get(kwargs, :rotation, 40)), Int(get(kwargs, :tilt, 70))]
+        perspective = [Int(get(kwargs, :rotation, 40)), Int(get(kwargs, :tilt, 60))]
         options[:render3d] = render3d = get(kwargs, :render3d, 0)
         if render3d == 2
             cameradistance = get(kwargs, :cameradistance, 3.0)
@@ -479,7 +479,7 @@ function draw(ax::Axes, background=true)
         if ax.options[:render3d] == 1
             GR.setwindow3d(ax.ranges[:x]..., ax.ranges[:y]..., ax.ranges[:z]...)
             GR.setspace3d(-ax.perspective[1], ax.perspective[2], 30, 0)
-            GR.setcharheight(2*charheight)
+            GR.setcharheight(1.5*charheight)
         else
             GR.setspace(ax.ranges[:z]..., ax.perspective...)
         end
