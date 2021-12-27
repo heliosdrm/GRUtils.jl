@@ -20,11 +20,11 @@ Figure(); # hide
 Base.include(GRUtils, "../examples/docstrings/oplot.jl") # hide
 ```
 ```@docs
-stair
+stairs
 ```
 ```@example plot
 Figure(); # hide
-Base.include(GRUtils, "../examples/docstrings/stair.jl") # hide
+Base.include(GRUtils, "../examples/docstrings/stairs.jl") # hide
 ```
 ```@docs
 plot3

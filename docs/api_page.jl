@@ -7,7 +7,7 @@ open("./src/api/plotting.md", "w") do file begin
         """)
         write(file, "# Plotting functions\n\n")
         for data in (
-            ("Line plots", ("plot", "oplot", "stair", "plot3", "polar")),
+            ("Line plots", ("plot", "oplot", "stairs", "plot3", "polar")),
             ("Scatter plots", ("scatter", "scatter3")),
             ("Stem plots", ("stem", "errorbar")),
             ("Bar plots", ("barplot",)),

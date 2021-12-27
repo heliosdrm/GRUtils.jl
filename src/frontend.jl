@@ -1,6 +1,6 @@
 ## Select keyword arguments from lists
 const KEYS_GEOM_ATTRIBUTES = [:accelerate, :algorithm, :alpha, :baseline, :clabels, :color, :headsize,
-    :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stair_position, :xform, :wc]
+    :horizontal, :label, :linecolor, :linewidth, :markercolor, :markersize, :shadelines, :spec, :stairs_position, :xform, :wc]
 const KEYS_PLOT_ATTRIBUTES = [:backgroundalpha, :backgroundcolor, :colorbar, :colormap, :location, :hold, :overlay_axes, :radians, :ratio, :scheme, :subplot, :title,
     :xflip, :xlabel, :xlim, :xlog, :xticks, :xticklabels,
     :yflip, :ylabel, :ylim, :ylog, :yticks, :yticklabels,
@@ -144,24 +144,24 @@ $(_example("plot"))
 ```
 """)
 
-function _setargs_stair(f, args...; kwargs...)
-    stair_position_str = get(kwargs, :where, "mid")
-    if stair_position_str == "mid"
-        stair_position = 0.0
-    elseif stair_position_str == "post"
-        stair_position = 1.0
-    elseif stair_position_str == "pre"
-        stair_position = -1.0
+function _setargs_stairs(f, args...; kwargs...)
+    stairs_position_str = get(kwargs, :where, "mid")
+    if stairs_position_str == "mid"
+        stairs_position = 0.0
+    elseif stairs_position_str == "post"
+        stairs_position = 1.0
+    elseif stairs_position_str == "pre"
+        stairs_position = -1.0
     else
         throw(ArgumentError("""`where` must be one of `"mid"`, `"pre"` or `"post"`"""))
     end
-    return _setargs_line(f, args...; stair_position=stair_position, kwargs...)
+    return _setargs_line(f, args...; stairs_position=stairs_position, kwargs...)
 end
 
-@plotfunction(stair, geom = :stair, axes = :axes2d, setargs=_setargs_stair, docstring="""
-    stair(x[, y, spec; kwargs...])
-    stair(x1, y1, x2, y2...; kwargs...)
-    stair(x1, y1, spec1...; kwargs...)
+@plotfunction(stairs, geom = :stairs, axes = :axes2d, setargs=_setargs_stairs, docstring="""
+    stairs(x[, y, spec; kwargs...])
+    stairs(x1, y1, x2, y2...; kwargs...)
+    stairs(x1, y1, spec1...; kwargs...)
 
 Draw one or more staircase or step plots.
 
@@ -182,7 +182,7 @@ Additionally, the keyword argument `where` can be used to define where the "stai
 # Examples
 
 ```julia
-$(_example("stair"))
+$(_example("stairs"))
 ```
 """)
 
@@ -325,7 +325,7 @@ $(_example("polar"))
 """)
 
 # Recursive call in case of multiple x-y pairs
-for fun = [:plot!, :stair!, :stem!, :polar!]
+for fun = [:plot!, :stairs!, :stem!, :polar!]
     @eval function $fun(f::Figure, x, y, u, v, args...; kwargs...)
         holdstate = get(currentplot(f).attributes, :hold, false)
         if typeof(u) <: AbstractString

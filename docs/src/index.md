@@ -73,6 +73,5 @@ Many more functions to make and manipulate plots are also available in GRUtils. 
 * The angle labels in [`polar`](@ref) and [`polarhistogram`](@ref) are by default in radians; and the bins of `polarhistogram` are by default positioned according to the values of the input.
 * Matrices passed to [`imshow`](@ref) must contain numbers in the range [0, 1].
 * The function [`isosurface`](@ref) does not assume a default "isovalue", which has to be entered explicitly as second positional argument.
-* Staircase plots (not present in GR's documentation) are made with the function [`stair`](@ref) instead of `step`, in order to avoid name conflicts with [Base.step](https://docs.julialang.org/en/latest/base/collections/#Base.step).
 
 Some plots in GRUtils also allow extra features. Check the list of [Plotting functions](@ref) for more details.

@@ -4,7 +4,7 @@ import GR
 using LinearAlgebra
 
 export Figure, gcf, subplot, currentplot, draw, savefig, video, videofile,
-    plot, plot3, polar, quiver, quiver3, scatter, scatter3, stair, stem, oplot,
+    plot, plot3, polar, quiver, quiver3, scatter, scatter3, stairs, stem, oplot,
     errorbar, barplot, histogram, polarhistogram,
     contour, contourf, shade, surface, tricont, trisurf, volume, wireframe,
     heatmap, polarheatmap, hexbin, imshow, isosurface, annotations,
@@ -15,7 +15,7 @@ export Figure, gcf, subplot, currentplot, draw, savefig, video, videofile,
     zflip, zlabel, zlim, zlog, zticks,
     background, colormap, colorscheme,
 
-    subplot!, plot!, plot3!, polar!, quiver!, quiver3!, scatter!, scatter3!, stair!, stem!, oplot!,
+    subplot!, plot!, plot3!, polar!, quiver!, quiver3!, scatter!, scatter3!, stairs!, stem!, oplot!,
     errorbar!, barplot!, histogram!, polarhistogram!,
     contour!, contourf!, shade!, surface!, tricont!, trisurf!, volume!, wireframe!,
     heatmap!, polarheatmap!, hexbin!, imshow!, isosurface!, annotations!,
