@@ -477,6 +477,7 @@ function draw(g::Geometry, ::Val{:wireframe})::Nothing
 end
 
 function draw(g::Geometry, ::Val{:trisurf})::Nothing
+    GR.setwindow(-1, 1, -1, 1)
     GR.trisurface(g.x, g.y, g.z)
 end
 
@@ -534,6 +535,8 @@ function draw(g::Geometry, ::Val{:isosurf})::Nothing
             round(Int64, isovalue * (2^16-1)))
     GR.gr3.setbackgroundcolor(1, 1, 1, 0)
     GR.gr3.drawmesh(mesh, 1, (0, 0, 0), (0, 0, 1), (0, 1, 0), meshcolor, (1, 1, 1))
+    GR.gr3.setcameraprojectionparameters(45, 1, 200)
+
     vp = GR.inqviewport()
     GR.gr3.drawimage(vp..., 500, 500, GR.gr3.DRAWABLE_GKS)
     GR.gr3.deletemesh(mesh)
