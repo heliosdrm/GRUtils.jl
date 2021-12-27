@@ -1040,7 +1040,7 @@ $(_example("wireframe"))
 """)
 
 @plotfunction(trisurf, geom = :trisurf, axes = :axes3d, setargs = _setargs_tricont,
-kwargs = (colorbar=true, ratio=1.0), docstring="""
+kwargs = (colorbar=true, ratio=1.0, render3d=1), docstring="""
     tricont(x, y, z; kwargs...)
 
 Draw a triangular surface plot.
