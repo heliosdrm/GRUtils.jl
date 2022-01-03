@@ -481,6 +481,7 @@ function draw(ax::Axes, background=true)
             GR.setspace3d(-ax.perspective[1], ax.perspective[2], 30, 0)
             GR.setcharheight(1.5*charheight)
         else
+            GR.setprojectiontype(0)
             GR.setspace(ax.ranges[:z]..., ax.perspective...)
         end
         ztick, zorg, majorz = ax.tickdata[:z]
