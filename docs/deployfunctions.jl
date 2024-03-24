@@ -101,3 +101,36 @@ function deploytag(tagname, addlink=true)
     commit = LibGit2.commit(docrepo, "Deploy $tagname")
     LibGit2.branch!(docrepo, "gh-pages", string(commit))
 end
+
+function bumpversion(oldversion, newversion)
+    # Rename old version folder to new number
+    oldtag = "v" * string(VersionNumber(oldversion))
+    newtag = "v" * string(VersionNumber(newversion))
+    mv(joinpath(docpath, oldtag), joinpath(docpath, newtag))
+    write(joinpath(docpath, newtag, "siteinfo.js"), """var DOCUMENTER_CURRENT_VERSION = "$newtag";""")
+    # Modify symlinks
+    for file in readdir(docpath, join=true)
+        if islink(file) && readlink(file) == oldtag
+            rm(file)
+            symlink(newtag, file)
+        end
+    end
+    symlink(newtag, joinpath(docpath, oldtag))
+    # Update list of versions
+    versionlist = readlines(joinpath(docpath, "versions.js"))
+    minortag = newtag[1:end-2]
+    for line = 1:length(versionlist)
+        m = match(r"(v\d+\.\d+)", versionlist[line])
+        m == nothing && continue # skip line
+        version = m.captures[1]
+        if version == minortag  # the version is already in the list
+            break
+        end
+        if VersionNumber(version) < VersionNumber(minortag)
+            # Add the version
+            insert!(versionlist, line, "  \"$minortag\",")
+            write(joinpath(docpath, "versions.js"), join(versionlist, "\n"))
+            break
+        end
+    end
+end
