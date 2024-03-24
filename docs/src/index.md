@@ -7,6 +7,10 @@ CurrentModule = GRUtils
 
 GRUtils is being maintained in a package apart from GR, in order to make its development faster, assuming a temporary duplication of development efforts. Hopefully in a near future it will be clearer if the interface to GR provided in GRUtils deserves maintenance in such an independent "plug-in", or if its code should be integrated in GR itself.
 
+!!! note
+
+    There are other packages, most notably [Plots.jl](https://github.com/JuliaPlots/Plots.jl), that also provide an alternative high-level interface to GR for Julia (and even much more than that). Over the course of years, the high latency and other issues of early versions of Plots.jl have been largely solved, and GRUtils does not provide significant advantages anymore. So the maintenance of this package has been limited to keeping it working with new versions of Julia and GR as it is.
+
 ## Installation
 
 Add GRUtils to your library of Julia packages, typing `]` to enter in the "package management mode" and then typing:
