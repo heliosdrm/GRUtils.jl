@@ -51,7 +51,7 @@ Geometry(kind::Symbol;
     c=emptyvector(Float64),
     spec="",
     label="",
-    kwargs...) where K =
+    kwargs...) =
     Geometry(kind, x, y, z, c, spec, label, Dict{Symbol,Float64}(kwargs...))
 
 """
